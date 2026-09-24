@@ -1,4 +1,4 @@
-# Competitive Intelligence — Evidence Ledger v0.3
+# Competitive Intelligence — Evidence Ledger v0.4
 
 **Date:** 2026-09-24  
 **Gate:** Product Foundation / Competitive Intelligence — NOT PROVEN  
@@ -27,6 +27,12 @@
 | EVID-0017 | Noon Academy App Store / public reviews | USER REPORT / RECENT EXAMPLE | A 2025 review reports that a student could not find the expected grade/curriculum options. A 2023 review reports the app did not open after an update. These examples support continued investigation of curriculum/context fit and update reliability, but do not establish prevalence. |
 | EVID-0018 | Abwaab Google Play / public reviews | USER REPORT / RECENT EXAMPLES | August 2026 reviews include positive usability feedback; separate public review aggregations include September 2026 reports of repeated logout, application errors and heavy/sluggish behavior. These are user reports and require sampling before systemic conclusions. |
 | EVID-0019 | Khan Academy Google Play / Trustpilot | USER REPORT / RECENT EXAMPLES | September 2026 public reviews include reports of login persistence problems and complaints about explanation clarity/lesson length. These are subjective or individual reports and do not establish general product effectiveness. |
+| EVID-0020 | Coligo Edu | VERIFIED PUBLIC CAPABILITY / COMPANY-REPORTED | Coligo currently positions itself as an AI-powered K-12 school operating system combining LMS, student information, parent communication, attendance, fees and admissions. It reports 45+ schools and 150k+ users; those scale figures are company-reported. |
+| EVID-0021 | Hessity | VERIFIED PUBLIC CAPABILITY | Hessity positions itself around Egyptian private education operations for teachers and centers, connecting attendance, classes, payment collection, parent communication and reporting; it also describes a unified student profile across teachers and centers. |
+| EVID-0022 | Tafra Tech | VERIFIED PUBLIC CAPABILITY / COMPANY-REPORTED | Tafra Tech describes an integrated platform combining lectures, exams, assignments, attendance, parent follow-up, auto-grading, WhatsApp communication, store and payments. It reports 500+ institutions; scale is company-reported. |
+| EVID-0023 | TeacherFlow by Provada | VERIFIED PUBLIC CAPABILITY | TeacherFlow publicly exposes a demo-oriented workflow for booking, scheduling, homework, attendance, progress tracking and parent communication across admin, teacher, parent and student portals, with a WhatsApp-first interaction model. |
+| EVID-0024 | MENA/Egypt market | INFERENCE | Current public product positioning indicates that “one platform connecting education operations, learning, parents and communications” is already an active market direction in Egypt/MENA. This weakens any differentiation hypothesis based only on integration breadth. |
+| EVID-0025 | UNESCO / 2024 Youth Report | RESEARCH EVIDENCE | UNESCO's 2024 Youth Report emphasizes learner-centred, context-appropriate, equitable, evidence-based and sustainable technology use, and maintaining human connection rather than treating technology itself as the solution. |
 
 ## Evidence Interpretation Rules
 
@@ -38,23 +44,25 @@
 - Subjective accusations in reviews are recorded as claims by reviewers, not as established facts.
 - Research findings are context-dependent and must not be generalized beyond their studied population without evidence.
 - Public review aggregators can help discover reports but may have incomplete sampling or copied/repeated content; they are not equivalent to controlled user research.
+- Public demos/documentation establish observable capability, not usability, effectiveness or retention.
 - No competitor is ranked, scored or declared a winner.
 
 ## Current Research Conclusion
 
-The market is broad and already contains content, practice, assessment, live/social interaction, parent visibility, teacher support, AI and institutional capabilities.
+The market is broad and already contains content, practice, assessment, live/social interaction, parent visibility, teacher support, AI and institutional/operational capabilities. Current Egypt/MENA products also demonstrate that integrated education operations are an active market direction.
 
 The expanded public-review evidence provides multiple examples across Noon, Abwaab and Khan Academy involving reliability, access/curriculum fit, navigation/usability and explanation experience. At this stage these remain **USER REPORTS / EARLY-PATTERN signals**, not systemic market findings.
 
-This supports continued discovery around:
+The evidence therefore makes the following research direction more important:
 
-- end-to-end learning coordination,
-- evidence-based next actions,
-- reliability and recovery,
-- human control and trust,
-- privacy/visibility boundaries,
-- cross-role coordination,
-- context/curriculum fit.
+- end-to-end learning coordination;
+- evidence-based next actions;
+- reliability and recovery;
+- human control and trust;
+- privacy/visibility boundaries;
+- cross-role coordination;
+- context/curriculum fit;
+- measurable learning impact rather than feature breadth.
 
 It still does **not** prove a unique product-market gap.
 
