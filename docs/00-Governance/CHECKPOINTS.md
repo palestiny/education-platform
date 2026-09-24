@@ -122,3 +122,26 @@ Collect direct real-case evidence. The next gate review must be based on actual 
 
 ### Guardrail
 No implementation, requirements, domain model, UX contract, API, data model, or architecture decision is authorized until the Product Foundation Gate is explicitly reviewed.
+
+
+## Checkpoint 004 — Direct Research Execution Pack
+
+Date: 2026-09-24
+
+### Evidence update
+- Recent 2026 research continues to support investigating the human interpretation/action layer: AI signals do not automatically become pedagogical intervention; interpretation, judgment and orchestration remain part of the process. citeturn0search0
+- This evidence strengthens the research question but does not prove an unmet market need.
+
+### Completed
+- Added `docs/02-Research/DIRECT_WORKFLOW_RESEARCH_SCRIPT.md` with neutral real-case interview prompts and anti-leading controls.
+- Added `docs/02-Research/DIRECT_CASE_EVIDENCE_LEDGER.md` for cross-case synthesis and contradictory evidence.
+- Added `docs/02-Research/DIRECT_VALIDATION_GATING_CHECKLIST.md` defining PASS/GAP/NOT PROVEN/REJECT-PIVOT review criteria without numeric scoring.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Next action
+Run the research protocol against actual recent cases and populate the case records/ledger. Do not substitute additional competitor feature inventory for direct evidence.
+
+### Guardrail
+No implementation, requirements, domain model, UX contract, API, data model, or architecture decision is authorized until the Product Foundation Gate is explicitly reviewed.
