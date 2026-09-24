@@ -1,4 +1,4 @@
-# Competitive Intelligence — Evidence Ledger v0.6
+# Competitive Intelligence — Evidence Ledger v0.7
 
 **Date:** 2026-09-24  
 **Gate:** Product Foundation / Competitive Intelligence — NOT PROVEN  
@@ -37,6 +37,11 @@
 | EVID-0027 | Khan Academy Interim Assessments | VERIFIED PUBLIC CAPABILITY / PROVIDER-DESCRIBED WORKFLOW | Documents assessment → understand needs → personalized practice/next steps → progress, including reasoning/misconception signals and district visibility. |
 | EVID-0028 | Classera | VERIFIED PUBLIC CAPABILITY / PROVIDER CLAIM | Documents AI-driven personalization, real-time insights and adaptive exams; AI + personalization + insights is already a competitive capability. |
 | EVID-0029 | Abwaab Ask the Teacher | VERIFIED PUBLIC CAPABILITY / HUMAN-IN-THE-LOOP | Current 2026 help documentation shows a learner can submit a curriculum question and optional screenshot and receive an answer from a specialized teacher for supported subjects. This is direct human intervention for a learner need, but not evidence of cross-role intervention coordination or outcome effectiveness. |
+| EVID-0030 | Khan Academy teacher/intervention workflow | VERIFIED PUBLIC CAPABILITY / PROVIDER-DESCRIBED WORKFLOW | Current teacher material describes using student progress/mastery insights to identify what each student needs next and provide targeted support without extra work. |
+| EVID-0031 | Khan Academy district case study | PROVIDER CASE STUDY / DISTRICT-REPORTED | A 2026 case describes targeted intervention using standards-aligned practice, real-time data, teacher instructional adjustment and later assessment results. The reported outcomes are attributed by the district/provider case study and are not independent causal proof. |
+| EVID-0032 | Abwaab current public product description | VERIFIED PUBLIC CAPABILITY / PROVIDER-DESCRIBED WORKFLOW | Current product description includes curriculum-tailored assessments, progress reports, a weekly schedule from a Morshed and ongoing communication, plus Q&A with teachers/students. |
+| EVID-0033 | TeacherFlow / Sahahly / Tabora | VERIFIED PUBLIC CAPABILITY | Current public products document multi-role operational coordination or explicit teacher workflows for parent communication, follow-up, intervention tracking and reassessment. These establish market activity, not unmet need. |
+| EVID-0034 | 2026 systematic review of teacher intervention in K-12 AI instruction | RESEARCH EVIDENCE | Review concludes that AI-generated information does not automatically become pedagogical action; teachers interpret, judge and translate information into situated support. This supports preserving a human decision boundary, but does not prove demand for a particular product architecture. |
 
 ## Research correction
 
@@ -52,6 +57,7 @@ This remains a PRODUCT HYPOTHESIS, not a requirement.
 
 - Official product pages establish documented capabilities, not independent learning outcomes.
 - Provider-described workflows establish intended/documented workflow, not proof of effectiveness.
+- Provider or district case studies are reported evidence, not automatically independent causal evidence.
 - A feature absent from a public page is not proof of absence.
 - A single complaint remains a USER REPORT.
 - Multiple reports may establish an early pattern, not automatically a systemic weakness.
@@ -62,6 +68,8 @@ This remains a PRODUCT HYPOTHESIS, not a requirement.
 
 ## Current conclusion
 
-Feature breadth is crowded. Assessment-to-next-step, AI personalization, and single-role human intervention are also documented capabilities. The next research focus is specifically **cross-role intervention coordination**, including evidence provenance/confidence, decision ownership, due state, closure/follow-up, reliability/recovery, privacy/visibility and measurable value.
+Feature breadth is crowded. Assessment-to-next-step, AI personalization, and single-role human intervention are also documented capabilities. Current evidence also shows that teacher interpretation and human action remain important between AI/data signals and educational intervention.
+
+The next research focus is specifically **cross-role intervention coordination**, including evidence provenance/confidence, decision ownership, due state, closure/follow-up, reliability/recovery, privacy/visibility and measurable value.
 
 **Gate remains: NOT PROVEN.**
