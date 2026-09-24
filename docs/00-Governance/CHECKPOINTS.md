@@ -170,3 +170,29 @@ Execute real-case reconstruction with participants in the selected research segm
 
 ### Guardrail
 No implementation, requirements, domain model, UX contract, API, data model, or architecture decision is authorized until the Product Foundation Gate is explicitly reviewed.
+
+
+## Checkpoint 006 — Participant Collection Readiness
+
+Date: 2026-09-24
+
+### Evidence update
+- Current 2026 research continues to support examining how educational signals become human decisions and interventions, while not proving the proposed unmet need. citeturn0search3turn0search2
+- Current Egypt tutoring products document substantial attendance, assessment, parent communication and operational tooling, reinforcing that direct research must test the remaining coordination gap rather than assume it. citeturn0search4turn0search12turn0search8
+
+### Completed
+- Added `docs/02-Research/PARTICIPANT_RECRUITMENT_AND_CONSENT_BRIEF.md`.
+- Defined neutral recruitment language, participant boundaries, artifact-handling rules, safeguarding boundary for minors, anti-leading controls and research stop conditions.
+- No participant evidence was invented or recorded.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Current State
+**Collection-ready; direct evidence not yet collected.**
+
+### Next action
+Use the committed research instruments with real participants and real recent cases. Record each case separately, preserve contradictory evidence, then perform the Product Foundation Gate review.
+
+### Guardrail
+Do not convert public market capability, recruitment readiness, or participant opinion into product requirements. No implementation, domain, UX, API, data, security or architecture authorization has been created.
