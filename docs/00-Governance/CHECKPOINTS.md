@@ -27,11 +27,16 @@ Pre-Discovery / Foundation
 ### In Progress
 - Competitive Intelligence validation.
 - Direct user/review evidence collection.
-- Public competitor workflow walkthroughs documented.
+- Public competitor workflow walkthroughs documented and expanded across Khan Academy/Khan Academy Kids, Classera, Abwaab, and Nagwa.
 - Hands-on competitor workflow validation remains open.
 - Validation of learning-orchestration hypothesis.
 - Validation of reliability/recovery and trust/visibility opportunities.
 - Product foundation validation.
+
+### Latest Verification Note
+- Public workflow research expansion committed in `e065be37eb057a14ac8c35dc04871e969affb743` (`docs(research): expand competitor workflow walkthroughs`).
+- Current public evidence confirms that content, assessment, progress visibility, institutional tooling, and AI/personalization already exist across parts of the market; this does not by itself validate differentiation.
+- Hands-on validation is still NOT PROVEN; no implementation authorization has been created.
 
 ### Current Gate
 Product Foundation / Competitive Intelligence Gate — NOT PROVEN
