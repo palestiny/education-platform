@@ -73,3 +73,60 @@ Feature breadth is crowded. Assessment-to-next-step, AI personalization, and sin
 The next research focus is specifically **cross-role intervention coordination**, including evidence provenance/confidence, decision ownership, due state, closure/follow-up, reliability/recovery, privacy/visibility and measurable value.
 
 **Gate remains: NOT PROVEN.**
+
+
+### EVID-0035 — Egypt private-education operating platforms
+- **Classification:** VERIFIED PUBLIC CAPABILITY
+- **Source:** Hessity public documentation, retrieved 2026-09-24.
+- **Evidence:** Documents connected teachers, centers, students and parents for attendance, classes, payments, communication and reporting.
+- **Interpretation:** Multi-role operational coordination is already an active Egyptian market category.
+- **Limitation:** Provider documentation does not establish adoption, usability, learning impact or unmet need.
+
+### EVID-0036 — Egypt tutor performance + parent visibility
+- **Classification:** VERIFIED PUBLIC CAPABILITY
+- **Source:** Eduscore public documentation, retrieved 2026-09-24.
+- **Evidence:** Documents assessment/grade tracking, performance trends, at-risk identification, parent notifications and parent progress access.
+- **Interpretation:** Parent visibility and risk-oriented workflows already exist locally.
+- **Limitation:** This does not prove actionable cross-role intervention coordination.
+
+### EVID-0037 — Egypt tutoring offline/recovery workflow
+- **Classification:** VERIFIED PUBLIC CAPABILITY / PROVIDER CASE STUDY
+- **Source:** Mudarris public case study, retrieved 2026-09-24.
+- **Evidence:** Describes offline-first tutoring operations, synchronization after connectivity returns, parent progress visibility and multi-tenant operation.
+- **Interpretation:** Reliability and recovery are already product-level concerns in this market.
+- **Limitation:** Provider/client case study; prevalence and impact remain unproven.
+
+### EVID-0038 — Egypt tutoring: integrated parent/teacher/operations workflow
+- **Classification:** VERIFIED PUBLIC CAPABILITY
+- **Source:** EduBook Pro public documentation, retrieved 2026-09-24.
+- **Evidence:** Documents owner/teacher dashboards, parent portal, attendance, schedules, exams, offline operation and parent notifications.
+- **Interpretation:** Feature consolidation and multi-role visibility are active market capabilities.
+- **Limitation:** Public capability does not prove workflow quality or unresolved intervention pain.
+
+### EVID-0039 — Egypt tutoring: cross-teacher parent identity
+- **Classification:** VERIFIED PUBLIC CAPABILITY
+- **Source:** Dros Spot public documentation, retrieved 2026-09-24.
+- **Evidence:** Documents one parent account spanning children/teachers and offline attendance handling.
+- **Interpretation:** Family identity across multiple teachers is already being addressed.
+- **Limitation:** It does not establish whether academic intervention context travels across teachers.
+
+### EVID-0040 — Egypt tutor all-in-one workflow
+- **Classification:** VERIFIED PUBLIC CAPABILITY
+- **Source:** Edvanz Tutor public documentation, retrieved 2026-09-24.
+- **Evidence:** Documents attendance, payments, homework, exams, video lessons and parent communication in one tutor workflow.
+- **Interpretation:** Broad feature consolidation is not a sufficient differentiation hypothesis.
+- **Limitation:** Capability breadth does not prove a closed intervention loop or measurable outcome.
+
+### EVID-0041 — Local integrated school/center deployment
+- **Classification:** VERIFIED PUBLIC CAPABILITY / PROVIDER CASE STUDY
+- **Source:** Mandarin Software public case study, retrieved 2026-09-24.
+- **Evidence:** Describes parent/student/teacher apps and operations covering attendance, grades, fees, homework, exams and communication; reports a live private-school deployment above 3,300 students.
+- **Interpretation:** Integrated multi-role education operations are deployable locally.
+- **Limitation:** One case does not establish market-wide prevalence or effectiveness.
+
+### EVID-0042 — Fragmentation as a local problem signal
+- **Classification:** PROVIDER-REPORTED PROBLEM / USER-RESEARCH INPUT
+- **Source:** Mudarris public case study, retrieved 2026-09-24.
+- **Evidence:** Describes tutoring businesses using paper registers and WhatsApp groups and parents learning progress when someone remembers to communicate it.
+- **Interpretation:** Fragmentation is a plausible local problem signal.
+- **Limitation:** Provider-reported positioning; direct user validation is still required.
