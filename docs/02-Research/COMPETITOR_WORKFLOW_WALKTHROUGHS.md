@@ -8,63 +8,84 @@ Implementation is not authorized by this document.
 
 ## Workflow Validation Matrix
 
-| Competitor | State | Evidence | Interpretation / Insight | Decision / Action | Follow-up / New Evidence |
+| Competitor / Workflow | State / Trigger | Evidence | Decision / Action | Follow-up / New Evidence | Cross-role coordination status |
 |---|---|---|---|---|---|
-| Khan Academy | Learner/course/class skill state | Mastery levels, assignment/progress data, assessment results | Teacher can identify where learners are and what they need next | Targeted practice, reteach/support, personalized next step | Subsequent practice/progress and reassessment |
-| Khan Academy Interim Assessments | Assessment state | Responses plus reasoning/misconception signals and identified unfinished learning | Assessment is used to understand needs, not only score | Personalized practice aligned to attention areas | Practice progress feeds the next learning cycle |
-| Classera | Learner/institution state | Interactions, assessments, AI/personalization data and analytics described by provider | Platform intends to derive real-time insights and adapt learning | Adaptive exams, personalized learning and AI-supported actions | Ongoing learning interactions and analytics |
-| Abwaab | Question/learning need | Student question, optional screenshot, curriculum context | A learner need is interpreted by a specialized teacher | Human teacher answer/support | New response and continued learning |
-| Nagwa | Curriculum/content state | Public material establishes curriculum-oriented content | Full evidence-to-intervention workflow is not sufficiently documented in current research | OPEN | OPEN |
-| Egypt/MENA operating-layer products | Operational/student state | Attendance, classes, payments, parent communication, progress and related records | Products coordinate operational information across roles | Communication, scheduling, reporting and operational actions | Subsequent operational/progress records |
+| Khan Academy | Learner/course/class skill state | Mastery, assignment/progress and assessment data | Targeted practice, reteach/support, personalized next step | Practice/progress and reassessment | Documented across learner/teacher; broader parent/org intervention closure still requires validation |
+| Khan Academy Interim Assessments | Assessment state | Responses, reasoning/misconception signals, unfinished learning | Personalized practice aligned to needs | Practice progress and later assessment | Strong assessment→action loop; cross-role intervention ownership/closure not established by this evidence |
+| Classera | Learner/institution state | Interactions, assessments, AI/personalization and analytics described by provider | Adaptive exams, personalized learning, AI-supported actions | Ongoing analytics/interactions | Institutional breadth documented; exact intervention closure workflow needs validation |
+| Abwaab Ask the Teacher | Learner submits question | Question, optional screenshot, curriculum context | Specialized teacher answers/supports | Response and continued learning | Human intervention documented; no evidence yet of persistent cross-role intervention lifecycle |
+| Nagwa | Curriculum/content state | Curriculum-oriented public material | OPEN | OPEN | Insufficient current evidence |
+| Egypt/MENA operating-layer products | Operational/student state | Attendance, classes, payments, parent communication, progress | Communication, scheduling, reporting, operational actions | Subsequent operational/progress records | Multi-role operational coordination documented; learning intervention closure needs validation |
 
-## Important research correction
+## Scenario validation
 
-Khan Academy publicly documents assessment-to-personalized-practice and teacher next-step workflows. Classera publicly documents AI personalization, adaptive assessment and real-time insights.
+### Scenario A — Repeated concept failure
+**Question:** Does the platform preserve the evidence, identify the likely need, assign an intervention owner, verify remediation, and capture outcome evidence?
 
-Therefore the earlier broad learning-orchestration hypothesis is too broad to serve as differentiation by itself.
+Current public evidence:
+- Khan Academy documents assessment → understanding → personalized next step → progress.
+- This proves the learning loop exists in-market, but does not prove a cross-role intervention case with explicit owner/due/closure across student, parent, teacher and organization.
 
-## Narrower hypothesis
+**Status:** HYPOTHESIS OPEN.
 
-The remaining hypothesis worth testing is:
+### Scenario B — Attendance drop + performance drop
+**Question:** Can attendance and learning evidence be combined without producing an unsupported causal claim?
 
-> Evidence → interpreted state → human decision/approval → assigned intervention → follow-up → new evidence, coordinated across roles with role-appropriate visibility and auditability.
+**Required validation:** evidence provenance, time alignment, confidence, human interpretation, privacy boundaries and intervention ownership.
 
-This is a PRODUCT HYPOTHESIS, not a requirement.
+**Status:** NOT PROVEN.
+
+### Scenario C — Parent concern requiring action
+**Question:** Can a parent receive an understandable concern and an appropriate next action without surveillance overload or exposing inappropriate teacher/student data?
+
+**Status:** NOT PROVEN.
+
+### Scenario D — Teacher remediation + verification
+**Question:** Can a teacher assign remediation, define completion/outcome criteria, and verify whether the intervention changed evidence?
+
+Khan Academy documents targeted support/reteaching and reassessment-oriented workflows, but the specific persistent intervention lifecycle remains unproven.
+
+**Status:** HYPOTHESIS OPEN.
+
+### Scenario E — Organization unresolved intervention
+**Question:** Can an organization see unresolved interventions, ownership, due state, escalation and closure across multiple teachers/classes?
+
+**Status:** NOT PROVEN.
+
+### Scenario F — AI recommendation with incomplete/contradictory evidence
+**Question:** Can AI distinguish recommendation from fact, expose evidence/provenance/confidence, request human review when needed, and avoid unsupported intervention?
+
+**Status:** NOT PROVEN.
 
 ## Validation gaps
 
-1. Do parents need cross-role intervention visibility, and what is appropriate to expose?
-2. Can teachers coordinate interventions without manually assembling evidence from separate tools?
-3. Can organizations track unresolved learning/operational exceptions to closure?
-4. Does an intervention have an explicit owner, due state, outcome and follow-up evidence?
-5. Can AI recommend while preserving human approval and explainability?
-6. How are stale, missing, contradictory or low-confidence evidence handled?
-7. How does the workflow recover after connectivity, playback, scheduling or communication failure?
-8. Does added coordination reduce work or improve outcomes enough to justify its complexity?
-9. Which initial user segment experiences the problem frequently enough to support a focused product?
+1. Parent visibility and consent boundaries.
+2. Teacher evidence assembly burden.
+3. Organization exception/intervention closure.
+4. Explicit owner, due state, outcome and closure criteria.
+5. AI recommendation vs human approval.
+6. Stale, missing, contradictory or low-confidence evidence.
+7. Connectivity/playback/scheduling/communication recovery.
+8. Measurable learning/operational value versus added complexity.
+9. Initial segment with sufficiently frequent/high-cost problem.
+10. Real user evidence from students, parents, teachers and organizations.
 
 ## Next research step
 
-Move from competitor capability discovery to **Intervention Workflow Validation**.
+Run **Intervention Workflow Validation** using public documentation/reviews where available and direct user evidence where access is possible. Record:
 
-Candidate scenarios:
-- Student repeatedly fails a concept.
-- Student attendance drops while assessment performance also drops.
-- Parent receives a concern requiring action.
-- Teacher assigns remediation and needs to verify completion.
-- Center detects an unresolved intervention across multiple teachers.
-- AI produces a recommendation with incomplete or contradictory evidence.
-
-For each scenario collect:
-- current competitor behavior;
-- user role;
+- trigger;
+- role;
 - evidence source;
-- confidence/provenance;
+- provenance/confidence;
+- interpretation;
 - decision owner;
-- intervention action;
+- intervention;
 - notification/visibility;
-- recovery path;
+- failure/recovery;
+- due state;
 - closure criteria;
-- measurable outcome.
+- outcome evidence;
+- privacy/consent implications.
 
 Do not convert scenarios into requirements until the Product Foundation Gate is explicitly reviewed.
