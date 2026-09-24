@@ -77,3 +77,25 @@ Review direct evidence and classify the hypothesis as PASS, GAP, NOT PROVEN, or 
 
 ### Implementation Status
 Not authorized.
+
+
+## Checkpoint 002 — Egypt Market Scan Refinement
+
+Date: 2026-09-24
+
+### Evidence update
+- Latest public scan confirms that Egyptian tutoring/education products already cover substantial portions of multi-role operations, parent visibility, assessments, communication and offline continuity.
+- Evidence ledger extended with EVID-0035 through EVID-0042.
+- Opportunity map refined so generic feature integration is treated as existing market capability, not differentiation.
+
+### Research interpretation
+The unresolved question is now narrower: whether intervention cases still lose evidence, context, ownership, follow-up or outcome across roles after current tools are available.
+
+### Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Implementation
+Not authorized.
+
+### Next action
+Direct real-case validation in a specific segment, starting with private tutoring / tutoring-center workflows where student, parent and multiple educators may interact.
