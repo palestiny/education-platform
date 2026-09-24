@@ -49,9 +49,7 @@ Classification: VERIFIED PUBLIC CAPABILITY.
 
 ### Research implication
 
-Khan Academy demonstrates that student learning, teacher assignment/measurement, and parent visibility can be connected in one ecosystem. This means those individual capabilities cannot by themselves define differentiation for our product.
-
-Sources checked: Khan Academy teacher and Khan Academy Kids public documentation (2026).
+Khan Academy demonstrates that student learning, teacher assignment/measurement, and parent visibility can be connected in one ecosystem. These individual capabilities cannot by themselves define differentiation for our product.
 
 ## Workflow B — Classera
 
@@ -83,6 +81,40 @@ Classification: VERIFIED PUBLIC CAPABILITY.
 
 Open question: the current evidence set is not sufficient to claim how effectively learner evidence, parent visibility, teacher intervention, and organizational workflows are connected end-to-end.
 
+## Workflow E — Egypt / MENA Operating-Layer Products
+
+### Coligo Edu
+
+Public positioning connects LMS, student information, parent communication, attendance, fees and admissions in one K-12 operating platform, with AI described as part of the product.
+
+Classification: VERIFIED PUBLIC CAPABILITY / COMPANY-REPORTED.
+
+Research implication: a school operating layer that connects academic and administrative workflows is already being actively positioned in Egypt/GCC. Integration breadth alone is therefore not a validated distinction.
+
+### Hessity
+
+Public positioning connects teachers, centers, students and parents around attendance, classes, payment collection, communication and operational reporting. It also describes a unified student profile across teachers and centers.
+
+Classification: VERIFIED PUBLIC CAPABILITY.
+
+Research implication: the "unified student profile + operational coordination" concept already exists in the private-education segment. The research question should move toward the quality of decisions, interventions and learning outcomes enabled by that shared state.
+
+### Tafra Tech
+
+Public positioning combines lectures, exams, assignments, attendance, parent follow-up, auto-grading, WhatsApp communication, commerce and payments.
+
+Classification: VERIFIED PUBLIC CAPABILITY / COMPANY-REPORTED.
+
+Research implication: automated parent communication and integrated academy operations are already market capabilities. They should not be treated as unique requirements without stronger evidence.
+
+### TeacherFlow by Provada
+
+A public demo-oriented workflow exposes admin, teacher, parent and student portals around booking, scheduling, homework, attendance, progress and WhatsApp-first parent communication.
+
+Classification: VERIFIED PUBLIC CAPABILITY.
+
+Research implication: multi-role coordination and communication can be packaged as a focused workflow product rather than only as a large school ERP. This broadens the competitive set beyond conventional LMS products.
+
 ## Cross-competitor observation
 
 Current public evidence supports the following factual conclusion:
@@ -93,13 +125,19 @@ Existing products already cover substantial parts of:
 - teacher progress views;
 - parent visibility in at least some products;
 - institutional reporting;
-- AI/personalization in parts of the market.
+- AI/personalization in parts of the market;
+- attendance, scheduling and communication;
+- payments and operational workflows in Egypt/MENA products.
 
 Therefore the working research question remains:
 
 > Can we coordinate evidence, interpretation, decision, intervention, and follow-up across student, parent, teacher, and organization without increasing user complexity?
 
-This remains a PRODUCT HYPOTHESIS, not a requirement.
+A second research question is now explicit:
+
+> Can that coordination produce measurable learning/operational value rather than simply increasing feature and integration breadth?
+
+These remain PRODUCT HYPOTHESES, not requirements.
 
 ## Validation gaps
 
@@ -111,6 +149,8 @@ The following remain NOT PROVEN:
 5. Whether recommendation quality can be grounded in sufficient evidence.
 6. How the workflows behave under failure, delay, missing data, connectivity problems, and support escalation.
 7. Which workflow elements must remain human-controlled.
+8. Whether integrated operational workflows improve measurable outcomes enough to justify their complexity and cost.
+9. Which unmet need, if any, is sufficiently painful and frequent to support a differentiated initial product.
 
 ## Next research step
 
@@ -122,6 +162,7 @@ Perform hands-on walkthroughs for a small selected set of competitors and record
 - missing context;
 - manual workarounds;
 - failure/recovery behavior;
-- privacy/consent implications.
+- privacy/consent implications;
+- measurable outcome or value signal where available.
 
 Do not convert observations directly into requirements. Feed them into the evidence ledger and Product Foundation Gate review.
