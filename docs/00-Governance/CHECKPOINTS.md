@@ -22,8 +22,11 @@ Pre-Discovery / Foundation
 
 ### In Progress
 - Competitive Intelligence preparation.
+- First competitor matrix completed.
+- First evidence ledger completed.
+- Initial pain-point hypothesis map completed.
 - Product foundation validation.
-- Research evidence collection.
+- Direct user evidence collection.
 
 ### Current Gate
 Product Foundation / Competitive Intelligence Gate — NOT PROVEN
@@ -36,7 +39,8 @@ Not authorized.
 2. Evidence classification.
 3. Repeated-pattern extraction.
 4. Opportunity mapping.
-5. Product Foundation Gate review.
-6. Only then move into detailed requirements/domain/UX decisions.
+5. Direct user/review evidence collection.
+6. Product Foundation Gate review.
+7. Only then move into detailed requirements/domain/UX decisions.
 
 Open questions and risks are maintained in GAP_REGISTER.md and RISK_REGISTER.md.
