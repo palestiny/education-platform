@@ -94,3 +94,32 @@ The evidence is sufficient to continue focused discovery, and reliability/access
 No implementation is authorized by this document.
 
 The candidate learning-orchestration direction and reliability/recovery direction remain PRODUCT OPPORTUNITY hypotheses.
+
+
+## 2026-09-24 Research Update — Local Market Validation
+
+The latest Egypt-market scan reinforces that generic integration is already crowded: current public products document attendance, payments, schedules, parent visibility, assessments, homework, communication and offline operation across several provider types. This does **not** prove that the market is solved; it changes the research question.
+
+### Refined validation question
+
+> When a learner needs intervention, does the current stack reliably carry the right evidence, interpretation, ownership, action, follow-up and outcome across the relevant roles — or does the case still fall back to memory, WhatsApp, calls, spreadsheets or repeated manual coordination?
+
+### New research guardrail
+
+Do not treat any of the following as differentiation by themselves:
+- parent dashboard
+- risk/at-risk indicator
+- attendance tracking
+- intervention tracker
+- multi-role portals
+- WhatsApp notifications
+- offline-first operation
+- all-in-one education management
+
+These are now market capabilities to validate against, not product conclusions.
+
+### Segment hypothesis
+
+The most useful first validation context remains private tutoring / tutoring centers where a student may interact with multiple teachers and a parent, because cross-role coordination can be observed without requiring the full complexity of a school ERP.
+
+**Status:** Hypothesis only — direct evidence required.
