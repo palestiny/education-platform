@@ -52,6 +52,22 @@ This creates design questions around:
 
 These are not implementation requirements yet; they need prioritization during Requirements and UX Gates.
 
+### P-004 — Reliability, access and navigation failures can interrupt learning
+
+Evidence status: EARLY PATTERN / NOT PROVEN SYSTEMIC
+
+Public reviews across multiple platforms contain materially similar reports involving app crashes/freezing, login/logout problems, missing or mismatched curriculum/grade options, playback/loading issues, and navigation/usability friction. Current evidence includes examples from Noon Academy, Abwaab and Khan Academy.
+
+The correct conclusion at this stage is **early pattern signal**, not “market-wide systemic weakness.” Frequency, severity, affected segments, and persistence require structured sampling.
+
+Research questions:
+- How often do these failures occur?
+- Which user segments are most affected?
+- Does the failure block learning or merely add friction?
+- Is recovery clear and fast?
+- Can the learner resume without losing context?
+- Is support continuity adequate when self-recovery fails?
+
 ## Patterns not yet proven
 
 The following hypotheses remain OPEN and require direct user research or stronger independent evidence:
@@ -63,9 +79,10 @@ The following hypotheses remain OPEN and require direct user research or stronge
 - Existing platforms provide analytics but insufficiently convert evidence into coordinated interventions.
 - Parents want confidence and actionable summaries rather than surveillance-heavy monitoring.
 - Centers need a unified operating layer across teaching, attendance, assessment, communication, and finance.
+- Reliability/recovery quality materially affects learning outcomes or retention at meaningful scale.
 
 ## Research conclusion
 
-The evidence is strong enough to keep these as research hypotheses, but not strong enough to declare them market-wide weaknesses.
+The evidence is now strong enough to promote reliability/access/navigation friction from isolated examples to an **EARLY PATTERN signal**, but not enough to declare a market-wide weakness.
 
-The next step is direct evidence collection: user interviews, surveys, support/review analysis, and competitor workflow walkthroughs.
+The next step is structured evidence collection: dated review sampling, user interviews, surveys, support/review analysis, and competitor workflow walkthroughs.
