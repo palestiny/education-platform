@@ -17,7 +17,7 @@ This document is intentionally decision-support material. It does not authorize 
 | OPP-001 | Major platforms already provide content, practice, assessment, interaction, parent visibility and/or institutional tooling. | Coordinate the learning journey instead of adding isolated features. | INFERENCE | Observe real journeys across multiple platforms and users; identify coordination failures that materially affect outcomes. | Candidate end-to-end orchestration layer. |
 | OPP-002 | Khan Academy already provides parent progress, assignments and activity reporting. | Convert progress data into understandable, appropriately scoped decisions/actions for families. | PRODUCT OPPORTUNITY | Interview parents; test whether current dashboards answer what matters now, why it matters, and what action is appropriate. | Parent experience may focus on confidence + next action rather than raw monitoring. |
 | OPP-003 | UNESCO reports limited robust evidence of EdTech added value and emphasizes educational objectives/evidence. | Make learning evidence and outcomes first-class product concepts. | VERIFIED MARKET CONCERN + PRODUCT OPPORTUNITY | Define which evidence is reliable enough for decisions; validate whether users value evidence-based guidance. | Avoid optimizing primarily for views, clicks, minutes or completion. |
-| OPP-004 | Current user reviews for Noon, Abwaab and Nagwa contain reports of access, playback, navigation, support and communication problems. | Treat reliability, recovery and support continuity as part of the learning experience. | USER REPORTS / EARLY PATTERN | Collect larger, dated samples across platforms and separate transient incidents from repeated systemic issues. | Reliability and recovery should be evaluated as product capabilities, not only technical concerns. |
+| OPP-004 | Public reviews across Noon, Abwaab and Khan Academy contain materially similar examples involving reliability, access/curriculum fit, navigation and usability. | Treat reliability, recovery and support continuity as part of the learning experience. | EARLY PATTERN SIGNAL | Collect larger, dated samples across platforms and segments; distinguish transient incidents from repeated systemic issues and measure learning impact. | Reliability/recovery should be evaluated as product capabilities, not only technical concerns. |
 | OPP-005 | Recent research on school platformisation reports benefits from streamlined administration/communication alongside concerns about monitoring, digital exclusion and teacher digital wellbeing. | Design visibility and automation with explicit human boundaries. | RESEARCH EVIDENCE | Validate these tensions in target markets and user segments; identify acceptable visibility/notification boundaries. | Privacy, consent, explainability and human control should shape future requirements. |
 | OPP-006 | Existing products span different contexts: consumer learning, curriculum support, professional learning, school/LMS and marketplace models. | Build a core model that supports multiple operating contexts without hard-coding one market. | PRODUCT OPPORTUNITY | Validate tenant/role/context needs and identify which capabilities are genuinely shared. | Global-ready domain model with configurable local context remains a hypothesis. |
 
@@ -31,6 +31,8 @@ This document is intentionally decision-support material. It does not authorize 
 6. What happens when connectivity, playback, scheduling, payment or communication fails during a learning journey?
 7. Which parts of the experience must remain human-controlled even when AI is available?
 8. Which requirements are global platform invariants, and which should be local configuration?
+9. Which reliability failures are merely annoying, and which materially interrupt learning continuity?
+10. What recovery behavior allows a learner to resume from the same learning context after failure?
 
 ## Research Method for the Next Pass
 
@@ -85,10 +87,10 @@ Operational state → exception → assignment → resolution → reporting.
 Status: NOT PROVEN
 
 Reason:
-The evidence is sufficient to continue focused discovery, but not sufficient to lock differentiation, detailed requirements, domain boundaries, or architecture.
+The evidence is sufficient to continue focused discovery, and reliability/access/navigation now has an early-pattern signal, but the evidence is still insufficient to lock differentiation, detailed requirements, domain boundaries, or architecture.
 
 ## Decision Impact
 
 No implementation is authorized by this document.
 
-The candidate learning-orchestration direction remains a PRODUCT OPPORTUNITY hypothesis.
+The candidate learning-orchestration direction and reliability/recovery direction remain PRODUCT OPPORTUNITY hypotheses.
