@@ -34,3 +34,46 @@ Not authorized.
 
 ### Guardrail
 No research hypothesis in this checkpoint authorizes implementation. A hypothesis becomes a requirement only through an explicit product decision and traceable gate update.
+
+
+## Checkpoint 001 — Direct Workflow Validation Protocol
+
+Date: 2026-09-24
+
+### Current Stage
+Product Foundation / Competitive Intelligence — Direct Workflow Validation
+
+### Completed
+- Market evidence expanded across learning, intervention and education-operations workflows.
+- Broad learning-orchestration differentiation was rejected as insufficiently validated.
+- Cross-role intervention coordination remains the narrower hypothesis under investigation.
+- Direct workflow validation protocol committed at `docs/02-Research/DIRECT_WORKFLOW_VALIDATION_PLAN.md`.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Current Research Objective
+Collect direct evidence from real recent cases in a specific initial segment, rather than validating feature opinions.
+
+### Required next evidence
+- Recurring real cases.
+- Material cost/friction.
+- Current workaround and its failure points.
+- Decision/action ownership.
+- Follow-up and closure behavior.
+- Outcome evidence.
+- Evidence quality and uncertainty handling.
+- Privacy/consent boundaries.
+- Failure/recovery behavior.
+- Human accountability and AI boundaries.
+- Segment-specific unmet need.
+- Measurable value hypothesis.
+
+### Guardrail
+Public competitor capabilities and participant opinions do not, by themselves, authorize requirements or implementation.
+
+### Next Gate
+Review direct evidence and classify the hypothesis as PASS, GAP, NOT PROVEN, or REJECT/PIVOT.
+
+### Implementation Status
+Not authorized.
