@@ -99,3 +99,26 @@ Not authorized.
 
 ### Next action
 Direct real-case validation in a specific segment, starting with private tutoring / tutoring-center workflows where student, parent and multiple educators may interact.
+
+
+## Checkpoint 003 — Direct Validation Instrumentation
+
+Date: 2026-09-24
+
+### Evidence update
+- Current research literature reinforces that educational signals do not automatically become intervention; human interpretation, judgment and orchestration remain important. This is supporting evidence for investigating the evidence-to-action handoff, not proof of unmet need.
+- Current research also identifies trade-offs around monitoring, parent access, teacher workload, student autonomy and privacy. These are now explicit validation dimensions rather than assumptions.
+
+### Completed
+- Added `docs/02-Research/DIRECT_WORKFLOW_CASE_RECORD_TEMPLATE.md` for reconstructing real recent cases without inventing missing facts.
+- Added `docs/02-Research/INITIAL_SEGMENT_SELECTION_MATRIX.md` to structure segment selection without prematurely declaring a product market.
+- Updated Issue #1 with the research instruments and evidence boundary.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Next action
+Collect direct real-case evidence. The next gate review must be based on actual cases, not additional feature inventories.
+
+### Guardrail
+No implementation, requirements, domain model, UX contract, API, data model, or architecture decision is authorized until the Product Foundation Gate is explicitly reviewed.
