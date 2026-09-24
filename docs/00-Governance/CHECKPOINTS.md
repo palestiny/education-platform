@@ -196,3 +196,29 @@ Use the committed research instruments with real participants and real recent ca
 
 ### Guardrail
 Do not convert public market capability, recruitment readiness, or participant opinion into product requirements. No implementation, domain, UX, API, data, security or architecture authorization has been created.
+
+
+## Checkpoint 007 — Field Execution Ready
+
+Date: 2026-09-24
+
+### Completed
+- Added `docs/02-Research/RESEARCH_EXECUTION_CHECKLIST.md`.
+- Converted the committed research protocol into a concise execution checklist covering pre-session consent, case reconstruction, evidence classification, post-session integrity, cohort review and gate discipline.
+- Updated Issue #1 to record the new execution state.
+- No participant cases were invented or recorded.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Current State
+**Collection-ready; direct evidence not yet collected.**
+
+### Blocking evidence
+Real recent cases from actual participants in the selected education segments.
+
+### Next action
+Run the research protocol with real participants, record cases separately, preserve contradictions, update the cross-case evidence ledger, and then review the Product Foundation Gate.
+
+### Guardrail
+Public research, competitor capability, recruitment readiness, or participant opinion cannot be converted into product requirements without case evidence and an explicit gate decision. No implementation, domain, UX, API, data, security or architecture authorization has been created.
