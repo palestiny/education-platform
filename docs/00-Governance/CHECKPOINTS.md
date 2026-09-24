@@ -145,3 +145,28 @@ Run the research protocol against actual recent cases and populate the case reco
 
 ### Guardrail
 No implementation, requirements, domain model, UX contract, API, data model, or architecture decision is authorized until the Product Foundation Gate is explicitly reviewed.
+
+
+## Checkpoint 005 — Collection-Ready Research State
+
+Date: 2026-09-24
+
+### Evidence update
+- Current literature continues to support studying the transition from educational signals to human judgment and intervention, while not establishing that the proposed cross-role workflow is an unmet need. citeturn0search0turn0search4
+- Recent digital-learning research also shows that implementation constraints such as connectivity, time and technical difficulties can affect educational technology workflows, reinforcing reliability/recovery as a validation dimension rather than an implementation assumption. citeturn0search8
+
+### Completed
+- Updated Issue #1 to include the full direct research execution pack and explicit collection status.
+- Verified the repository remains research-only at this stage.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — NOT PROVEN
+
+### Current State
+**Collection-ready; direct evidence not yet collected.**
+
+### Next action
+Execute real-case reconstruction with participants in the selected research segments and populate case records plus the cross-case ledger. The gate review must use actual case evidence and contradictory evidence, not additional competitor feature inventory.
+
+### Guardrail
+No implementation, requirements, domain model, UX contract, API, data model, or architecture decision is authorized until the Product Foundation Gate is explicitly reviewed.
