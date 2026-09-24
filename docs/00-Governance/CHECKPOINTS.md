@@ -27,7 +27,8 @@ Pre-Discovery / Foundation
 ### In Progress
 - Competitive Intelligence validation.
 - Direct user/review evidence collection.
-- Competitor workflow walkthroughs.
+- Public competitor workflow walkthroughs documented.
+- Hands-on competitor workflow validation remains open.
 - Validation of learning-orchestration hypothesis.
 - Validation of reliability/recovery and trust/visibility opportunities.
 - Product foundation validation.
@@ -40,7 +41,7 @@ Not authorized.
 
 ### Next Work
 1. Expand evidence collection across students, parents, teachers and organizations.
-2. Perform complete workflow walkthroughs for selected competitors.
+2. Perform hands-on workflow validation for selected competitors.
 3. Separate user reports from repeated patterns and systemic findings.
 4. Validate the candidate opportunity areas.
 5. Review Product Foundation Gate.
