@@ -23,6 +23,8 @@ Pre-Discovery / Foundation
 - Evidence ledger created and extended with current user/research evidence.
 - Repeated pain-point hypothesis map created.
 - Opportunity map created.
+- Public review evidence expanded across Noon Academy, Abwaab and Khan Academy.
+- Reliability/access/navigation friction promoted from isolated USER REPORT examples to an EARLY PATTERN signal, without declaring a systemic market weakness.
 
 ### In Progress
 - Competitive Intelligence validation.
@@ -34,8 +36,10 @@ Pre-Discovery / Foundation
 - Product foundation validation.
 
 ### Latest Verification Note
-- Public workflow research expansion committed in `e065be37eb057a14ac8c35dc04871e969affb743` (`docs(research): expand competitor workflow walkthroughs`).
-- Current public evidence confirms that content, assessment, progress visibility, institutional tooling, and AI/personalization already exist across parts of the market; this does not by itself validate differentiation.
+- Public-review evidence expansion committed in `185d67d3a9c7d7884915a5451e967f199e5c6d5d` (`docs(research): expand public user evidence ledger`).
+- Repeated-pain-point classification committed in `31b15287f3a7c730d85336717fb2aa46cb78fb30` (`docs(research): classify reliability friction as early pattern`).
+- Opportunity-map refinement committed in `2a8038ef1042c6444b216d8bcfe1a2d0288bf8e9` (`docs(research): refine opportunity signals from user evidence`).
+- Current public evidence now supports an EARLY PATTERN signal around reliability/access/navigation friction across multiple products, but prevalence, severity, segmentation and learning impact are not yet proven.
 - Hands-on validation is still NOT PROVEN; no implementation authorization has been created.
 
 ### Current Gate
