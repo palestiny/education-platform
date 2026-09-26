@@ -129,8 +129,7 @@ No implementation, requirements, domain model, UX contract, API, data model, or 
 Date: 2026-09-24
 
 ### Evidence update
-- Recent 2026 research continues to support investigating the human interpretation/action layer: AI signals do not automatically become pedagogical intervention; interpretation, judgment and orchestration remain part of the process. citeturn0search0
-- This evidence strengthens the research question but does not prove an unmet market need.
+- Recent 2026 research continues to support investigating the human interpretation/action layer: AI signals do not automatically become pedagogical intervention; interpretation, judgment and orchestration remain part of the process. This evidence strengthens the research question but does not prove an unmet market need.
 
 ### Completed
 - Added `docs/02-Research/DIRECT_WORKFLOW_RESEARCH_SCRIPT.md` with neutral real-case interview prompts and anti-leading controls.
@@ -152,8 +151,8 @@ No implementation, requirements, domain model, UX contract, API, data model, or 
 Date: 2026-09-24
 
 ### Evidence update
-- Current literature continues to support studying the transition from educational signals to human judgment and intervention, while not establishing that the proposed cross-role workflow is an unmet need. citeturn0search0turn0search4
-- Recent digital-learning research also shows that implementation constraints such as connectivity, time and technical difficulties can affect educational technology workflows, reinforcing reliability/recovery as a validation dimension rather than an implementation assumption. citeturn0search8
+- Current literature continues to support studying the transition from educational signals to human judgment and intervention, while not establishing that the proposed cross-role workflow is an unmet need.
+- Recent digital-learning research also shows that implementation constraints such as connectivity, time and technical difficulties can affect educational technology workflows, reinforcing reliability/recovery as a validation dimension rather than an implementation assumption.
 
 ### Completed
 - Updated Issue #1 to include the full direct research execution pack and explicit collection status.
@@ -177,8 +176,8 @@ No implementation, requirements, domain model, UX contract, API, data model, or 
 Date: 2026-09-24
 
 ### Evidence update
-- Current 2026 research continues to support examining how educational signals become human decisions and interventions, while not proving the proposed unmet need. citeturn0search3turn0search2
-- Current Egypt tutoring products document substantial attendance, assessment, parent communication and operational tooling, reinforcing that direct research must test the remaining coordination gap rather than assume it. citeturn0search4turn0search12turn0search8
+- Current 2026 research continues to support examining how educational signals become human decisions and interventions, while not proving the proposed unmet need.
+- Current Egypt tutoring products document substantial attendance, assessment, parent communication and operational tooling, reinforcing that direct research must test the remaining coordination gap rather than assume it.
 
 ### Completed
 - Added `docs/02-Research/PARTICIPANT_RECRUITMENT_AND_CONSENT_BRIEF.md`.
@@ -253,3 +252,57 @@ Execute the existing direct-research protocol. Do not add more feature-inventory
 
 ### Guardrail
 No requirements, domain model, UX contract, API, data model, security policy, tenancy decision, architecture decision or implementation may be promoted from hypothesis to commitment before the explicit gate decision.
+
+
+## Checkpoint 009 — Field Execution Handoff
+
+Date: 2026-09-26
+
+### Completed
+- Re-verified Issue #1 as the active research gate.
+- Re-verified the direct evidence ledger contains **0 real cases** and no placeholder case.
+- Added an explicit field-execution handoff to Issue #1.
+- Defined the minimum information needed to convert a real case into a Case Record without inventing missing facts.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — **NOT PROVEN**
+
+### Evidence State
+- Direct participant cases: **0**
+- Initial segment: **NOT SELECTED**
+- Domain Gate: **NOT PROVEN**
+- Architecture Gate: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Blocking Evidence
+The next meaningful state change requires at least one **real recent educational case** from an actual participant. A case may arrive as rough notes; it does not need to be a completed interview transcript.
+
+### Minimum Case Capture
+- Segment and roles
+- Trigger
+- Actual evidence
+- Interpretation/uncertainty
+- Decision owner
+- Action owner
+- Intervention/action
+- Communication/context handoff
+- Due state/follow-up
+- Outcome/closure
+- Existing workaround
+- Cost/friction
+- Failure/recovery
+- Privacy/consent
+- AI/human boundary
+- Contradictions and unknowns
+
+### Integrity Rules
+- Missing facts remain unknown.
+- A single case is evidence of that case, not prevalence.
+- Contradictory evidence must be preserved.
+- No case becomes a product requirement automatically.
+
+### Next Action
+Obtain and reconstruct real cases, then expand to comparable and contradictory cases before Product Foundation Gate review.
+
+### Guardrail
+No requirements, domain, UX, API, data, security, tenancy, architecture or implementation decision is authorized by this checkpoint.
