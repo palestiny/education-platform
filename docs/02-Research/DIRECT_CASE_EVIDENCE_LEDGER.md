@@ -1,6 +1,7 @@
 # Direct Case Evidence Ledger
 
 Status: Research Instrument  
+Collection state: **0 direct cases collected**  
 Gate: Product Foundation / Competitive Intelligence — NOT PROVEN  
 Implementation authorization: None
 
@@ -22,7 +23,7 @@ Maintain a cross-case evidence record for direct workflow validation. This ledge
 
 | Case ID | Segment | Role(s) | Recency | Scenario | Evidence quality | Ownership clarity | Follow-up state | Outcome evidence | Workaround | Cost/Friction | Privacy issue | Recovery issue | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| CASE-0001 | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | OPEN |
+| _No cases collected yet_ | — | — | — | — | — | — | — | — | — | — | — | — | — |
 
 ## Cross-case synthesis
 
@@ -107,4 +108,6 @@ A gate cannot be marked PASS merely because the ledger contains several cases. T
 
 ## Current status
 
-NOT PROVEN — no direct case evidence has yet been entered into this repository.
+**NOT PROVEN — 0 direct cases collected.**
+
+The ledger intentionally contains no placeholder case. A case row is created only after a real recent case has been reconstructed and assigned a case ID.
