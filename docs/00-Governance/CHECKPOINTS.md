@@ -222,3 +222,34 @@ Run the research protocol with real participants, record cases separately, prese
 
 ### Guardrail
 Public research, competitor capability, recruitment readiness, or participant opinion cannot be converted into product requirements without case evidence and an explicit gate decision. No implementation, domain, UX, API, data, security or architecture authorization has been created.
+
+
+## Checkpoint 008 — Pre-Research Audit / Handoff
+
+Date: 2026-09-26
+
+### Completed
+- Completed the pre-research governance audit across Product, Requirements, Domain and Architecture preparation artifacts.
+- Verified that hypotheses remain explicitly separated from commitments and that segment-dependent capabilities remain conditional/open.
+- Verified the repository is collection-ready for direct workflow validation.
+- Confirmed Issue #1 remains the active research gate and no implementation authorization exists.
+
+### Current Gate
+Product Foundation / Competitive Intelligence — **NOT PROVEN**
+
+### Evidence State
+- Direct participant cases collected: **0**.
+- Public competitive/research evidence: useful supporting context, but not sufficient to close the direct-validation gate.
+- Initial beachhead segment: **NOT SELECTED**.
+- Domain Gate: **NOT PROVEN**.
+- Architecture Gate: **NOT PROVEN**.
+- Implementation: **NOT AUTHORIZED**.
+
+### Blocking Evidence
+Real recent cases from actual participants, reconstructed without inventing missing facts, with enough evidence to evaluate recurrence, material friction/cost, ownership, follow-up, closure, outcome evidence, workarounds, failure/recovery, privacy/consent and human accountability.
+
+### Next Action
+Execute the existing direct-research protocol. Do not add more feature-inventory work as a substitute for participant evidence. After sufficient cases are collected, review contradictory evidence and run the Product Foundation Gate using the committed PASS/GAP/NOT PROVEN/REJECT-PIVOT criteria.
+
+### Guardrail
+No requirements, domain model, UX contract, API, data model, security policy, tenancy decision, architecture decision or implementation may be promoted from hypothesis to commitment before the explicit gate decision.
