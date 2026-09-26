@@ -10,6 +10,34 @@ Use this record only for a real recent case reconstructed with a participant or 
 
 Do not collect unnecessary personally identifiable information. Use a Case ID rather than names.
 
+## Fast Capture Mode
+
+Use this when a real case is available but there is not enough time to complete the full record during the conversation. Capture only facts that are known; leave unknowns as **UNKNOWN**.
+
+- **Case ID:** assign after capture
+- **Segment/context:** private tutoring / tutoring center / school / other
+- **Participant role(s):**
+- **Approximate recency:**
+- **What happened / trigger:**
+- **Evidence that existed:**
+- **Who interpreted it:**
+- **Who decided action was needed:**
+- **Who performed the action:**
+- **What action/intervention happened:**
+- **How communication happened:**
+- **Was there a due date/follow-up owner?:**
+- **What happened afterward:**
+- **How outcome was known:**
+- **Tools/workarounds used:**
+- **Main time/friction/cost:**
+- **Failure/recovery, if any:**
+- **Privacy/consent concern, if any:**
+- **AI/automation involvement, if any:**
+- **Contradictory evidence:**
+- **Unknowns / open questions:**
+
+Fast Capture is **raw research input**, not a product requirement and not evidence of prevalence. Convert it into the full case record only after the facts are reviewed.
+
 ## Case Metadata
 
 - **Case ID:**
