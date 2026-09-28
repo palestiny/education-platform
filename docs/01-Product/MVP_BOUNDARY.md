@@ -132,3 +132,12 @@ Before implementation starts, we must have:
 10. test strategy and Definition of Done.
 
 No code is authorized by this document.
+
+## Research Boundary Clarification
+
+Standard market capabilities do not require individually reconstructed user cases before they can be included in the parity planning baseline.
+
+Parity presence does not automatically make a capability MVP-committed. MVP inclusion still depends on the selected segment, business model, coherent journey, cost, risk, and explicit product decisions.
+
+For differentiation candidates such as the intervention lifecycle, targeted direct workflow validation remains appropriate.
+
