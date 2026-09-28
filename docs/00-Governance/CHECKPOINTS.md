@@ -1292,3 +1292,39 @@ If accepted, the acceptance must be recorded by changing ADR-0001 and DEC-0012 t
 **Explicit Architecture Decision → Architecture Gate Closure → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
 
 No implementation is authorized until the applicable gates are passed.
+
+
+## Checkpoint 036 — Security + Data Gate Closure Preparation
+
+**Date:** 2026-09-28  
+**Stage:** Security/Data Gate Preparation  
+**Status:** READY FOR EXPLICIT SECURITY/DATA DECISIONS — NOT PROVEN  
+**Implementation:** Not authorized
+
+### Completed
+- Re-read the current architecture closure and data-impacting review before opening downstream gate preparation.
+- Added a single consolidated Security + Data Gate Closure Candidate to the existing Architecture Gate inputs rather than creating separate speculative documents.
+- Converted remaining security decisions into explicit closure areas: tenant isolation, authorization vocabulary, relationship lifecycle/delegation, parent/guardian visibility, age/country policy, privileged support access, sensitive-read auditing, retention/deletion and abuse/security controls.
+- Converted remaining data decisions into explicit closure areas: authoritative facts, evidence taxonomy, versioning, learner-state materialization, concurrency, idempotency, atomicity, projection recovery, data classification, tenant isolation and retention/deletion.
+- Preserved the distinction between proposed invariants and decisions that require explicit confirmation.
+- Corrected GAP-0011 so targeted direct research is treated consistently with DEC-0009: useful for uncertain/high-impact claims, not a mandatory blocker for normal market-led platform planning.
+
+### Important boundary
+Security/Data preparation does **not** accept the architecture, finalize privacy policy, choose physical tenant isolation, define database schema, or authorize implementation.
+
+### Current gate state
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| UX Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| Architecture | **READY FOR EXPLICIT DECISION — NOT PROVEN** |
+| Security | **READY FOR EXPLICIT DECISIONS — NOT PROVEN** |
+| Data | **READY FOR EXPLICIT DECISIONS — NOT PROVEN** |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Next
+**Explicit Architecture Decision → Security Decision Set → Data Decision Set → Architecture Impact Reconciliation → API Contract Gate → Implementation Gate**
