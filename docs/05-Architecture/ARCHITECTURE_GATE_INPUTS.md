@@ -1174,3 +1174,72 @@ The Architecture ADR should **not** silently decide:
 PASS does **not** require every implementation detail to be frozen. It requires that implementation-impacting architectural behavior is explicit, internally coherent, and traceable to downstream Security/Data/API decisions.
 
 Until that confirmation exists, the architecture remains **NOT PROVEN** and implementation remains unauthorized.
+
+
+## Security + Data Gate Closure Candidate
+
+**Date:** 2026-09-28  
+**Status:** READY FOR EXPLICIT SECURITY/DATA DECISIONS — NOT PROVEN  
+**Implementation authorization:** None
+
+This section prepares the next gates without inventing product, privacy, legal, tenancy or persistence decisions.
+
+### Security Gate — minimum decision set
+
+| Decision area | Required closure | Current status |
+|---|---|---|
+| Tenant isolation | Define mandatory tenant context at protected command/data boundaries; choose physical isolation strategy later only with explicit decision | OPEN |
+| Authorization vocabulary | Define minimum policy concepts for actor, effective role, relationship, organization/tenant, resource, action and context | OPEN |
+| Relationship lifecycle | Define creation, scope, delegation, expiry/revocation and historical attribution semantics | OPEN |
+| Parent/guardian visibility | Define what may be projected, under which relationship/consent/policy conditions | OPEN |
+| Age/country policy | Define whether and where visibility/consent rules vary by age, guardian status or jurisdiction | OPEN |
+| Privileged support/admin access | Define break-glass/support access, approval, scope, logging and review | OPEN |
+| Sensitive reads/mutations | Define audit requirements for sensitive learner data access and high-impact mutations | OPEN |
+| Retention/deletion | Define retention, correction, deletion, legal-hold and historical-attribution constraints | OPEN |
+| Abuse/security controls | Define authentication/session, recovery, rate limiting, abuse prevention and provider trust boundaries | OPEN |
+
+### Security invariants already proposed
+
+- Role is not unconditional permission.
+- Relationship is not permission.
+- Authorization is evaluated at command time.
+- Tenant/context boundaries are enforced below UI visibility.
+- Historical attribution survives relationship changes.
+- Authorization failure does not mutate authoritative state.
+- Parent access is a controlled projection, not direct unrestricted access to underlying learning records.
+- Security telemetry must minimize sensitive learner content.
+
+These are architectural constraints, not a completed security policy.
+
+### Data Gate — minimum decision set
+
+| Decision area | Required closure | Current status |
+|---|---|---|
+| Authoritative facts | Confirm exact durable first-slice business facts and ownership | OPEN |
+| Evidence taxonomy | Define minimum evidence categories and provenance requirements | OPEN |
+| Evidence versioning | Define correction/supersession/conflict representation | OPEN |
+| Learner-state materialization | Decide which learner-state facts, if any, are durable versus rebuildable projections | OPEN |
+| Concurrency | Define version/conflict semantics for stale or concurrent mutations | OPEN |
+| Idempotency | Confirm command identity scope and duplicate-result semantics | PROPOSED |
+| Atomicity | Confirm which authoritative facts must commit together locally | OPEN |
+| Projection recovery | Confirm rebuild/reconciliation source and boundaries | PROPOSED |
+| Data classification | Classify learner, assessment, communication and audit data and sensitive-read controls | OPEN |
+| Tenant data isolation | Select data-boundary enforcement consistent with Security decision | OPEN |
+| Retention/deletion | Define lifecycle semantics jointly with Security | OPEN |
+
+### Data invariants already proposed
+
+- Authoritative business facts are durable and attributable.
+- Derived progress, dashboards, search, analytics and notification projections are rebuildable unless explicitly promoted to authoritative state.
+- Evidence corrections preserve original lineage.
+- Assessment Result and Evidence remain distinct.
+- Semantic conflicts are representable; no implicit last-write-wins for accountable learning mutations.
+- Retriable authoritative commands are idempotent.
+- Projection/provider failure cannot corrupt authoritative learning state.
+- Recovery repairs derived/external state from authoritative records.
+
+### Closure sequence
+
+**Security decision set → Data decision set → Architecture impact reconciliation → API Contract Gate → Implementation Gate**
+
+No schema, API, provider or production implementation is authorized by this section.
