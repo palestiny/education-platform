@@ -292,6 +292,159 @@ Before declaring Domain Gate PASS:
 | Recommendation Engine | OPEN / DEFERRED | No domain model yet |
 | Payments / Attendance / Marketplace | OUTSIDE FIRST SLICE | No first-slice dependency |
 
+
+
+## Domain Confirmation Candidate — First Slice
+
+The following proposals resolve the remaining domain questions enough to define a coherent first-slice domain contract without freezing implementation details.
+
+### 9. Learning Context Ownership
+
+**Proposed owner:** the Learning domain owns the authoritative learning context for the first slice.
+
+A learning context identifies the scope in which a goal, assignment, evidence, assessment, progress, and teacher authority have meaning. It may reference organization/class/subject/curriculum metadata when those exist, but those structures do not become required first-slice operational domains.
+
+**Invariant:** learning records must not be interpreted outside their applicable context.
+
+**Status:** PROPOSED.
+
+### 10. Assessment Result vs Evidence
+
+Assessment and Evidence are related but not identical:
+
+- **Assessment** owns the assessment definition, attempt/submission lifecycle, and the assessment result as the result of evaluating that assessment.
+- **Evidence** owns attributable observations/records that can support interpretation and progress.
+- An assessment result can produce evidence.
+- Not all evidence is an assessment result.
+- Evidence may reference the assessment result that produced it without becoming the assessment aggregate itself.
+
+**Invariant:** progress and outcomes may consume assessment-derived evidence, but must preserve provenance back to the assessment/result where applicable.
+
+**Status:** PROPOSED.
+
+### 11. Follow-up Ownership and Closure
+
+**Proposed owner:** Follow-up owns the lifecycle of an explicitly created piece of unresolved work.
+
+A follow-up requires:
+- owner;
+- related context;
+- reason/trigger;
+- current status;
+- expected action or resolution condition;
+- timestamps/audit where accountable.
+
+**Closure authority:** the actor who owns the accountable action may close the follow-up, subject to any policy requiring new evidence. The system must not infer closure merely because a due date passed or a related activity was completed.
+
+**Evidence rule:** when closure claims an achieved learning outcome, the follow-up may require new attributable evidence or an explicit teacher decision; closure and outcome remain distinct concepts.
+
+**Status:** PROPOSED.
+
+### 12. Evidence Correction and Conflict
+
+Evidence is **version-aware rather than silently mutable** when a change affects meaning or accountability.
+
+Proposed behavior:
+- preserve the original record/version;
+- create a correction/superseding version with attribution and reason;
+- preserve lineage between versions;
+- derived progress may use the currently valid version according to policy;
+- conflicting evidence is represented as distinct attributable evidence, not overwritten to manufacture consistency;
+- interpretation/progress must be able to reflect insufficient or contradictory evidence.
+
+**Invariant:** the system never silently rewrites historical evidence to make a later interpretation appear true.
+
+**Status:** PROPOSED.
+
+### 13. Teacher–Student Relationship Lifecycle
+
+The relationship/authorization model should distinguish:
+- relationship existence;
+- authorization scope;
+- active/inactive lifecycle;
+- context/group/class scope where applicable.
+
+**Proposed rule:** teacher authority exists only while the relevant relationship/context authorization is active. Historical records remain attributable after the relationship ends, but new actions are rejected unless another valid authorization exists.
+
+Relationship creation/change is an authorization concern and should be owned by the smallest authoritative scope available in the chosen product configuration; it must not be inferred from messaging or assignment activity.
+
+**Status:** PROPOSED.
+
+### 14. Atomicity and Idempotency Boundaries
+
+For the first learning loop, the platform should treat these as separate durable operations:
+
+1. teacher creates/authorizes assignment;
+2. student submits/records attempt;
+3. assessment produces result/evidence;
+4. teacher records decision;
+5. student receives/accepts next action;
+6. follow-up is created/updated when required;
+7. new evidence is recorded;
+8. outcome is declared when authorized.
+
+Within each operation:
+- the authoritative state change and its required local audit/outbox record should be atomic where applicable;
+- client retries must not create duplicate assignments, submissions, decisions, or follow-ups when an idempotency key is required;
+- external delivery (notification/message/provider) must not be assumed to be transactionally atomic with the domain state;
+- delivery failures produce recoverable delivery state, not rollback of already-authoritative learning state.
+
+**Status:** PROPOSED.
+
+### 15. Durable State and Rebuild/Reconciliation
+
+Authoritative records are the recovery basis. Derived projections may be rebuilt.
+
+**Proposed rule:**
+- authoritative relationship, assignment, attempt/submission, assessment result, evidence, teacher decision, follow-up, and declared outcome records are durable;
+- progress summaries, dashboards, recommendation candidates, and convenience aggregates are rebuildable;
+- if a materialized projection disagrees with authoritative records, reconciliation repairs the projection rather than rewriting authoritative history;
+- every derived learner-state calculation must identify the evidence/context basis sufficiently for explanation.
+
+**Status:** PROPOSED.
+
+### 16. Minimum First-Slice State Transition Chain
+
+The canonical durable chain is:
+
+**Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up (if needed) → New Evidence → Outcome**
+
+The following must remain explicitly distinct:
+- assignment completion vs learning achievement;
+- assessment result vs evidence;
+- evidence vs interpretation;
+- interpretation/progress vs authoritative teacher decision;
+- recommendation vs decision;
+- follow-up closure vs outcome declaration.
+
+This chain is a domain invariant, not an API or database design.
+
+**Status:** PROPOSED.
+
+## Domain Confirmation Candidate Checklist
+
+The current proposal is sufficient to enter a Domain Confirmation review, but not sufficient to claim PASS.
+
+- [x] First-slice actors and journey are documented.
+- [x] Goal vs Assignment distinction proposed.
+- [x] Minimum learning mode bounded.
+- [x] Evidence provenance/correction/conflict direction proposed.
+- [x] Progress is bounded as evidence-derived and explainable.
+- [x] Teacher authorization boundary proposed.
+- [x] Parent projection boundary proposed.
+- [x] Outcome distinction proposed.
+- [x] Durable vs derived state proposed.
+- [x] Learning context owner proposed.
+- [x] Assessment Result vs Evidence relationship proposed.
+- [x] Follow-up ownership/closure direction proposed.
+- [x] Atomicity/idempotency boundaries proposed.
+- [x] Rebuild/reconciliation direction proposed.
+- [ ] Product owner confirmation of the proposed domain contract.
+- [ ] Security/privacy confirmation.
+- [ ] Data/API design confirmation.
+
+**Candidate status:** DOMAIN CONFIRMATION READY FOR REVIEW — NOT PROVEN.
+
 ## Domain Gate checklist
 
 ### Product / Evidence
