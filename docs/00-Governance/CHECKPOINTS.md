@@ -1106,3 +1106,63 @@ Exact tenant isolation, permission vocabulary, relationship lifecycle/delegation
 Architecture remains **READY FOR EXPLICIT REVIEW — NOT PROVEN**.
 Security Gate remains **NOT PROVEN**.
 No implementation is authorized.
+
+
+## Checkpoint 032 — Data-Impacting Architecture Review Candidate
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Review Preparation / Data-Impacting Architecture  
+**Status:** READY FOR DATA/DOMAIN REVIEW — NOT PROVEN  
+**Implementation:** Not authorized
+
+### Completed
+- Added a Data-Impacting Architecture Review to the existing Architecture Gate inputs.
+- Separated authoritative durable business facts from derived/rebuildable projections.
+- Defined evidence as a first-class provenance-bearing record with correction/supersession lineage.
+- Preserved the distinction between Assessment Result and Evidence.
+- Bounded Outcome as an attributable durable business fact when authorized, distinct from completion, score, progress and follow-up closure.
+- Kept Learner State/Progress rebuildable and traceable to authoritative evidence; teacher override cannot erase underlying evidence.
+- Defined explicit concurrency/conflict expectations instead of implicit last-write-wins.
+- Defined idempotency expectations for retriable authoritative commands.
+- Defined local atomicity plus outbox intent where reliable asynchronous publication is required.
+- Defined projection/provider reconciliation and recovery principles.
+- Kept retention, deletion, sensitive-data classification and physical tenant isolation as Security/Data decisions.
+
+### Key invariants
+- Derived state may become stale; it must not corrupt authoritative learning state.
+- Evidence correction preserves historical provenance.
+- Progress is not the source of truth for evidence.
+- Semantic conflicts remain explicit and recoverable.
+- Retries must not create duplicate business facts.
+- External effects are not assumed to be transactionally atomic with domain state.
+- Projections and provider state are repaired from authoritative records, not allowed to redefine them.
+
+### Remaining Data Gate decisions
+1. Exact authoritative first-slice facts/fields.
+2. Minimum evidence taxonomy and storage semantics.
+3. Version/supersession representation.
+4. Learner-state materialization/rebuild policy.
+5. Exact concurrency/version mechanics.
+6. Retention/deletion and sensitive-data policy.
+7. Tenant data-isolation implementation.
+8. Data classification and sensitive-read controls.
+
+### Explicit non-actions
+- No database schema.
+- No table/index design.
+- No ORM mapping.
+- No API contract.
+- No technology/provider selection.
+- No implementation authorization.
+
+### Gate state
+- Domain Confirmation: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN
+- UX Confirmation: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN
+- Architecture Review: READY FOR EXPLICIT REVIEW — NOT PROVEN
+- Security: NOT PROVEN
+- Data: READY FOR REVIEW — NOT PROVEN
+- API Contract: NOT PROVEN
+- Implementation: NOT AUTHORIZED
+
+### Next
+**Data-impacting review closure → Architecture closure → ADR → API Contract Gate → Implementation Gate**
