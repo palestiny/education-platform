@@ -2,7 +2,7 @@
 
 | ID | Area | Gap / Open Question | Impact | Severity | Required Decision | Status |
 |---|---|---|---|---|---|---|
-| GAP-0001 | Research | Competitive landscape and repeated user pain points require systematic research. | Product positioning and scope | HIGH | Complete Competitive Intelligence Gate | OPEN |
+| GAP-0001 | Research | Competitive capability baseline is consolidated; differentiation and repeated user-pain evidence remain targeted/open. | Product positioning and scope | HIGH | Complete Competitive Intelligence Gate | OPEN |
 | GAP-0002 | Business | Free vs paid boundary is not finalized. | Monetization and product packaging | HIGH | Business Model Gate | OPEN |
 | GAP-0003 | Domain | Final learning domain/bounded contexts are not finalized. | Data and architecture | HIGH | Domain Gate | OPEN |
 | GAP-0004 | Tenancy | Exact multi-tenancy isolation and operating model are not finalized. | Security, data, architecture | HIGH | Architecture/Data/Security Gates | OPEN |
