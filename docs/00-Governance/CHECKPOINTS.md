@@ -1010,3 +1010,37 @@ The project direction explicitly does not make participant-based segment selecti
 - No architecture ADR created.
 - No technology/provider decision made.
 - Architecture Gate remains NOT PROVEN.
+
+
+## Checkpoint 029 — First-Slice Architecture Decision Matrix
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Review Preparation  
+**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN
+
+### Completed
+Added a structured architecture decision matrix to the existing Architecture Gate inputs.
+
+The candidate now explicitly covers:
+- Modular Monolith as a proposed application shape.
+- First-slice workflow ownership and dependency direction.
+- Assessment, Evidence, Learner State and Follow-up boundaries.
+- Authorization and tenant-isolation pressure points.
+- External provider isolation.
+- Recoverable notification/search/analytics projections.
+- Optional AI assistance.
+- Observability baseline.
+- First-slice consistency and idempotency/reconciliation invariants.
+- Explicit architecture blockers that remain open.
+
+### Important boundary
+These are architecture review proposals, not accepted ADR decisions.
+
+No production code, schema, API contract, provider, cloud target, privacy policy or final architecture decision was silently committed.
+
+### Current gate state
+- Domain Confirmation: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN
+- UX Confirmation: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN
+- Architecture Review: READY FOR EXPLICIT REVIEW — NOT PROVEN
+- Security/Data/API: NOT PROVEN
+- Implementation: NOT AUTHORIZED
