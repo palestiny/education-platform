@@ -57,7 +57,6 @@ These are semantic concepts, not automatically separate entities, aggregates, ta
 | Decision | SCENARIO-DERIVED | Authorized commitment/action or state change | Medium |
 | Interpretation | SCENARIO-DERIVED | Meaning assigned to evidence; human/system/AI-assisted | Medium |
 | Recommendation | OPEN | Proposed next useful action; not authoritative state | Low |
-| Marketplace | OPEN | Multi-party discovery/commerce | Low |
 | AI Assistance | SCENARIO-DERIVED | Bounded AI-assisted workflows with human accountability | Medium |
 | Intervention Case | OPEN | Governed cross-role intervention lifecycle | Low |
 | Marketplace | OPEN | Multi-party discovery/commerce | Low |
@@ -142,6 +141,55 @@ The following remain conditional until the first committed product slice/commerc
 - Marketplace
 - Social / Community
 - White-label
+
+
+
+## First-Slice Domain Confirmation Candidate
+
+The following ownership and invariants are proposed for the Teacher-Led Learning Loop. They narrow domain responsibility without approving bounded contexts, aggregates, schemas, or APIs.
+
+| Area | Proposed owner | Core invariant |
+|---|---|---|
+| Learning Context | Learning | Goals, assignments, evidence and progress are interpreted within an applicable context |
+| Goal / Assignment | Learning / Assignment capability | Goal is intended outcome; Assignment is authorized work; completion is not achievement |
+| Assessment | Assessment | Owns assessment definition, attempts/submissions and assessment result |
+| Evidence | Evidence capability | Owns attributable evidence, provenance, visibility and correction lineage |
+| Learner Progress | Learner State capability | Derived from relevant evidence/context; explainable and rebuildable |
+| Teacher Decision | Learning/Teacher workflow | Authorized teacher decision can change the next learning action within scope |
+| Follow-up | Follow-up capability | Owns unresolved work, owner/status and closure lifecycle |
+| Outcome | Learning State / Outcome capability | Represents what evidence demonstrates; never inferred from activity completion alone |
+| Parent Visibility | Authorization + projection | Parent sees policy-permitted projections, not internal records by relationship alone |
+
+### Critical semantic boundaries
+
+1. **Assessment Result != Evidence** — an assessment result can produce evidence, but evidence can originate elsewhere.
+2. **Evidence != Interpretation** — observations remain attributable; interpretation may change.
+3. **Progress != Activity Count** — progress must be explainable from relevant evidence and context.
+4. **Teacher Decision != Recommendation** — recommendations cannot silently mutate authoritative state.
+5. **Follow-up Closure != Outcome** — closing work does not prove learning achievement.
+6. **Historical Evidence != Mutable Fact** — meaning-changing corrections preserve lineage and attribution.
+7. **Relationship != Permission** — a relationship is insufficient without applicable scope/policy.
+8. **Projection != Source of Truth** — dashboards and parent views are rebuildable projections.
+
+### First-slice transaction boundary
+
+The domain workflow is intentionally decomposed into durable operations:
+
+**Assignment → Submission/Attempt → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome**
+
+Each operation must define idempotency and conflict behavior. Domain state and required local audit/outbox intent should be atomic where applicable. External notification/delivery is not assumed to be part of the same transaction and must have recoverable delivery state.
+
+### Domain confirmation implications
+
+If these proposals are accepted, the next gates can focus on:
+- UX state presentation and role-specific journeys;
+- architecture/module boundaries;
+- security/privacy policy;
+- data ownership and versioning;
+- API contracts.
+
+They do **not** yet authorize implementation.
+
 
 ## Domain Risks
 
