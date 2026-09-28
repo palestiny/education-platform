@@ -940,3 +940,52 @@ No code is authorized by this checkpoint.
 
 ### Next
 **Explicit Domain Confirmation → Explicit UX Confirmation → Architecture Review → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
+
+
+## Checkpoint 027 — Post Domain/UX Architecture Review Candidate
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Review Preparation  
+**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN  
+**Implementation:** Not authorized
+
+### Completed
+- Re-reviewed the Architecture Gate inputs after the Domain and UX confirmation candidates were documented.
+- Added an explicit architecture readiness matrix covering module ownership, consistency, idempotency, concurrency, evidence versioning, tenancy, authorization, provider isolation and observability.
+- Identified no current internal contradiction between the proposed first-slice state chain and the candidate modular boundary map.
+- Narrowed the remaining architecture blockers to explicit decision closure rather than additional document generation.
+- Kept the Modular Monolith recommendation PROPOSED; no ADR or architecture commitment was created.
+
+### Key findings
+- Authorization/relationship semantics and tenant isolation remain architecture-impacting OPEN decisions.
+- Authoritative vs derived state, evidence correction/versioning, and concurrency semantics must be preserved into Data/API design.
+- External providers remain adapters/dependencies and must not own learning truth.
+- Progress, dashboards, notifications and search can remain recoverable projections where their derived status is explicitly accepted.
+- AI Assistance must not become a mandatory dependency or authoritative owner of the core learning-state transition.
+- Future scale does not, by itself, require services-from-start.
+
+### Gate status
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| UX | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| Architecture | **READY FOR EXPLICIT REVIEW — NOT PROVEN** |
+| Security | NOT PROVEN |
+| Data | NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Explicit non-actions
+- No production code.
+- No database schema.
+- No API contract.
+- No final bounded-context/module commitment.
+- No technology/provider selection.
+- No architecture ADR.
+- PR #2 remains open and unmerged.
+
+### Next
+**Explicit Domain Confirmation → Explicit UX Confirmation → Architecture Review/Decision Closure → Security → Data → API Contract → Architecture ADR/Gate Decision → Implementation Gate**
