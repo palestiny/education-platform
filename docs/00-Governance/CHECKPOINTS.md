@@ -1072,3 +1072,37 @@ Domain Confirmation → UX Confirmation → Security-impacting architecture → 
 ### Gate state
 Architecture remains **READY FOR EXPLICIT REVIEW — NOT PROVEN**.
 No production implementation is authorized.
+
+
+## Checkpoint 031 — Security-Impacting Authorization Architecture Candidate
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Review Preparation  
+**Status:** READY FOR SECURITY/PRODUCT CONFIRMATION — NOT PROVEN
+
+### Completed
+Defined the architectural separation between:
+- Identity;
+- Role;
+- Relationship;
+- Organization/Tenant;
+- Authorization.
+
+Defined command-time authorization context and historical-attribution behavior.
+
+### Key invariants
+- Role is not unconditional permission.
+- Relationship is not permission.
+- Tenant context is mandatory at protected boundaries.
+- Parent access is a policy-authorized projection.
+- Historical attribution survives relationship changes.
+- Authorization failures do not mutate authoritative state.
+- Domain modules do not silently duplicate authorization policy.
+
+### Remaining security/product decisions
+Exact tenant isolation, permission vocabulary, relationship lifecycle/delegation, parent/guardian consent, age/country rules, privileged access, sensitive-read auditing, and retention/deletion remain OPEN.
+
+### Gate state
+Architecture remains **READY FOR EXPLICIT REVIEW — NOT PROVEN**.
+Security Gate remains **NOT PROVEN**.
+No implementation is authorized.
