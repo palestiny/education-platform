@@ -605,3 +605,50 @@ The proposed slice is a product recommendation, not an implementation authorizat
 
 ### Next Gate Work
 **Review First Slice → Minimum Domain Decisions → Domain Confirmation → UX → Architecture → Security → Data → API**
+
+
+## Checkpoint 020 — Minimum Domain Decisions for First Slice
+
+Date: 2026-09-28
+
+### Completed
+- Added a minimum-domain decision section to `DOMAIN_READINESS_CHECKPOINT.md`.
+- Defined the proposed semantic distinction between Goal and Assignment.
+- Bounded the first learning mode to an asynchronous teacher-led activity capable of producing learner evidence, without locking the product to a video/live/offline provider model.
+- Defined candidate evidence provenance and correction/version expectations.
+- Defined candidate explainable progress states without freezing a mastery algorithm.
+- Defined contextual student-teacher authorization as a prerequisite for teacher actions.
+- Defined Parent as a controlled projection with separate visibility policy.
+- Defined candidate Outcome semantics separately from activity completion.
+- Identified authoritative/durable state versus rebuildable/derived projections.
+- Added a Domain Confirmation checklist that explicitly identifies what remains unresolved.
+
+### Current Domain Decision Status
+
+| Area | Status |
+|---|---|
+| Goal vs Assignment | **PROPOSED** |
+| Minimum learning mode | **PROPOSED** |
+| Evidence semantics | **PROPOSED** |
+| Progress semantics | **PROPOSED** |
+| Student-teacher authorization | **PROPOSED** |
+| Parent visibility | **PROPOSED** |
+| Outcome | **PROPOSED** |
+| Durable vs derived state | **PROPOSED** |
+| Intervention / Recommendation engine | **OPEN / DEFERRED** |
+
+### Current Gate
+- Product Foundation: **NOT PROVEN**
+- First Product Slice: **PROPOSED**
+- Requirements Consolidation: **COMPLETE FOR CURRENT PRODUCT MODEL**
+- Domain Readiness: **IMPROVED / NOT PROVEN**
+- Domain Confirmation: **NOT REACHED**
+- UX: **NOT PROVEN**
+- Architecture: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Guardrail
+These are explicit design proposals, not hidden commitments. No schema, API, aggregate, bounded context, or implementation is authorized until the remaining Domain Confirmation questions are resolved.
+
+### Next Gate Work
+**Confirm First Slice → Close/Defer Remaining Domain Questions → Domain Confirmation → UX → Architecture → Security → Data → API**
