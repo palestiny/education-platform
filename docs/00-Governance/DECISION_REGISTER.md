@@ -7,7 +7,9 @@
 | DEC-0003 | Identity | Identity should support multiple roles, organizations, permissions and relationships rather than a single UserType. | PROPOSED | Project Charter |
 | DEC-0004 | Architecture | Modular monolith is the candidate initial architecture direction; final decision requires Architecture Gate. | CANDIDATE | Project Charter |
 | DEC-0005 | AI | AI is an assisting capability; human accountability remains explicit. | PROPOSED | Project Charter |
-| DEC-0007 | Product | Product scope is organized into Foundation, Advanced, AI and Scale/Ecosystem layers; Foundation defines the trustworthy capability baseline but does not itself define the MVP. | PROPOSED | Feature Gap Matrix + Product Layers |\n| DEC-0006 | Research/Product | Established educational capabilities can be validated through current market/product evidence for competitive-parity planning; direct real-user case reconstruction is required primarily for uncertain, materially differentiating, or workflow-specific hypotheses—not for every conventional feature. | PROPOSED | Competitive Feature & Review Benchmark + 2026 market review |
+| DEC-0006 | Research/Product | Established educational capabilities can be validated through current market/product evidence for competitive-parity planning; direct real-user case reconstruction is required primarily for uncertain, materially differentiating, or workflow-specific hypotheses—not for every conventional feature. | PROPOSED | Competitive Feature & Review Benchmark + 2026 market review |
+| DEC-0007 | Product | Product scope is organized into Foundation, Advanced, AI and Scale/Ecosystem layers; Foundation defines the trustworthy capability baseline but does not itself define the MVP. | PROPOSED | Feature Gap Matrix + Product Layers |
+| DEC-0008 | Product/Research | Initial segment selection must use an explicit decision framework covering journey coherence, role/operational complexity, evidence availability, commercial/privacy implications, expansion path, Foundation-loop fit and differentiation opportunity; the framework must not silently rank or select a segment. | PROPOSED | Initial Segment Decision Framework |
 
 ## DEC-0006 Boundary
 
@@ -26,6 +28,19 @@ Direct workflow evidence remains necessary when we are trying to establish:
 This distinction prevents two opposite errors:
 1. treating every standard feature as if it requires novel field research before we can design it;
 2. treating a novel product hypothesis as proven merely because competitors expose a similar feature.
+
+## DEC-0008 Boundary
+
+The segment framework is a decision-support artifact, not a market ranking.
+
+It makes the decision variables explicit while preserving unknowns. Conceptual Foundation loops are allowed for scenario design, but they are not treated as validated user evidence.
+
+The framework does not authorize:
+- choosing the initial segment without the required evidence,
+- committing the MVP,
+- finalizing the domain model,
+- approving tenancy or architecture,
+- or beginning implementation.
 
 ## Lifecycle
 
