@@ -150,3 +150,20 @@ It means the planning chain is sufficiently controlled to proceed to direct work
 
 After real cases are collected, the evidence should be reviewed against the segment-dependency matrix and falsification criteria before committing the initial segment or MVP.
 
+
+## Research Boundary Correction
+
+The earlier audit treated direct workflow cases as the material blocker for the entire Product Foundation Gate. DEC-0006 corrected that boundary.
+
+Established market capabilities may be validated for parity planning through current product evidence.
+
+Direct evidence remains required where we assert:
+- a novel or uncertain problem;
+- segment-specific semantics;
+- a materially different workflow;
+- a proposed differentiator;
+- prevalence/severity/cost;
+- or high-impact behavior whose semantics cannot safely be inferred from market presence.
+
+This changes the next step from "wait for cases before all product planning" to "continue parity/requirements work while running targeted validation where it adds decision value."
+
