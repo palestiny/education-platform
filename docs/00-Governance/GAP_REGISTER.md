@@ -12,3 +12,4 @@
 | GAP-0008 | Parent Experience | Exact parent visibility, consent and notification boundaries are not finalized. | UX, privacy, safety | HIGH | Product/UX/Security Gates | OPEN |
 | GAP-0009 | Assessment | Mastery/progress calculation and evidence model are not finalized. | Learning intelligence | HIGH | Domain/Product/Research Gates | OPEN |
 | GAP-0010 | Globalization | Country-specific curricula, payments, calendars and compliance model require research. | International expansion | HIGH | Research/Product/Architecture Gates | OPEN |
+| GAP-0011 | Research Execution | Direct real-case evidence needed to support an explicit initial-segment decision and committed Core Journey has not yet been collected. | Product Foundation and segment decision | HIGH | Execute field research and review evidence-to-segment protocol | OPEN |
