@@ -42,6 +42,31 @@ The framework does not authorize:
 - approving tenancy or architecture,
 - or beginning implementation.
 
+
+| DEC-0009 | Product/Research | The platform is market-led rather than dependent on social/field case research. We will use established market capabilities and documented competitor gaps to design the integrated education platform. Direct user research is optional and targeted: it may validate uncertain/high-impact differentiators, but absence of field cases does not block parity planning, product definition, domain design, or implementation once the relevant product/design/architecture gates are otherwise satisfied. | PROPOSED | Product direction clarification, 2026-09-28 |
+
+## DEC-0009 Boundary
+
+The project objective is to build a unified education platform connecting students, parents, teachers and educational organizations/centers, with useful capabilities that address known market gaps where evidence exists.
+
+We are **not** treating the product as a social research project, a sampled study, or a hypothesis that must be proven through participant cohorts before normal product work can continue.
+
+Research remains useful, but it has a narrower role:
+
+- market and competitor research establishes the capability baseline and visible gaps;
+- product analysis converts those findings into requirements and coherent workflows;
+- direct user research is optional targeted validation for uncertain or materially differentiated assumptions;
+- no fictional case, participant sample, or prevalence claim is required merely to build conventional platform capabilities.
+
+Therefore:
+
+- **0 direct cases is not a blocker by itself.**
+- The absence of direct cases must not be described as the primary reason implementation is unauthorized.
+- Implementation remains gated by product, requirements, domain, UX, architecture, security, data and API decisions—not by a mandatory field-study milestone.
+- If a future feature depends on a claim that cannot be responsibly inferred from market evidence, that feature can be marked OPEN/NOT PROVEN or validated later without stopping the rest of the platform.
+
+This decision supersedes the earlier assumption that a direct-case collection gate is the next mandatory project milestone.
+
 ## Lifecycle
 
 Statuses: PROPOSED, ACCEPTED, REJECTED, SUPERSEDED, OPEN.
