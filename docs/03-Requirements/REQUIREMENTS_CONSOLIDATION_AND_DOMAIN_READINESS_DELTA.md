@@ -107,6 +107,39 @@ The following decisions are the minimum meaningful blockers; they do not require
 
 Everything else should remain explicitly conditional or deferred rather than being guessed.
 
+## 6. First Product Slice Delta
+
+The proposed first slice is now documented in `docs/01-Product/FIRST_PRODUCT_SLICE_DECISION.md`.
+
+Current proposed boundary:
+
+- Student + Teacher are the mandatory actors.
+- Parent is a controlled visibility projection, not a first-slice workflow owner.
+- Organization may provide context where required but organization operations are outside the first slice by default.
+- The first slice is a teacher-led learning loop that closes the cycle from goal/assignment through evidence, teacher decision, student next action, follow-up, new evidence and outcome.
+- Payment, attendance, broad organization administration, marketplace, white-label and broad autonomous AI are outside the first slice by default.
+- Exact goal semantics, evidence schema, progress calculation and some relationship/visibility rules remain OPEN until domain confirmation.
+
+This reduces the domain decision surface enough to move into explicit domain confirmation without pretending that unresolved semantics are already final.
+
+### Minimum Domain Confirmation Checklist
+
+| Decision | Current status |
+|---|---|
+| Mandatory actors | PROPOSED |
+| Parent visibility boundary | PROPOSED |
+| Organization scope | PROPOSED |
+| Learning context | PROPOSED |
+| Goal / assignment model | OPEN |
+| Evidence provenance model | PROPOSED |
+| Progress semantics | PROPOSED / calculation OPEN |
+| Teacher decision authority | PROPOSED |
+| Follow-up lifecycle | DEFINED at semantic level |
+| Outcome semantics | PROPOSED |
+| Privacy / relationship boundary | DEFINED at principle level; detailed policy OPEN |
+| First learning mode(s) | OPEN |
+| AI necessity | Not required for first-slice viability |
+
 ## 6. Gate Position
 
 **Requirements Consolidation: COMPLETE FOR CURRENT PRODUCT MODEL**
