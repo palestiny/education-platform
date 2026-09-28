@@ -176,4 +176,4 @@ Before Architecture Gate:
 
 This document authorizes only further domain analysis. It does not approve bounded contexts, aggregates, database schemas, APIs, technology choices, or implementation.
 
-Next step: produce the Domain Readiness Delta after requirements consolidation, then resolve only the domain decisions required by the first committed product slice.
+Next step: resolve the minimum domain decisions for the proposed Teacher-Led Learning Loop, then perform Domain Confirmation.\n\nThe current minimum decisions are documented in `docs/04-Domain/DOMAIN_READINESS_CHECKPOINT.md`; they remain PROPOSED until the Domain Confirmation gate is passed.
