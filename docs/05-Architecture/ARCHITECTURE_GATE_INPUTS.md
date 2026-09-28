@@ -731,3 +731,38 @@ A retry of the command must be idempotent. A failure after external execution mu
 - final architecture ADR.
 
 This review strengthens the candidate architecture without converting unresolved policy/data decisions into hidden implementation assumptions.
+
+
+## Architecture Blocker Decision Matrix — Closure Plan
+
+The following matrix separates decisions that require product/security/data ownership from decisions that can be closed as architecture policy.
+
+| Blocker | Why it matters | Proposed closure direction | Owner/Gate | Status |
+|---|---|---|---|---|
+| Tenant isolation | Cross-tenant leakage is an architectural failure | Define tenant context as a mandatory authorization/data boundary; defer exact physical isolation until Data/Security review | Product + Security + Data | OPEN |
+| Relationship + authorization scope | Relationship must not imply permission | Explicit relationship context + policy evaluation at command time | Product + Security | OPEN |
+| Parent visibility/consent | Child data has policy-sensitive visibility | Parent view is a controlled projection; exact age/consent/visibility rules remain Security/Product decisions | Product + Security | OPEN |
+| Durable vs derived learner state | Determines consistency, rebuild and recovery | Durable facts: context/assignment/submission/result/evidence/decision/follow-up/outcome; projections rebuildable | Domain + Data | PROPOSED |
+| Evidence versioning | Corrections must not destroy historical truth | Append/version lineage with supersession and attribution; conflict remains representable | Domain + Data | PROPOSED |
+| Concurrency/conflicts | Prevents silent overwrite of accountable decisions | Explicit version/conflict checks; no semantic last-write-wins | Domain + API | PROPOSED |
+| Technology/deployment | Needed for implementation, not for semantic architecture | Keep technology-neutral until Architecture Gate; select stack immediately before Implementation Gate | Architecture | DEFERRED |
+| API contracts | Must encode idempotency, auth, conflicts and failure semantics | Define after Domain + Security/Data closure; contract tests before implementation | API Gate | DEFERRED |
+
+### Closure rule
+
+A blocker may be closed only when its proposed direction is supported by an explicit decision and the decision does not silently invent a product/security/data policy.
+
+Architecture Gate PASS requires the architecture implications to be explicit; it does not require every implementation detail to be frozen.
+
+### Recommended next review order
+
+1. Domain Confirmation: accept/reject the first-slice semantic contract.
+2. UX Confirmation: accept/reject the interaction and trust boundaries.
+3. Security-impacting architecture: authorization, relationship scope, tenant isolation and parent visibility.
+4. Data-impacting architecture: durable facts, evidence lineage, derived projections and conflict/version strategy.
+5. Architecture closure: module/dependency/consistency/provider/observability decisions.
+6. ADR: record the accepted architecture.
+7. API Contract Gate.
+8. Implementation Gate.
+
+This order prevents the architecture decision from pretending that security or data policy has already been decided.
