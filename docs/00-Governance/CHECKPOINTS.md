@@ -1044,3 +1044,31 @@ No production code, schema, API contract, provider, cloud target, privacy policy
 - Architecture Review: READY FOR EXPLICIT REVIEW — NOT PROVEN
 - Security/Data/API: NOT PROVEN
 - Implementation: NOT AUTHORIZED
+
+
+## Checkpoint 030 — Architecture Blocker Closure Matrix
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Review Preparation  
+**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN
+
+### Completed
+The remaining architecture blockers were separated into:
+- product/security decisions that cannot be invented by architecture;
+- data/domain decisions that need explicit closure;
+- architecture policies that can be accepted once the upstream decisions are confirmed;
+- implementation decisions that should remain deferred.
+
+### Key result
+The architecture review is no longer a generic list of "open questions". Each blocker now has:
+- architectural impact;
+- proposed closure direction;
+- responsible gate/decision owner;
+- explicit status.
+
+### Current recommended sequence
+Domain Confirmation → UX Confirmation → Security-impacting architecture → Data-impacting architecture → Architecture closure → ADR → API Contract → Implementation.
+
+### Gate state
+Architecture remains **READY FOR EXPLICIT REVIEW — NOT PROVEN**.
+No production implementation is authorized.
