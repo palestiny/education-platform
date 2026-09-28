@@ -350,3 +350,43 @@ Product Foundation — **NOT PROVEN**
 
 ### Guardrail
 No architecture or implementation work is authorized by this checkpoint.
+
+
+## Checkpoint 011 — Initial Segment Decision Framework
+
+Date: 2026-09-28
+
+### Completed
+- Added `docs/01-Product/INITIAL_SEGMENT_DECISION_FRAMEWORK.md`.
+- Converted the segment choice into an explicit decision-support framework rather than an implicit preference.
+- Defined neutral criteria covering journey coherence, roles, operations, commercial complexity, evidence availability, implementation complexity, expansion path, privacy/regulatory implications, differentiation opportunity, AI dependence and Foundation-loop fit.
+- Defined conceptual Foundation loops for private tutoring, tutoring centers/academies and schools without treating them as validated user evidence.
+- Recorded DEC-0008 to preserve the decision boundary.
+
+### Current Gate
+Product Foundation — **NOT PROVEN**
+
+### Current State
+- Global capability baseline: **ESTABLISHED FOR PLANNING**
+- Product layers: **PROPOSED**
+- Initial segment: **NOT SELECTED**
+- Business model: **OPEN**
+- Direct targeted cases: **0**
+- Domain Gate: **NOT PROVEN**
+- Architecture Gate: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Decision Boundary
+The framework is now ready to absorb direct evidence. It does not select a segment and does not create an overall score or ranking.
+
+### Next Gate Work
+1. Obtain real recent cases from candidate segments using the existing research instruments.
+2. Update the segment matrix/framework with evidence and contradictions.
+3. Decide the initial segment explicitly.
+4. Define the committed Core Journey and exact Foundation learning loop for that segment.
+5. Convert segment-dependent requirements into committed/conditional/open states.
+6. Resolve minimum evidence/progress semantics.
+7. Review Product Foundation Gate before Domain/UX/Architecture work.
+
+### Guardrail
+No architecture or implementation work is authorized by this checkpoint.
