@@ -128,3 +128,21 @@ It does not finalize:
 - technology/provider choices.
 
 Status remains **PROPOSED** until the Domain Confirmation gate is explicitly passed.
+
+
+| DEC-0012 | Architecture | Initial architecture candidate: Modular Monolith with explicit logical module contracts, command-time authorization, authoritative-vs-derived state policy, evidence lineage, idempotency/concurrency/reconciliation policies and isolated external integrations. | PROPOSED | ADR-0001 + Architecture Closure Review, 2026-09-28 |
+
+## DEC-0012 Boundary
+
+This decision is represented by ADR-0001 and remains **PROPOSED** until the Architecture Gate is explicitly passed.
+
+It does not finalize:
+- database schema;
+- API contracts;
+- physical tenant isolation;
+- consent/age/country policy;
+- retention/deletion policy;
+- cloud/vendor selection;
+- implementation.
+
+If accepted, later decisions may refine or supersede this architecture without silently changing its meaning.
