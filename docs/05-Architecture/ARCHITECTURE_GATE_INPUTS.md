@@ -659,3 +659,75 @@ This remains **PROPOSED**. It is supported by the current first-slice consistenc
 8. Implementation Gate.
 
 Until these are closed, implementation remains unauthorized.
+
+
+## Architecture Review Decision Matrix — First Slice
+
+**Status:** PROPOSED — NOT AN ACCEPTED ADR
+
+| Decision | Proposed direction | Rationale | Main trade-off | Gate status |
+|---|---|---|---|---|
+| Application shape | Modular Monolith | Keeps first-slice consistency local while preserving explicit boundaries | Requires discipline to prevent module coupling | PROPOSED |
+| Learning workflow ownership | Learning/Teacher Workflow coordinates the first-slice command flow | The workflow spans assignment, learner action, evidence, decision and next action | Coordinator can become a god-module if boundaries are weak | PROPOSED |
+| Assessment boundary | Assessment owns assessment definitions, attempts and results | Prevents assessment semantics from leaking into Learning | Evidence still needs an explicit handoff contract | PROPOSED |
+| Evidence boundary | Evidence is a first-class capability with provenance/version lineage | Supports correction, conflict and traceability | More modeling than treating records as mutable facts | PROPOSED |
+| Learner progress | Derived/rebuildable learner-state projection | Avoids opaque mutable progress as source of truth | Rebuild/recalculation path must be reliable | PROPOSED |
+| Follow-up | Explicit capability for unresolved work | Separates work lifecycle from learning outcome | May be unnecessary complexity if the first workflow never creates follow-up | PROPOSED |
+| Authorization | Central policy/authorization boundary consumed by modules | Prevents relationship from being treated as permission | Requires explicit scope/context model | OPEN — SECURITY IMPACT |
+| Tenant isolation | Tenant context enforced at application/data boundaries | Prevents cross-organization data leakage | Exact strategy depends on security/data decisions | OPEN |
+| External providers | Adapter/integration boundary outside domain truth | Providers can fail or change without rewriting learning state | Requires reconciliation/status modeling | PROPOSED |
+| Notifications | Recoverable delivery projection/integration | Delivery failure must not rollback authoritative decisions | Adds delivery state and retry handling | PROPOSED |
+| Search/analytics | Derived projections | Avoids making query/read models authoritative | Requires rebuild/reconciliation | PROPOSED |
+| AI | Optional bounded assistance | Core learning workflow must work without AI | AI features require separate governance/evaluation | PROPOSED |
+| Observability | Structured logs + trace/correlation IDs + auditable authoritative mutations | Supports diagnosis and accountability | Operational overhead | PROPOSED |
+| Deployment topology | Single deployable first slice unless operational constraints prove otherwise | Avoids premature distributed-system complexity | Later extraction requires stable contracts | DEFERRED |
+
+### Proposed dependency direction
+
+Identity/Auth -> Authorization -> Learning Context -> Learning Workflow
+
+Supporting dependencies:
+- Learning Workflow -> Assessment contract
+- Learning Workflow -> Evidence contract
+- Learning Workflow -> Learner State projection
+- Learning Workflow -> Follow-up contract
+- Communication/Notifications consume authorized state or explicit commands; they do not own learning truth.
+- AI consumes permitted context/evidence and returns bounded assistance; it does not own authoritative learner state.
+- External providers sit behind integration adapters and cannot directly mutate domain truth.
+
+No module may depend on another module's persistence schema as an implicit contract.
+
+### First-slice consistency boundary
+
+Authoritative command -> durable state + local intent -> asynchronous/external effect -> delivery/provider state -> reconciliation
+
+The authoritative state and required local audit/outbox intent are atomic where applicable. External effects are outside that atomic boundary.
+
+A retry of the command must be idempotent. A failure after external execution must be reconciled rather than blindly replayed.
+
+### Architecture-level invariants
+
+1. Domain modules communicate through explicit contracts, not shared persistence assumptions.
+2. Authoritative records are durable; derived projections are rebuildable.
+3. Evidence corrections preserve lineage rather than overwriting history.
+4. Authorization is evaluated at command time against applicable context/scope.
+5. Relationship existence never grants permission by itself.
+6. External provider state never becomes the sole source of learning truth.
+7. AI assistance cannot silently mutate authoritative learning state.
+8. No implicit last-write-wins for semantically conflicting authoritative mutations.
+9. Retries of retriable authoritative commands are idempotent.
+10. Projection failure must not corrupt authoritative learning state.
+
+### Architecture blockers that remain
+
+- exact tenant isolation strategy;
+- relationship lifecycle and authorization scope model;
+- parent visibility/consent policy;
+- final durable-versus-derived learner-state boundary;
+- exact evidence storage/versioning model;
+- detailed concurrency/conflict semantics;
+- technology stack and deployment target;
+- final API contracts;
+- final architecture ADR.
+
+This review strengthens the candidate architecture without converting unresolved policy/data decisions into hidden implementation assumptions.
