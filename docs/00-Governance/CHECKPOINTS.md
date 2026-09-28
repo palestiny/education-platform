@@ -306,3 +306,47 @@ Obtain and reconstruct real cases, then expand to comparable and contradictory c
 
 ### Guardrail
 No requirements, domain, UX, API, data, security, tenancy, architecture or implementation decision is authorized by this checkpoint.
+
+
+## Checkpoint 010 — Global Feature Baseline and Product Layer Model
+
+Date: 2026-09-28
+
+### Completed
+- Consolidated the current global education feature baseline.
+- Established the boundary that conventional market capabilities do not require one reconstructed user case each for parity planning.
+- Added the Feature Gap Matrix and Product Layers model.
+- Reconciled the MVP boundary and parity backlog with the new layer model.
+- Kept intervention/differentiation validation targeted rather than treating it as a blocker for conventional parity planning.
+
+### Current Gate
+Product Foundation — **NOT PROVEN**
+
+### Current State
+- Global capability baseline: **ESTABLISHED FOR PLANNING**
+- Feature Gap Matrix: **PROPOSED**
+- Product Layers: **PROPOSED**
+- Initial segment: **NOT SELECTED**
+- Business model: **OPEN**
+- Direct targeted cases: **0**
+- Domain Gate: **NOT PROVEN**
+- Architecture Gate: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Open Decisions
+- Initial segment and coherent first journey.
+- Free/paid/business model boundary.
+- Evidence/progress semantics.
+- Parent visibility and consent semantics where applicable.
+- Tenancy/organization operating model.
+- AI scope, evaluation and accountability boundaries.
+
+### Next Gate Work
+1. Select the initial segment using explicit decision criteria and available evidence.
+2. Define the exact Foundation learning loop for that segment.
+3. Convert segment-dependent capabilities from OPEN/CONDITIONAL into explicit decisions.
+4. Resolve the minimum evidence/progress semantics needed for trustworthy product behavior.
+5. Then proceed through Product → Requirements → Domain → UX → Architecture gates.
+
+### Guardrail
+No architecture or implementation work is authorized by this checkpoint.
