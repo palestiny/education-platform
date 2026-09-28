@@ -58,7 +58,10 @@ These are semantic concepts, not automatically separate entities, aggregates, ta
 | Interpretation | SCENARIO-DERIVED | Meaning assigned to evidence; human/system/AI-assisted | Medium |
 | Recommendation | OPEN | Proposed next useful action; not authoritative state | Low |
 | Marketplace | OPEN | Multi-party discovery/commerce | Low |
-| Follow-up / Work Item | SCENARIO-DERIVED | Remaining work, ownership and due state | Medium |
+| AI Assistance | SCENARIO-DERIVED | Bounded AI-assisted workflows with human accountability | Medium |
+| Intervention Case | OPEN | Governed cross-role intervention lifecycle | Low |
+| Marketplace | OPEN | Multi-party discovery/commerce | Low |
+| Social / Community | OPEN | Peer/community interaction | Low |
 
 ## Candidate Ownership Boundaries
 
