@@ -104,33 +104,27 @@ A document cannot promote an item merely because it appears in a downstream docu
 11. Global-ready architecture ≠ global-market validation.
 12. Technical scalability concern ≠ evidence for distributed architecture.
 
-## Research blocker
+## Research Boundary
 
-The only material blocker remaining for the Product Foundation Gate is not additional documentation.
+The earlier audit treated direct workflow cases as a blocker for the Product Foundation Gate. That boundary is superseded by the clarified market-led product direction and DEC-0009.
 
-It is **direct evidence from real participants reconstructing recent real workflows**.
+The project may continue product planning from:
+- current market capability evidence;
+- competitor workflow/capability analysis;
+- documented product gaps;
+- explicit product synthesis and decisions.
 
-Required evidence remains:
-- segment/context;
-- trigger;
-- actual evidence;
-- evidence quality;
-- interpretation;
-- decision owner;
-- action owner;
-- intervention/action;
-- communication;
-- due/follow-up;
-- outcome evidence;
-- closure;
-- workaround;
-- cost/friction;
-- failure/recovery;
-- privacy/consent;
-- human/AI accountability;
-- contradictory evidence.
+Direct participant evidence remains useful, but is optional and targeted. It should be used when we need to validate:
+- a novel or uncertain problem;
+- segment-specific behavior or semantics;
+- a materially different workflow;
+- a proposed differentiator;
+- prevalence/severity/cost claims;
+- or high-impact behavior that cannot safely be inferred from market evidence.
 
-No fabricated or inferred case may be used to close the gate.
+Zero direct cases therefore does not block conventional parity planning, product definition, requirements planning, domain preparation, UX planning, or architecture preparation when the relevant gates are otherwise satisfied.
+
+The remaining Product Foundation work is product synthesis and explicit decisions, not waiting for a participant sample.
 
 ## Audit result
 
@@ -146,24 +140,6 @@ It means the planning chain is sufficiently controlled to proceed to direct work
 
 ## Next gate
 
-**Direct Workflow Evidence Collection → Product Foundation Gate Review**
+**Product Capability Synthesis → Product Foundation Gate Review**
 
-After real cases are collected, the evidence should be reviewed against the segment-dependency matrix and falsification criteria before committing the initial segment or MVP.
-
-
-## Research Boundary Correction
-
-The earlier audit treated direct workflow cases as the material blocker for the entire Product Foundation Gate. DEC-0006 corrected that boundary.
-
-Established market capabilities may be validated for parity planning through current product evidence.
-
-Direct evidence remains required where we assert:
-- a novel or uncertain problem;
-- segment-specific semantics;
-- a materially different workflow;
-- a proposed differentiator;
-- prevalence/severity/cost;
-- or high-impact behavior whose semantics cannot safely be inferred from market presence.
-
-This changes the next step from "wait for cases before all product planning" to "continue parity/requirements work while running targeted validation where it adds decision value."
-
+Targeted validation remains available for uncertain or high-impact differentiators; it is not a prerequisite for standard product planning.
