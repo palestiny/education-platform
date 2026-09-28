@@ -390,3 +390,51 @@ The framework is now ready to absorb direct evidence. It does not select a segme
 
 ### Guardrail
 No architecture or implementation work is authorized by this checkpoint.
+
+
+## Checkpoint 015 — Product Direction Clarification
+
+Date: 2026-09-28
+
+### Decision
+
+The project is **market-led**, not dependent on a participant-based social/field study.
+
+The intended product is a unified professional education platform connecting:
+
+**Students + Parents + Teachers + Centers/Schools/Organizations**
+
+The platform will combine established market capabilities, solve operational and learning-flow fragmentation, and pursue genuine gaps identified through competitor/product analysis.
+
+### Research Boundary
+
+- Conventional capabilities can be designed from current market evidence.
+- Competitor weaknesses and missing integrations can inform product opportunities.
+- Direct user research is optional targeted validation, not a mandatory project gate.
+- No statistical sample, participant cohort, or reconstructed case is required to continue normal product development.
+- Unknown high-impact assumptions remain explicitly OPEN/NOT PROVEN until resolved.
+
+### Corrected Current State
+
+- Market capability baseline: **ESTABLISHED FOR PLANNING**
+- Direct cases: **0 — NOT A BLOCKER**
+- Initial product direction: **UNIFIED EDUCATION PLATFORM**
+- Initial segment/beachhead: **still a product/business decision, not a field-research prerequisite**
+- Product Foundation: **NOT PROVEN — product decisions still need completion**
+- Domain: **NOT PROVEN**
+- Architecture: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED until the normal engineering gates are satisfied**
+
+### Next Work
+
+1. Continue product/market gap analysis.
+2. Define the unified platform's core capabilities and role experiences.
+3. Distinguish parity capabilities from genuine differentiation.
+4. Define the coherent first product journey without artificially requiring participant cases.
+5. Resolve requirements and domain semantics.
+6. Proceed through UX, Architecture, Security, Data and API gates.
+7. Use targeted real-world validation only where it materially improves an unresolved decision.
+
+### Guardrail
+
+Do not invent user research. Do not invent market gaps. Do not treat competitor absence as proof of user demand. But also do not stop the project merely because direct cases are unavailable.
