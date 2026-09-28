@@ -989,3 +989,24 @@ No code is authorized by this checkpoint.
 
 ### Next
 **Explicit Domain Confirmation → Explicit UX Confirmation → Architecture Review/Decision Closure → Security → Data → API Contract → Architecture ADR/Gate Decision → Implementation Gate**
+
+
+## Checkpoint 028 — Architecture Exit-Criteria Alignment
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Review Preparation  
+**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN
+
+### Change
+The Architecture Gate exit criteria were aligned with the current market-led product direction.
+
+The gate no longer requires an **initial segment selection** as a generic prerequisite. The relevant prerequisite is now a sufficiently explicit **first committed product slice / first workflow** whose architecture-impacting characteristics are understood.
+
+### Why
+The project direction explicitly does not make participant-based segment selection a mandatory blocker. Architecture should be driven by the committed product slice and its consistency, authorization, isolation, reliability and operational requirements.
+
+### Result
+- No production implementation authorized.
+- No architecture ADR created.
+- No technology/provider decision made.
+- Architecture Gate remains NOT PROVEN.
