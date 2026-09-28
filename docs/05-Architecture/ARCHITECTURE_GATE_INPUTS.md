@@ -532,7 +532,8 @@ Choose based on:
 Architecture Gate cannot PASS until:
 
 - Product Foundation is sufficiently resolved for the first workflow;
-- initial segment is selected;
+- a first committed product slice exists;
+- the product boundary is sufficiently explicit for the first workflow;
 - committed MVP scope exists;
 - candidate domain boundaries are reviewed;
 - key aggregates/state ownership are defined;
