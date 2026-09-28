@@ -652,3 +652,63 @@ These are explicit design proposals, not hidden commitments. No schema, API, agg
 
 ### Next Gate Work
 **Confirm First Slice → Close/Defer Remaining Domain Questions → Domain Confirmation → UX → Architecture → Security → Data → API**
+
+
+## Checkpoint 021 — Domain Confirmation Candidate Prepared
+
+**Date:** 2026-09-28  
+**Stage:** Domain Design → Domain Confirmation Preparation  
+**Status:** NOT PROVEN  
+**Implementation authorization:** None
+
+### Completed
+
+- Defined a proposed owner for Learning Context.
+- Separated Assessment Result from Evidence.
+- Defined a proposed Follow-up owner and closure direction.
+- Defined correction/version and conflicting-evidence semantics.
+- Bounded Teacher–Student relationship lifecycle and contextual authorization.
+- Defined first-slice atomicity/idempotency boundaries.
+- Distinguished durable authoritative records from rebuildable projections.
+- Documented the minimum durable learning-state chain: Assignment → Submission/Attempt → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome.
+- Updated DOMAIN_READINESS_CHECKPOINT.md with a Domain Confirmation Candidate.
+- Updated DOMAIN_MAP.md with proposed ownership and semantic invariants.
+
+### Important guardrails
+
+- These are proposed domain contracts, not approved database tables, APIs, bounded contexts, or technology choices.
+- Evidence is not a generic event bus.
+- Assessment Result is not interchangeable with Evidence.
+- Assignment completion is not learning achievement.
+- Follow-up closure is not outcome declaration.
+- Relationship existence does not automatically grant permission.
+- Derived projections must be rebuildable from authoritative records.
+- External delivery is not assumed to be transactionally atomic with domain state.
+
+### Gate status
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Readiness | IMPROVED |
+| Domain Confirmation | READY FOR REVIEW — NOT PROVEN |
+| UX | NOT PROVEN |
+| Architecture | NOT PROVEN |
+| Security | NOT PROVEN |
+| Data | NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Remaining confirmation items
+
+1. Product-owner confirmation of the proposed first-slice domain contract.
+2. Security/privacy confirmation for relationship and parent visibility.
+3. Data/API design confirmation after the domain contract is accepted.
+4. Any newly identified material ambiguity must be recorded rather than silently resolved.
+
+### Next
+
+**Domain Confirmation → UX Gate → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
+
