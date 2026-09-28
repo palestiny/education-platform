@@ -1217,3 +1217,32 @@ The architecture review must not silently decide:
 
 ### Explicit non-actions
 No production code, schema, API contract, provider selection, infrastructure provisioning, or merge.
+
+
+## Checkpoint 034 — Architecture ADR Candidate
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Decision / ADR Preparation  
+**Status:** READY FOR EXPLICIT ARCHITECTURE DECISION — NOT PROVEN  
+**Implementation:** Not authorized
+
+### Completed
+- Created ADR-0001 for the proposed initial Modular Monolith architecture.
+- Recorded logical module boundaries and dependency direction.
+- Recorded authoritative-vs-derived state policy.
+- Recorded command-time authorization, evidence lineage, idempotency, concurrency and reconciliation policies.
+- Recorded external-provider isolation, bounded AI assistance and observability expectations.
+- Documented alternatives and trade-offs.
+- Explicitly deferred database schema, API contracts, physical tenant isolation, detailed consent/retention policy and final vendor/cloud choices.
+- Registered DEC-0012 as the corresponding proposed architecture decision.
+
+### Decision boundary
+ADR-0001 is **PROPOSED**, not ACCEPTED.
+
+Architecture Gate remains **NOT PROVEN** until the Project Owner explicitly confirms the architectural decision and the required downstream constraints are traceable.
+
+### Explicit non-actions
+No production code, database schema, API contract, infrastructure provisioning, provider commitment, or merge.
+
+### Next
+**Explicit Architecture Decision → Architecture Gate closure → Security/Data Gates → API Contract Gate → Implementation Gate**
