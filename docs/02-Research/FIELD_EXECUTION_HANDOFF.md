@@ -100,3 +100,18 @@ Target:
 Real Cases -> Cross-Case Evidence -> Product Foundation Decision
 
 Only after a Product Foundation decision should downstream requirements, domain, UX, architecture, and implementation work be promoted.
+
+## Research Boundary Update
+
+Direct participant cases remain valuable for novel, uncertain, segment-specific, materially different, high-impact, or prevalence/severity/cost hypotheses.
+
+They are **not** a prerequisite for conventional competitive-parity planning.
+
+Therefore the project may continue:
+- global feature benchmarking;
+- conventional requirements drafting;
+- parity backlog refinement;
+
+while direct cases remain at zero.
+
+Issue #1 remains a targeted validation track for the intervention/differentiation hypothesis rather than a blocker for all standard feature planning.
