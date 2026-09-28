@@ -792,3 +792,58 @@ This checkpoint authorizes structured UX review/design work only. It does not au
 ### Next
 
 Domain Confirmation Review → UX Design Review → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate
+
+
+## Checkpoint 024 — First-Slice UX Design Review Candidate
+
+**Date:** 2026-09-28  
+**Stage:** UX Design Review Preparation  
+**Status:** READY FOR UX CONFIRMATION — NOT PROVEN  
+**Implementation authorization:** None
+
+### Completed
+
+- Expanded `docs/01-Product/UX_GATE_INPUTS_FIRST_SLICE.md` from UX preparation into a reviewable first-slice UX design candidate.
+- Defined the canonical Student flow from authorized context through assignment, submission, evidence, next action, follow-up, new evidence and outcome.
+- Defined the canonical Teacher flow from teaching context through attention, evidence, interpretation/recommendation, accountable decision, next action, follow-up, new evidence and outcome.
+- Defined the minimal Parent projection without turning Parent into a first-slice workflow owner.
+- Added information hierarchy and primary-action rules so domain complexity remains behind the UX.
+- Defined user-facing behavior for loading, empty, submission, validation, authorization, duplicate/retry, timeout, partial delivery, unknown/conflicting evidence, and corrected/superseded evidence.
+- Added a progress UX boundary that avoids freezing the mastery/progress algorithm before the relevant product/domain decision.
+- Added evidence-provenance and recovery patterns.
+- Added responsive/mobile, RTL/LTR and accessibility review constraints.
+- Added explicit UX acceptance criteria and unresolved UX questions.
+- Re-aligned `TARGET_USER_JOURNEYS.md` so direct research is optional targeted validation rather than a blocker for normal market-led product development.
+
+### Gate status
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR REVIEW — NOT PROVEN |
+| UX | **READY FOR CONFIRMATION — NOT PROVEN** |
+| Architecture | NOT PROVEN |
+| Security | NOT PROVEN |
+| Data | NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Important boundary
+
+This checkpoint authorizes structured UX confirmation and Architecture Gate preparation only.
+
+It does **not** authorize:
+- visual implementation;
+- final navigation/routes;
+- database schema;
+- API contracts;
+- technology selection;
+- bounded-context/module commitment;
+- security/consent policy finalization.
+
+### Next
+
+**Domain Confirmation Review → UX Confirmation → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
+
