@@ -1246,3 +1246,49 @@ No production code, database schema, API contract, infrastructure provisioning, 
 
 ### Next
 **Explicit Architecture Decision → Architecture Gate closure → Security/Data Gates → API Contract Gate → Implementation Gate**
+
+## Checkpoint 035 — Architecture Decision Readiness Review
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Decision Readiness Review  
+**Status:** READY FOR EXPLICIT ARCHITECTURE DECISION — NOT PROVEN  
+**Implementation:** Not authorized
+
+### Verification completed
+
+- Re-read ADR-0001 against the current Architecture Gate inputs and decision register.
+- Confirmed ADR-0001 is still **PROPOSED** and does not silently finalize downstream Security, Data, API, tenancy, privacy, retention, cloud or provider decisions.
+- Confirmed DEC-0012 remains **PROPOSED** and aligned with ADR-0001.
+- Confirmed the first-slice state chain and proposed module/dependency direction are represented consistently.
+- Confirmed the ADR explicitly preserves authoritative-vs-derived state, evidence lineage, command-time authorization, idempotency, concurrency and reconciliation policies.
+- Confirmed no production implementation, schema, API contract, infrastructure provisioning, provider commitment, or merge was introduced by the architecture work.
+- Confirmed PR #2 remains open and unmerged.
+
+### Architecture decision boundary
+
+The remaining action is not another generic architecture document. The Project Owner must explicitly decide whether to accept the proposed first-slice architecture:
+
+**Modular Monolith + explicit logical module contracts + isolated external integration adapters**, with the policies recorded in ADR-0001.
+
+If accepted, the acceptance must be recorded by changing ADR-0001 and DEC-0012 to **ACCEPTED** and closing the Architecture Gate. Downstream Security/Data/API decisions remain required and are not implied by that acceptance.
+
+### Current gate state
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| UX Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| Architecture | **READY FOR EXPLICIT DECISION — NOT PROVEN** |
+| Security | NOT PROVEN |
+| Data | READY FOR REVIEW — NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Next
+
+**Explicit Architecture Decision → Architecture Gate Closure → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
+
+No implementation is authorized until the applicable gates are passed.
