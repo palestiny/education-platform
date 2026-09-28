@@ -479,3 +479,39 @@ Do not build separate disconnected products for each role. Build one platform wi
 
 ### Guardrail
 Targeted real-world validation remains available for material uncertainty or differentiation, but the project continues on the market-led product path without waiting for a participant sample.
+
+
+## Checkpoint 017 — Product Operating Model
+
+Date: 2026-09-28
+
+### Completed
+- Added `docs/01-Product/PRODUCT_OPERATING_MODEL.md`.
+- Defined the minimum semantic objects: Context, Goal, Learning Action, Evidence, Interpretation, Progress State, Recommendation, Decision, Follow-up, and Outcome.
+- Established source-of-truth rules so dashboards, messages, and AI outputs cannot silently become authoritative business/learning state.
+- Defined cross-role state propagation from source action through evidence, interpretation, authorized action, follow-up, new evidence, and outcome.
+- Defined candidate privacy visibility semantics using Identity + Role + Relationship + Organization/Tenant + Consent/Policy + Context.
+- Defined reliability expectations for duplicates, timeouts, partial failures, retries, out-of-order events, and reconciliation.
+- Preserved open decisions around progress/mastery, evidence schema, tenancy, consent, intervention, payments, AI evaluation, and first-release learning modes.
+
+### Current Gate
+Product Foundation — **NOT PROVEN**
+
+### Current State
+- Core Product Journey: **PROPOSED**
+- Platform Capability Map: **PROPOSED**
+- Product Operating Model: **PROPOSED**
+- Requirements: **PROPOSED / OPEN / CONDITIONAL**
+- Domain: **NOT PROVEN**
+- UX: **NOT PROVEN**
+- Architecture: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Next Work
+1. Consolidate requirements against the Product Operating Model.
+2. Remove or revise stale requirement semantics that conflict with evidence/progress/decision boundaries.
+3. Produce a domain-readiness delta rather than redesigning the domain from scratch.
+4. Define the minimum first-release product slice only after the product/business boundary is explicit.
+
+### Guardrail
+No database schema, API contract, aggregate, bounded context, technology choice, or implementation should be treated as approved merely because the operating model exists.
