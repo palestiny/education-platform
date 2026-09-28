@@ -85,6 +85,12 @@ Every MVP capability must define, where applicable:
 8. audit/observability,
 9. regression tests.
 
+## Relationship to Feature Gap Matrix
+
+`docs/01-Product/FEATURE_GAP_MATRIX.md` is the current layer/maturity map. This backlog remains the capability planning baseline and is not a commitment to implement every Foundation capability in the first release.
+
+Established capabilities may be planned from current market evidence. Targeted direct evidence is reserved for uncertain, segment-specific, materially different, high-impact or differentiating workflows. Intervention lifecycle remains `NOT PROVEN`.
+
 ## Exit Criteria for This Backlog
 
 Before Architecture Gate:
