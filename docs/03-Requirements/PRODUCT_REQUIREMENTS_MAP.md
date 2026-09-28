@@ -14,7 +14,7 @@ Create traceability from the target product scenario and planning artifacts into
 - **PROPOSED** — supported by current product scenario/competitive baseline but not yet committed.
 - **OPEN** — requires evidence or an explicit product decision.
 - **CONDITIONAL** — depends on initial segment.
-- **NOT PROVEN** — depends on direct workflow validation.
+- **NOT PROVEN** — specifically requires direct evidence because it is novel, uncertain, materially differentiating, high-impact, or workflow-specific.
 - **COMMITTED** — may only be used after the relevant Product/Research gate and decision record authorize it.
 
 ## Candidate Requirement Map
@@ -86,5 +86,5 @@ It does not authorize implementation by itself.
 
 **Product Foundation / Competitive Intelligence: NOT PROVEN**
 
-The immediate blocker remains direct validation of real recent workflows. Public competitor evidence is sufficient to build the parity planning baseline but not sufficient to prove the proposed intervention differentiator or finalize the MVP.
+The conventional feature baseline is now sufficiently established to continue parity and requirements planning. The remaining blocker is not the absence of a user case for every standard feature; it is the unresolved initial segment, business model, and targeted evidence needed for novel or differentiating workflows.
 
