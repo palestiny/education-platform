@@ -7,6 +7,25 @@
 | DEC-0003 | Identity | Identity should support multiple roles, organizations, permissions and relationships rather than a single UserType. | PROPOSED | Project Charter |
 | DEC-0004 | Architecture | Modular monolith is the candidate initial architecture direction; final decision requires Architecture Gate. | CANDIDATE | Project Charter |
 | DEC-0005 | AI | AI is an assisting capability; human accountability remains explicit. | PROPOSED | Project Charter |
+| DEC-0006 | Research/Product | Established educational capabilities can be validated through current market/product evidence for competitive-parity planning; direct real-user case reconstruction is required primarily for uncertain, materially differentiating, or workflow-specific hypotheses—not for every conventional feature. | PROPOSED | Competitive Feature & Review Benchmark + 2026 market review |
+
+## DEC-0006 Boundary
+
+For capabilities that are already mature and broadly documented across the market—such as content delivery, assignments, assessments, progress tracking, teacher tools, parent visibility, communication, scheduling, payments where relevant, mobile/web, localization, and baseline AI assistance—we should establish the **parity baseline from current product evidence** and then define the minimum acceptable behavior.
+
+We do **not** need a fabricated or individually reconstructed user case to justify that a conventional capability exists in the market.
+
+Direct workflow evidence remains necessary when we are trying to establish:
+- a new or uncertain user problem,
+- a segment-specific requirement,
+- a materially different workflow,
+- a proposed differentiator,
+- a claim about prevalence/severity/cost,
+- or a high-impact behavior whose product semantics cannot safely be inferred from market presence alone.
+
+This distinction prevents two opposite errors:
+1. treating every standard feature as if it requires novel field research before we can design it;
+2. treating a novel product hypothesis as proven merely because competitors expose a similar feature.
 
 ## Lifecycle
 
