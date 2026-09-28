@@ -658,588 +658,93 @@ This remains **PROPOSED**. It is supported by the current first-slice consistenc
 7. Architecture ADR / Architecture Gate PASS decision.
 8. Implementation Gate.
 
-Until these are closed, implementation remains unauthorized.
+## Security Decision Closure Matrix — Candidate
 
+**Date:** 2026-09-29  
+**Status:** READY FOR EXPLICIT SECURITY DECISION — NOT PROVEN  
+**Implementation authorization:** None
 
-## Architecture Review Decision Matrix — First Slice
+This matrix turns the remaining Security Gate questions into explicit decision records. It does not select a legal/privacy policy or silently choose a physical isolation mechanism.
 
-**Status:** PROPOSED — NOT AN ACCEPTED ADR
-
-| Decision | Proposed direction | Rationale | Main trade-off | Gate status |
+| Decision | Options to evaluate | Current recommendation for review | Trade-off / consequence | Status |
 |---|---|---|---|---|
-| Application shape | Modular Monolith | Keeps first-slice consistency local while preserving explicit boundaries | Requires discipline to prevent module coupling | PROPOSED |
-| Learning workflow ownership | Learning/Teacher Workflow coordinates the first-slice command flow | The workflow spans assignment, learner action, evidence, decision and next action | Coordinator can become a god-module if boundaries are weak | PROPOSED |
-| Assessment boundary | Assessment owns assessment definitions, attempts and results | Prevents assessment semantics from leaking into Learning | Evidence still needs an explicit handoff contract | PROPOSED |
-| Evidence boundary | Evidence is a first-class capability with provenance/version lineage | Supports correction, conflict and traceability | More modeling than treating records as mutable facts | PROPOSED |
-| Learner progress | Derived/rebuildable learner-state projection | Avoids opaque mutable progress as source of truth | Rebuild/recalculation path must be reliable | PROPOSED |
-| Follow-up | Explicit capability for unresolved work | Separates work lifecycle from learning outcome | May be unnecessary complexity if the first workflow never creates follow-up | PROPOSED |
-| Authorization | Central policy/authorization boundary consumed by modules | Prevents relationship from being treated as permission | Requires explicit scope/context model | OPEN — SECURITY IMPACT |
-| Tenant isolation | Tenant context enforced at application/data boundaries | Prevents cross-organization data leakage | Exact strategy depends on security/data decisions | OPEN |
-| External providers | Adapter/integration boundary outside domain truth | Providers can fail or change without rewriting learning state | Requires reconciliation/status modeling | PROPOSED |
-| Notifications | Recoverable delivery projection/integration | Delivery failure must not rollback authoritative decisions | Adds delivery state and retry handling | PROPOSED |
-| Search/analytics | Derived projections | Avoids making query/read models authoritative | Requires rebuild/reconciliation | PROPOSED |
-| AI | Optional bounded assistance | Core learning workflow must work without AI | AI features require separate governance/evaluation | PROPOSED |
-| Observability | Structured logs + trace/correlation IDs + auditable authoritative mutations | Supports diagnosis and accountability | Operational overhead | PROPOSED |
-| Deployment topology | Single deployable first slice unless operational constraints prove otherwise | Avoids premature distributed-system complexity | Later extraction requires stable contracts | DEFERRED |
+| Tenant isolation | Shared schema + tenant controls; separate schema; database-per-tenant; hybrid | Prefer a phaseable strategy that enforces tenant context and isolation at every protected boundary while preserving a later migration path | Shared model lowers cost/ops but increases blast-radius and enforcement discipline; stronger physical isolation increases cost/ops | OPEN |
+| Authorization vocabulary | RBAC-only; RBAC + relationships; policy/relationship-aware authorization | RBAC + relationship/context-aware policy; keep roles separate from permissions | More expressive and safer for parent/teacher/org cases, but policy evaluation is more complex | OPEN |
+| Relationship lifecycle | Permanent relationship; scoped/time-bounded relationship; delegated relationship with expiry/revocation | Scoped, attributable relationships with explicit lifecycle and revocation | More lifecycle state, but avoids treating relationship existence as permanent permission | OPEN |
+| Parent/guardian visibility | Broad child-record access; curated projection; policy/consent-driven projection | Policy/consent-driven projection with least-privilege defaults | Requires explicit visibility rules and policy evaluation; reduces accidental exposure | OPEN |
+| Age/country rules | Global rule; configurable policy; country-specific implementation | Configurable policy boundary; country rules remain configuration/policy, not hard-coded domain assumptions | More configuration complexity, but preserves global readiness | OPEN |
+| Privileged support/admin | Unrestricted support; role-only access; scoped/break-glass access | Scoped, time-bounded/break-glass access with strong audit and explicit purpose | Adds operational controls, but limits privileged-access blast radius | OPEN |
+| Sensitive reads/mutations | Audit only writes; audit sensitive reads + mutations; audit everything | Audit sensitive reads and high-impact mutations, with data minimization | Better accountability, but more audit volume and privacy considerations | OPEN |
+| Retention/deletion | Permanent history; fixed retention; policy-driven lifecycle | Policy-driven lifecycle with explicit correction/deletion/legal-hold semantics | More lifecycle complexity; required for trustworthy privacy/data governance | OPEN |
+| Abuse/security controls | Minimal auth controls; baseline controls; adaptive/risk-based controls | Baseline controls first; adaptive controls only where justified | Baseline reduces obvious abuse without prematurely building a risk engine | OPEN |
 
-### Proposed dependency direction
+### Security invariants proposed for gate closure
 
-Identity/Auth -> Authorization -> Learning Context -> Learning Workflow
+1. Role, relationship and permission remain separate concepts.
+2. Protected commands evaluate authorization at command time.
+3. Tenant/context boundaries are enforced below UI visibility.
+4. Parent/guardian access is a controlled projection, not unrestricted record access.
+5. Privileged access is attributable and auditable.
+6. Authorization failure produces no authoritative mutation.
+7. Historical attribution survives relationship changes unless an explicit lawful deletion policy requires otherwise.
+8. Security telemetry minimizes learner content and secrets.
 
-Supporting dependencies:
-- Learning Workflow -> Assessment contract
-- Learning Workflow -> Evidence contract
-- Learning Workflow -> Learner State projection
-- Learning Workflow -> Follow-up contract
-- Communication/Notifications consume authorized state or explicit commands; they do not own learning truth.
-- AI consumes permitted context/evidence and returns bounded assistance; it does not own authoritative learner state.
-- External providers sit behind integration adapters and cannot directly mutate domain truth.
+These invariants are proposed architectural constraints, not a completed security policy.
 
-No module may depend on another module's persistence schema as an implicit contract.
+## Data Decision Closure Matrix — Candidate
 
-### First-slice consistency boundary
+**Date:** 2026-09-29  
+**Status:** READY FOR EXPLICIT DATA DECISION — NOT PROVEN  
+**Implementation authorization:** None
 
-Authoritative command -> durable state + local intent -> asynchronous/external effect -> delivery/provider state -> reconciliation
-
-The authoritative state and required local audit/outbox intent are atomic where applicable. External effects are outside that atomic boundary.
-
-A retry of the command must be idempotent. A failure after external execution must be reconciled rather than blindly replayed.
-
-### Architecture-level invariants
-
-1. Domain modules communicate through explicit contracts, not shared persistence assumptions.
-2. Authoritative records are durable; derived projections are rebuildable.
-3. Evidence corrections preserve lineage rather than overwriting history.
-4. Authorization is evaluated at command time against applicable context/scope.
-5. Relationship existence never grants permission by itself.
-6. External provider state never becomes the sole source of learning truth.
-7. AI assistance cannot silently mutate authoritative learning state.
-8. No implicit last-write-wins for semantically conflicting authoritative mutations.
-9. Retries of retriable authoritative commands are idempotent.
-10. Projection failure must not corrupt authoritative learning state.
-
-### Architecture blockers that remain
-
-- exact tenant isolation strategy;
-- relationship lifecycle and authorization scope model;
-- parent visibility/consent policy;
-- final durable-versus-derived learner-state boundary;
-- exact evidence storage/versioning model;
-- detailed concurrency/conflict semantics;
-- technology stack and deployment target;
-- final API contracts;
-- final architecture ADR.
-
-This review strengthens the candidate architecture without converting unresolved policy/data decisions into hidden implementation assumptions.
-
-
-## Architecture Blocker Decision Matrix — Closure Plan
-
-The following matrix separates decisions that require product/security/data ownership from decisions that can be closed as architecture policy.
-
-| Blocker | Why it matters | Proposed closure direction | Owner/Gate | Status |
+| Decision | Options to evaluate | Current recommendation for review | Trade-off / consequence | Status |
 |---|---|---|---|---|
-| Tenant isolation | Cross-tenant leakage is an architectural failure | Define tenant context as a mandatory authorization/data boundary; defer exact physical isolation until Data/Security review | Product + Security + Data | OPEN |
-| Relationship + authorization scope | Relationship must not imply permission | Explicit relationship context + policy evaluation at command time | Product + Security | OPEN |
-| Parent visibility/consent | Child data has policy-sensitive visibility | Parent view is a controlled projection; exact age/consent/visibility rules remain Security/Product decisions | Product + Security | OPEN |
-| Durable vs derived learner state | Determines consistency, rebuild and recovery | Durable facts: context/assignment/submission/result/evidence/decision/follow-up/outcome; projections rebuildable | Domain + Data | PROPOSED |
-| Evidence versioning | Corrections must not destroy historical truth | Append/version lineage with supersession and attribution; conflict remains representable | Domain + Data | PROPOSED |
-| Concurrency/conflicts | Prevents silent overwrite of accountable decisions | Explicit version/conflict checks; no semantic last-write-wins | Domain + API | PROPOSED |
-| Technology/deployment | Needed for implementation, not for semantic architecture | Keep technology-neutral until Architecture Gate; select stack immediately before Implementation Gate | Architecture | DEFERRED |
-| API contracts | Must encode idempotency, auth, conflicts and failure semantics | Define after Domain + Security/Data closure; contract tests before implementation | API Gate | DEFERRED |
-
-### Closure rule
-
-A blocker may be closed only when its proposed direction is supported by an explicit decision and the decision does not silently invent a product/security/data policy.
-
-Architecture Gate PASS requires the architecture implications to be explicit; it does not require every implementation detail to be frozen.
-
-### Recommended next review order
-
-1. Domain Confirmation: accept/reject the first-slice semantic contract.
-2. UX Confirmation: accept/reject the interaction and trust boundaries.
-3. Security-impacting architecture: authorization, relationship scope, tenant isolation and parent visibility.
-4. Data-impacting architecture: durable facts, evidence lineage, derived projections and conflict/version strategy.
-5. Architecture closure: module/dependency/consistency/provider/observability decisions.
-6. ADR: record the accepted architecture.
-7. API Contract Gate.
-8. Implementation Gate.
-
-This order prevents the architecture decision from pretending that security or data policy has already been decided.
-
-
-## Security-Impacting Architecture Review — Identity, Relationship, Tenant and Authorization
-
-### Architectural boundary
-
-The platform must distinguish five different concerns:
-
-1. **Identity** — who the person/system is.
-2. **Role** — what capabilities the identity may potentially exercise.
-3. **Relationship** — how the identity is related to another identity or learning context.
-4. **Organization/Tenant** — where the action/data belongs.
-5. **Authorization** — whether this actor may perform this action against this resource in this context at this time.
-
-These are intentionally not collapsed into one enum or one permission flag.
-
-### Proposed authorization evaluation context
-
-A command that can affect protected state should be evaluated against:
-
-**Actor Identity + Effective Roles + Tenant/Organization Context + Relationship Context + Resource + Requested Action + Learning/Business Context + Policy State**
-
-Authorization is evaluated at command time. A historical relationship must remain attributable for historical records but must not automatically grant current access.
-
-### Role is not permission
-
-A role is a capability grouping, not unconditional access.
-
-Examples:
-- Teacher does not automatically access every student.
-- Parent does not automatically access every learner record.
-- Organization membership does not automatically grant access to every organization resource.
-- Platform administration does not automatically imply unrestricted access to tenant learning data; privileged access must remain explicitly governed.
-
-### Relationship is not permission
-
-Relationships such as parent/child, teacher/student, assistant/student or organization/member provide context for policy evaluation.
-
-They do not independently authorize every operation.
-
-### Tenant boundary
-
-Tenant context must be explicit at protected data and command boundaries.
-
-The architecture must prevent a request from silently operating outside its authorized tenant context.
-
-The exact physical isolation strategy (shared database, database-level policy/RLS, schema isolation, or separate database) remains a Security/Data decision and is not silently finalized here.
-
-### Parent visibility boundary
-
-Parent-facing information is treated as a **policy-authorized projection**, not direct access to underlying learning records.
-
-The architecture must therefore support:
-- selecting which state/evidence is visible;
-- applying relationship and consent/policy rules;
-- preventing accidental exposure of restricted teacher/internal information;
-- preserving the authoritative source independently of the parent projection.
-
-Exact age, guardian, consent, country and exceptional-access rules remain Security/Product decisions.
-
-### Authorization failure semantics
-
-Protected commands must distinguish at least:
-- unauthenticated;
-- authenticated but unauthorized;
-- wrong tenant/context;
-- relationship exists but does not authorize requested action;
-- resource no longer accessible because authorization scope changed;
-- semantic conflict after authorization succeeds.
-
-Authorization failure must not mutate authoritative state.
-
-### Historical access vs current authority
-
-Ending or changing a relationship must not rewrite historical attribution.
-
-For example, a teacher who previously assessed a learner remains the attributable actor of that historical assessment, while future commands are evaluated against the teacher's current authority.
-
-### Architectural invariant
-
-No module may infer authorization solely from:
-- role;
-- relationship;
-- tenant membership;
-- possession of an identifier;
-- visibility of a UI element.
-
-The authoritative command path must evaluate the applicable authorization boundary.
-
-### Candidate dependency direction
-
-**Identity → Role/Organization Context → Authorization Policy → Domain Command**
-
-Domain modules may request authorization decisions through the authorization boundary but must not duplicate incompatible authorization rules.
-
-Authorization should not become the owner of learning, assessment, evidence or commerce state.
-
-### Security review blockers remaining
-
-The following remain explicitly open for Security/Product confirmation:
-- exact tenant isolation mechanism;
-- permission model and policy vocabulary;
-- relationship lifecycle and delegation;
-- parent/guardian consent model;
-- age/country-specific visibility rules;
-- privileged support/admin access;
-- audit requirements for sensitive reads and mutations;
-- data retention/deletion requirements.
-
-No final security policy or implementation is implied by this architecture candidate.
-
-
-## Data-Impacting Architecture Review — Authoritative State, Evidence and Recovery
-
-**Date:** 2026-09-28  
-**Status:** READY FOR DATA/DOMAIN REVIEW — NOT PROVEN  
-**Implementation authorization:** None
-
-This review closes the architectural implications of data semantics without selecting database technology, tables, indexes, schemas, ORM mappings or API shapes.
-
-### 1. Authoritative durable facts vs derived state
-
-The first slice should distinguish **durable business facts** from **derived/read-optimized state**.
-
-Candidate authoritative records:
-- learning context and applicable authorization context;
-- goals and assignments;
-- learner submissions/attempts;
-- assessment definitions, attempts and assessment results;
-- attributable evidence and its lineage;
-- accountable teacher decisions;
-- explicit next-action commitments where they are business state;
-- follow-up work items and their lifecycle;
-- outcomes and their attribution;
-- required audit records.
-
-Candidate derived/rebuildable state:
-- learner progress summaries;
-- dashboards;
-- attention/priority views;
-- recommendation candidates;
-- notification delivery projections;
-- search indexes;
-- analytics aggregates;
-- convenience counters and cached summaries.
-
-**Invariant:** a derived projection may be stale or unavailable temporarily, but its failure must not corrupt authoritative learning state.
-
-### 2. Evidence is first-class and history-preserving
-
-Evidence must not behave like a mutable status field.
-
-Each accepted evidence record should preserve, at minimum, enough information to establish:
-- source;
-- actor/system;
-- learner and learning context;
-- originating action/assessment when applicable;
-- observation time;
-- provenance;
-- quality/uncertainty;
-- visibility classification;
-- version/supersession lineage.
-
-A correction must preserve the prior record and create an attributable correction/superseding version. The system must be able to distinguish:
-- original evidence;
-- corrected evidence;
-- superseded evidence;
-- conflicting evidence;
-- insufficient evidence.
-
-**Invariant:** correction changes the current interpretation of evidence without silently erasing historical provenance.
-
-### 3. Assessment Result vs Evidence
-
-Assessment owns assessment semantics: definition, attempt and result.
-
-Evidence owns attributable observations and provenance.
-
-An assessment result may produce or contribute evidence, but not every evidence record is an assessment result.
-
-This separation prevents assessment storage from becoming the universal learning-history model and preserves room for teacher observation, learner self-report, attendance-related evidence and other evidence sources without conflating them.
-
-### 4. Outcome authority and durability
-
-Outcome is a durable business fact only when an authorized actor/system has sufficient basis to declare it.
-
-Outcome must remain distinct from:
-- assignment completion;
-- submission existence;
-- assessment score;
-- progress percentage;
-- follow-up closure.
-
-The architecture must support outcome correction/versioning and attribution without rewriting the evidence that supported the original outcome.
-
-The exact authority rules remain a Domain/Product decision.
-
-### 5. Learner State and progress
-
-Learner State/Progress should be treated as a derived projection in the first slice unless a later explicit domain decision proves that a specific learner-state fact must itself be authoritative.
-
-Progress calculations must be traceable to authoritative evidence/context and rebuildable.
-
-Teacher override, where permitted, must be represented as an attributable business decision or interpretation; it must not overwrite or delete the underlying evidence.
-
-**Invariant:** progress is not the source of truth for the evidence from which it was derived.
-
-### 6. Concurrency and semantic conflicts
-
-The first slice must not rely on implicit last-write-wins for semantically accountable mutations.
-
-Concurrency controls should distinguish:
-- stale client state;
-- concurrent teacher decisions;
-- concurrent evidence corrections;
-- authorization scope changes during a command;
-- duplicate retries.
-
-A semantic conflict should remain explicit and recoverable rather than silently selecting one mutation.
-
-Exact version/token mechanics remain an API/Data implementation concern.
-
-### 7. Idempotency semantics
-
-Retriable authoritative commands must have deterministic duplicate behavior.
-
-At minimum:
-- assignment creation;
-- learner submission/attempt creation;
-- assessment-result ingestion;
-- evidence recording;
-- teacher decision;
-- follow-up creation.
-
-A duplicate retry for the same command intent should return/reuse the established business result rather than create a second business fact.
-
-Idempotency identity must be scoped to the relevant actor/context/command semantics and must not be confused with a business entity identifier.
-
-### 8. Local atomicity and outbox
-
-Where an authoritative mutation requires reliable asynchronous publication, the authoritative state change and the local publication intent should commit atomically within the local transaction boundary.
-
-External delivery is outside that transaction.
-
-Therefore:
-**Authoritative State → Local Outbox/Intent → External/Asynchronous Effect → Provider/Projection State → Reconciliation**
-
-The outbox is a reliability pattern candidate, not a technology commitment.
-
-### 9. Projection recovery and reconciliation
-
-Every derived projection with business visibility must have a defined recovery path.
-
-Recovery should:
-- rebuild from authoritative records;
-- be safe to repeat;
-- tolerate duplicate delivery;
-- preserve evidence lineage;
-- avoid rewriting authoritative history;
-- expose degraded/stale state where necessary.
-
-External-provider reconciliation follows the same principle: reconcile provider state against the platform's authoritative record rather than allowing provider state to silently redefine business truth.
-
-### 10. Retention, deletion and sensitive data
-
-Data retention, deletion, legal holds, child/minor safeguards, sensitive-data classification and tenant-specific lifecycle rules remain Security/Data decisions.
-
-Architecture must nevertheless preserve enough lineage and ownership information to implement those policies later without requiring a redesign of the core semantic model.
-
-### Data-impacting architecture decision matrix
-
-| Concern | Proposed direction | Status |
+| Authoritative first-slice facts | Durable domain records; event-only history; mixed | Durable domain records for accountable business facts, with derived projections rebuilt from them | More explicit persistence ownership; easier audit/recovery than event-only semantics | OPEN |
+| Evidence taxonomy | One generic evidence type; fixed categories; extensible typed categories | Extensible typed evidence with mandatory provenance and context fields | Better evolution; requires taxonomy governance and versioning | OPEN |
+| Evidence storage | Evidence as embedded assessment data; first-class evidence store; hybrid | First-class evidence capability, while Assessment remains owner of assessment semantics | Preserves multiple evidence sources without conflating them with assessment results | OPEN |
+| Evidence correction | In-place overwrite; append-only correction/supersession; immutable original + current projection | Preserve original lineage and represent correction/supersession explicitly | More storage/history, substantially better provenance | OPEN |
+| Conflicting evidence | Last-write-wins; reject conflict; explicit conflict state | Explicit conflict/insufficient state; no silent last-write-wins | Requires downstream interpretation/progress handling | OPEN |
+| Learner-state materialization | Fully computed on read; durable aggregate; hybrid projection | Rebuildable projection with explicit materialization only where justified | Rebuild cost vs read performance; avoids derived state becoming hidden truth | OPEN |
+| Concurrency | Last-write-wins; optimistic versioning; explicit domain conflict | Explicit conflict + optimistic version mechanics where needed | More client/recovery work, protects accountable decisions | OPEN |
+| Atomicity | Large transaction; per-operation transactions; mixed | Small local transactions around facts that must change together; outbox intent where required | Limits coupling while preserving local consistency | OPEN |
+| Data classification | One sensitivity level; coarse classes; field/domain classes | Domain-level classification with stricter treatment for learner/assessment/communication/audit data | More policy metadata; better least-privilege enforcement | OPEN |
+| Tenant data boundary | Application-only filter; DB-enforced controls; physical isolation | Defense-in-depth; exact physical mechanism follows Security decision and scale/regulatory evidence | More implementation discipline, avoids relying on UI/application conventions alone | OPEN |
+| Retention/deletion | Permanent; fixed global TTL; policy-driven lifecycle | Policy-driven lifecycle, preserving required lineage/legal-hold semantics | More lifecycle machinery, but avoids irreversible blanket retention assumptions | OPEN |
+
+### Data invariants proposed for gate closure
+
+1. Authoritative business facts are durable, attributable and owned.
+2. Derived state is rebuildable from authoritative records.
+3. Evidence correction preserves lineage.
+4. Assessment Result remains distinct from Evidence.
+5. Semantic conflicts are representable.
+6. Retriable authoritative commands have deterministic duplicate semantics.
+7. Projection/provider failure cannot corrupt authoritative business state.
+8. Recovery repairs derived/external state from authoritative records.
+9. Historical attribution is preserved unless an explicit data-governance policy changes that requirement.
+10. Data classification is enforced at access boundaries, not only documented.
+
+## Security/Data Architecture Impact Reconciliation — Candidate
+
+Before API Contract Gate, Security and Data decisions must be translated into concrete architecture consequences:
+
+| Closure area | Architecture consequence | Must be explicit before implementation |
 |---|---|---|
-| Authoritative business facts | Durable, attributable records | PROPOSED |
-| Derived learner progress | Rebuildable projection | PROPOSED |
-| Evidence correction | Version/supersession lineage | PROPOSED |
-| Conflicting evidence | Explicitly representable | PROPOSED |
-| Assessment Result | Owned by Assessment | PROPOSED |
-| Evidence | First-class provenance-bearing capability | PROPOSED |
-| Outcome | Durable, attributable when authorized | PROPOSED |
-| Teacher override | Explicit decision/interpretation; never erase evidence | PROPOSED |
-| Concurrency | Explicit conflict handling | PROPOSED |
-| Retriable commands | Idempotent | PROPOSED |
-| Async publication | Local atomic intent/outbox where required | PROPOSED |
-| Projection recovery | Rebuild/reconcile from authoritative state | PROPOSED |
-| Retention/deletion | Security/Data policy | OPEN |
+| Tenant isolation | Tenant context must flow through protected command and data access paths | Yes |
+| Authorization | Module contracts must receive/resolve authorization context; no UI-only authorization | Yes |
+| Relationship lifecycle | Historical records require stable attribution independent of current relationship status | Yes |
+| Parent projection | Parent-facing reads must use policy-controlled projections | Yes |
+| Evidence lineage | Evidence APIs/storage must support correction/supersession without destructive overwrite | Yes |
+| Concurrency | Accountable mutations need explicit version/conflict semantics | Yes |
+| Idempotency | Command identity must be scoped to actor/context/intent | Yes |
+| Data classification | Sensitive data access must be enforceable and auditable | Yes |
+| Retention/deletion | Ownership and lifecycle metadata must exist before persistence design is frozen | Yes |
+| Projection recovery | Derived state needs rebuild/reconciliation path from authoritative records | Yes |
 
-### Data review blockers
+### Gate dependency rule
 
-Before Data Gate PASS, the following still require explicit closure:
-- exact authoritative fields/facts for the first slice;
-- evidence taxonomy and minimum storage model;
-- version/supersession representation;
-- learner-state materialization/rebuild policy;
-- exact concurrency/version semantics;
-- retention/deletion policy;
-- tenant data isolation implementation;
-- data classification and sensitive-read rules.
+Security and Data decisions do not require the final API schema to be written first. They require the minimum semantics that the API and persistence layers must preserve.
 
-No database schema or persistence implementation is authorized by this review.
+Conversely, API/Data implementation must not invent unresolved Security policy, consent rules, retention rules or tenant-isolation guarantees.
 
-
-## Architecture Closure Review — Candidate
-
-**Date:** 2026-09-28  
-**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN  
-**Implementation authorization:** None
-
-This section consolidates the Domain, UX, Security-impacting and Data-impacting reviews into one closure boundary. It does not silently convert proposals into accepted architecture.
-
-### Closure outcome
-
-The first-slice architecture can be coherently expressed as a **modular monolith with explicit internal module contracts and isolated external integration boundaries**, provided the following are treated as explicit architecture policies rather than hidden implementation assumptions:
-
-1. authoritative learning/business facts have clear ownership;
-2. derived projections are rebuildable;
-3. command-time authorization is mandatory;
-4. tenant/context/relationship information is explicit at protected boundaries;
-5. evidence preserves provenance and correction lineage;
-6. semantic conflicts are explicit; no implicit last-write-wins;
-7. retriable authoritative commands are idempotent;
-8. asynchronous/external effects are recoverable and reconciled;
-9. AI and external providers cannot silently become sources of authoritative learning truth;
-10. operational telemetry, audit and business evidence remain distinct.
-
-### Proposed module responsibility closure
-
-| Boundary | Primary responsibility | Key architectural rule |
-|---|---|---|
-| Identity & Access | identity/authentication | does not own learning truth |
-| Organizations & Relationships | organization context and relationship lifecycle | relationship is not permission |
-| Authorization | command-time policy evaluation | no module bypasses protected command authorization |
-| Learning | learning context, goals, assignments, learner actions | owns learning workflow coordination |
-| Assessment | assessment definitions, attempts, results | result is not generic evidence |
-| Evidence | attributable evidence and lineage | corrections preserve history |
-| Learner State / Progress | derived state and projections | rebuildable from authoritative records |
-| Follow-up | explicit unresolved work lifecycle | closure is not outcome |
-| Communication / Notifications | messages and delivery state | not authoritative learning state |
-| Audit / Observability | accountability and diagnostics | not generic event-sourcing source of truth |
-| AI Assistance | bounded assistance | no silent authority over grades, permissions or irreversible state |
-| Integrations | provider-specific execution/state | provider cannot redefine platform truth |
-
-These are **logical boundaries**, not a commitment to one deployable service per boundary.
-
-### Architecture policies proposed for acceptance
-
-**P1 — Source of truth**  
-Authoritative records own business truth. Dashboards, progress projections, search, analytics and notification state are derived/recoverable unless an explicit domain decision makes a fact authoritative.
-
-**P2 — Authorization**  
-Protected commands evaluate authorization using actor identity, effective role/policy, organization/tenant context, relationship context, resource and requested action at command time.
-
-**P3 — Evidence lineage**  
-Evidence correction is version/supersession based and attributable. Historical evidence is not silently overwritten.
-
-**P4 — Consistency**  
-Only state that must change together is placed in one local consistency boundary. External delivery is not assumed transactional.
-
-**P5 — Idempotency**  
-Retriable authoritative commands have deterministic duplicate semantics.
-
-**P6 — Conflict handling**  
-Semantic conflicts require explicit detection/resolution; implicit last-write-wins is not an accepted policy for accountable learning mutations.
-
-**P7 — Recovery**  
-Projections and external provider state have rebuild/reconciliation paths from authoritative records.
-
-**P8 — Provider isolation**  
-AI, video, messaging, search and payment providers are adapters/integrations. They do not own domain truth.
-
-**P9 — Human accountability**  
-High-impact learner decisions remain attributable to an authorized human/system decision owner; AI assistance is bounded and observable.
-
-**P10 — Operational diagnostics**  
-Critical transitions are traceable through correlation/workflow identifiers and failure/retry/reconciliation state without unnecessary sensitive learner content in telemetry.
-
-### Decisions that can move into the Architecture ADR
-
-Subject to explicit review/confirmation, the ADR can record:
-- modular monolith as the initial application shape;
-- logical module boundaries and dependency direction;
-- authoritative vs derived state policy;
-- command-time authorization boundary;
-- evidence lineage/correction policy;
-- idempotency/concurrency/reconciliation policies;
-- external-provider adapter boundary;
-- observability baseline;
-- deployment topology as a deliberately scoped first-phase choice.
-
-### Decisions that must remain downstream
-
-The Architecture ADR should **not** silently decide:
-- exact database tables/columns/indexes;
-- exact evidence taxonomy/storage representation;
-- exact API request/response contracts;
-- final tenant physical-isolation mechanism;
-- detailed consent/age/country policy;
-- retention/deletion/legal-hold rules;
-- final cloud/vendor selection;
-- detailed UX behavior beyond the confirmed UX contract.
-
-### Gate closure rule
-
-**Architecture Gate PASS** requires explicit confirmation of the architecture policies and boundaries above, plus a recorded ADR.
-
-PASS does **not** require every implementation detail to be frozen. It requires that implementation-impacting architectural behavior is explicit, internally coherent, and traceable to downstream Security/Data/API decisions.
-
-Until that confirmation exists, the architecture remains **NOT PROVEN** and implementation remains unauthorized.
-
-
-## Security + Data Gate Closure Candidate
-
-**Date:** 2026-09-28  
-**Status:** READY FOR EXPLICIT SECURITY/DATA DECISIONS — NOT PROVEN  
-**Implementation authorization:** None
-
-This section prepares the next gates without inventing product, privacy, legal, tenancy or persistence decisions.
-
-### Security Gate — minimum decision set
-
-| Decision area | Required closure | Current status |
-|---|---|---|
-| Tenant isolation | Define mandatory tenant context at protected command/data boundaries; choose physical isolation strategy later only with explicit decision | OPEN |
-| Authorization vocabulary | Define minimum policy concepts for actor, effective role, relationship, organization/tenant, resource, action and context | OPEN |
-| Relationship lifecycle | Define creation, scope, delegation, expiry/revocation and historical attribution semantics | OPEN |
-| Parent/guardian visibility | Define what may be projected, under which relationship/consent/policy conditions | OPEN |
-| Age/country policy | Define whether and where visibility/consent rules vary by age, guardian status or jurisdiction | OPEN |
-| Privileged support/admin access | Define break-glass/support access, approval, scope, logging and review | OPEN |
-| Sensitive reads/mutations | Define audit requirements for sensitive learner data access and high-impact mutations | OPEN |
-| Retention/deletion | Define retention, correction, deletion, legal-hold and historical-attribution constraints | OPEN |
-| Abuse/security controls | Define authentication/session, recovery, rate limiting, abuse prevention and provider trust boundaries | OPEN |
-
-### Security invariants already proposed
-
-- Role is not unconditional permission.
-- Relationship is not permission.
-- Authorization is evaluated at command time.
-- Tenant/context boundaries are enforced below UI visibility.
-- Historical attribution survives relationship changes.
-- Authorization failure does not mutate authoritative state.
-- Parent access is a controlled projection, not direct unrestricted access to underlying learning records.
-- Security telemetry must minimize sensitive learner content.
-
-These are architectural constraints, not a completed security policy.
-
-### Data Gate — minimum decision set
-
-| Decision area | Required closure | Current status |
-|---|---|---|
-| Authoritative facts | Confirm exact durable first-slice business facts and ownership | OPEN |
-| Evidence taxonomy | Define minimum evidence categories and provenance requirements | OPEN |
-| Evidence versioning | Define correction/supersession/conflict representation | OPEN |
-| Learner-state materialization | Decide which learner-state facts, if any, are durable versus rebuildable projections | OPEN |
-| Concurrency | Define version/conflict semantics for stale or concurrent mutations | OPEN |
-| Idempotency | Confirm command identity scope and duplicate-result semantics | PROPOSED |
-| Atomicity | Confirm which authoritative facts must commit together locally | OPEN |
-| Projection recovery | Confirm rebuild/reconciliation source and boundaries | PROPOSED |
-| Data classification | Classify learner, assessment, communication and audit data and sensitive-read controls | OPEN |
-| Tenant data isolation | Select data-boundary enforcement consistent with Security decision | OPEN |
-| Retention/deletion | Define lifecycle semantics jointly with Security | OPEN |
-
-### Data invariants already proposed
-
-- Authoritative business facts are durable and attributable.
-- Derived progress, dashboards, search, analytics and notification projections are rebuildable unless explicitly promoted to authoritative state.
-- Evidence corrections preserve original lineage.
-- Assessment Result and Evidence remain distinct.
-- Semantic conflicts are representable; no implicit last-write-wins for accountable learning mutations.
-- Retriable authoritative commands are idempotent.
-- Projection/provider failure cannot corrupt authoritative learning state.
-- Recovery repairs derived/external state from authoritative records.
-
-### Closure sequence
-
-**Security decision set → Data decision set → Architecture impact reconciliation → API Contract Gate → Implementation Gate**
-
-No schema, API, provider or production implementation is authorized by this section.
+**Current status:** Security/Data architecture impact is sufficiently mapped for explicit decision review; neither gate is PASS.
