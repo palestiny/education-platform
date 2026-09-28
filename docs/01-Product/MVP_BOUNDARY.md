@@ -5,6 +5,12 @@ Status: Boundary Proposal — PROPOSED
 Gate: Product Foundation / Competitive Intelligence — NOT PROVEN
 Implementation authorization: None
 
+## Product Layers
+
+The product is organized into Foundation, Advanced, AI and Scale/Ecosystem layers. See `docs/01-Product/PRODUCT_LAYERS.md` and `docs/01-Product/FEATURE_GAP_MATRIX.md`.
+
+**Foundation is not the MVP.** It is the trustworthy capability baseline from which a coherent MVP is selected.
+
 ## Purpose
 
 Prevent scope explosion while preserving enough competitive parity to build a coherent first product.
