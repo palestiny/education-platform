@@ -445,6 +445,43 @@ The current proposal is sufficient to enter a Domain Confirmation review, but no
 
 **Candidate status:** DOMAIN CONFIRMATION READY FOR REVIEW — NOT PROVEN.
 
+
+## Domain Confirmation — State Transition Invariants
+
+The first-slice workflow is now bounded by explicit transition rules. These rules are **PROPOSED domain invariants**, not implementation contracts.
+
+| Transition | Preconditions | Authoritative result | Failure / conflict rule |
+|---|---|---|---|
+| Context → Assignment | Valid learning context + authorized teacher scope | Assignment exists in context | Reject if authorization/context invalid; retry must be idempotent |
+| Assignment → Submission | Assignment is available to learner | Attributable attempt/submission | Duplicate retry returns existing submission; closed/invalid assignment rejects |
+| Submission → Assessment Result | Valid attempt + applicable assessment | Assessment result | Result must retain attempt/assessment provenance |
+| Assessment Result → Evidence | Result is accepted as learning evidence | Attributable evidence record | Evidence creation is idempotent for same source/result/version |
+| Evidence → Teacher Decision | Teacher has active authority in context | Teacher decision | No decision outside scope; conflicting concurrent decisions require explicit conflict handling |
+| Teacher Decision → Next Action | Valid teacher decision | Learner-visible next action state | Delivery failure does not erase decision; delivery is recoverable |
+| Decision → Follow-up | Unresolved work requires ownership | Follow-up with owner/status | Duplicate creation must be idempotent |
+| Follow-up → Closure | Closure authority + required condition satisfied | Follow-up closed | Due date/activity completion alone does not imply closure |
+| New Evidence → Outcome | Evidence sufficient for authorized outcome declaration | Outcome record | Insufficient/contradictory evidence must remain representable |
+| Correction → Recalculation | Authorized correction/version exists | New valid evidence version + rebuilt/updated derived state | Historical lineage retained; derived state reconciled, not historical evidence rewritten |
+
+### Cross-transition invariants
+
+1. **Authorization is evaluated at the time of the command**, not inferred from historical messaging or possession of an identifier.
+2. **Idempotency applies to retriable commands that create or mutate authoritative state.**
+3. **Authoritative state is never rolled back solely because a notification, projection, or external provider call failed.**
+4. **Derived state can be recomputed from authoritative records.**
+5. **A later interpretation does not rewrite earlier attributable evidence.**
+6. **Concurrency conflicts are explicit; last-write-wins is not an implicit learning rule.**
+7. **Every authoritative teacher decision is attributable to an actor and context.**
+8. **Parent projection is read/interaction policy over authoritative state; it is not a second source of truth.**
+
+### Domain Confirmation result
+
+The minimum first-slice invariants are now sufficiently explicit to proceed to **Domain Confirmation Review**.
+
+**Candidate status:** READY FOR DOMAIN CONFIRMATION — NOT PROVEN.
+
+The remaining gate items are acceptance of these proposed invariants plus the minimum privacy/security boundary needed to express them safely in UX. No database schema, API contract, bounded-context split, or implementation is authorized by this checkpoint.
+
 ## Domain Gate checklist
 
 ### Product / Evidence
