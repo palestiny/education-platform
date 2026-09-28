@@ -1066,3 +1066,111 @@ Before Data Gate PASS, the following still require explicit closure:
 - data classification and sensitive-read rules.
 
 No database schema or persistence implementation is authorized by this review.
+
+
+## Architecture Closure Review — Candidate
+
+**Date:** 2026-09-28  
+**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN  
+**Implementation authorization:** None
+
+This section consolidates the Domain, UX, Security-impacting and Data-impacting reviews into one closure boundary. It does not silently convert proposals into accepted architecture.
+
+### Closure outcome
+
+The first-slice architecture can be coherently expressed as a **modular monolith with explicit internal module contracts and isolated external integration boundaries**, provided the following are treated as explicit architecture policies rather than hidden implementation assumptions:
+
+1. authoritative learning/business facts have clear ownership;
+2. derived projections are rebuildable;
+3. command-time authorization is mandatory;
+4. tenant/context/relationship information is explicit at protected boundaries;
+5. evidence preserves provenance and correction lineage;
+6. semantic conflicts are explicit; no implicit last-write-wins;
+7. retriable authoritative commands are idempotent;
+8. asynchronous/external effects are recoverable and reconciled;
+9. AI and external providers cannot silently become sources of authoritative learning truth;
+10. operational telemetry, audit and business evidence remain distinct.
+
+### Proposed module responsibility closure
+
+| Boundary | Primary responsibility | Key architectural rule |
+|---|---|---|
+| Identity & Access | identity/authentication | does not own learning truth |
+| Organizations & Relationships | organization context and relationship lifecycle | relationship is not permission |
+| Authorization | command-time policy evaluation | no module bypasses protected command authorization |
+| Learning | learning context, goals, assignments, learner actions | owns learning workflow coordination |
+| Assessment | assessment definitions, attempts, results | result is not generic evidence |
+| Evidence | attributable evidence and lineage | corrections preserve history |
+| Learner State / Progress | derived state and projections | rebuildable from authoritative records |
+| Follow-up | explicit unresolved work lifecycle | closure is not outcome |
+| Communication / Notifications | messages and delivery state | not authoritative learning state |
+| Audit / Observability | accountability and diagnostics | not generic event-sourcing source of truth |
+| AI Assistance | bounded assistance | no silent authority over grades, permissions or irreversible state |
+| Integrations | provider-specific execution/state | provider cannot redefine platform truth |
+
+These are **logical boundaries**, not a commitment to one deployable service per boundary.
+
+### Architecture policies proposed for acceptance
+
+**P1 — Source of truth**  
+Authoritative records own business truth. Dashboards, progress projections, search, analytics and notification state are derived/recoverable unless an explicit domain decision makes a fact authoritative.
+
+**P2 — Authorization**  
+Protected commands evaluate authorization using actor identity, effective role/policy, organization/tenant context, relationship context, resource and requested action at command time.
+
+**P3 — Evidence lineage**  
+Evidence correction is version/supersession based and attributable. Historical evidence is not silently overwritten.
+
+**P4 — Consistency**  
+Only state that must change together is placed in one local consistency boundary. External delivery is not assumed transactional.
+
+**P5 — Idempotency**  
+Retriable authoritative commands have deterministic duplicate semantics.
+
+**P6 — Conflict handling**  
+Semantic conflicts require explicit detection/resolution; implicit last-write-wins is not an accepted policy for accountable learning mutations.
+
+**P7 — Recovery**  
+Projections and external provider state have rebuild/reconciliation paths from authoritative records.
+
+**P8 — Provider isolation**  
+AI, video, messaging, search and payment providers are adapters/integrations. They do not own domain truth.
+
+**P9 — Human accountability**  
+High-impact learner decisions remain attributable to an authorized human/system decision owner; AI assistance is bounded and observable.
+
+**P10 — Operational diagnostics**  
+Critical transitions are traceable through correlation/workflow identifiers and failure/retry/reconciliation state without unnecessary sensitive learner content in telemetry.
+
+### Decisions that can move into the Architecture ADR
+
+Subject to explicit review/confirmation, the ADR can record:
+- modular monolith as the initial application shape;
+- logical module boundaries and dependency direction;
+- authoritative vs derived state policy;
+- command-time authorization boundary;
+- evidence lineage/correction policy;
+- idempotency/concurrency/reconciliation policies;
+- external-provider adapter boundary;
+- observability baseline;
+- deployment topology as a deliberately scoped first-phase choice.
+
+### Decisions that must remain downstream
+
+The Architecture ADR should **not** silently decide:
+- exact database tables/columns/indexes;
+- exact evidence taxonomy/storage representation;
+- exact API request/response contracts;
+- final tenant physical-isolation mechanism;
+- detailed consent/age/country policy;
+- retention/deletion/legal-hold rules;
+- final cloud/vendor selection;
+- detailed UX behavior beyond the confirmed UX contract.
+
+### Gate closure rule
+
+**Architecture Gate PASS** requires explicit confirmation of the architecture policies and boundaries above, plus a recorded ADR.
+
+PASS does **not** require every implementation detail to be frozen. It requires that implementation-impacting architectural behavior is explicit, internally coherent, and traceable to downstream Security/Data/API decisions.
+
+Until that confirmation exists, the architecture remains **NOT PROVEN** and implementation remains unauthorized.
