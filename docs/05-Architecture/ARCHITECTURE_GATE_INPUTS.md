@@ -1,6 +1,6 @@
 # Architecture Gate Inputs
 
-Date: 2026-09-25
+Date: 2026-09-28
 Status: Architecture Gate Preparation — NOT PROVEN
 Gate: Architecture Gate — NOT PROVEN
 Implementation authorization: None
@@ -21,9 +21,9 @@ The repository has:
 - candidate requirements;
 - a candidate domain map.
 
-The Product Foundation and Domain Gates remain **NOT PROVEN** because direct workflow evidence from real participants has not yet been collected.
+The Product Foundation and Domain Gates remain **NOT PROVEN**. Direct workflow evidence is optional targeted validation for material uncertainty, but its absence is not a blocker for normal market-led product planning.
 
-Therefore architecture work may define constraints and evaluate options, but must not convert unvalidated product hypotheses into implementation commitments.
+Therefore architecture work may define constraints and evaluate options, but must not convert product proposals into implementation commitments.
 
 ## Architecture Drivers
 
@@ -161,6 +161,175 @@ Potentially deferred:
 - AI Agent Orchestration
 
 The final module set must be derived from the validated beachhead and domain ownership, not from this list alone.
+
+## First-Slice Architectural Boundary Candidate
+
+The proposed first slice is the Teacher-Led Learning Loop:
+
+**Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome**
+
+This translates the proposed domain invariants into architecture concerns without finalizing modules, schemas, APIs, or technology.
+
+### Candidate module boundary map
+
+| Candidate module | Owns / protects | Must not own |
+|---|---|---|
+| Identity & Access | identity, authentication, role/permission evaluation | learning truth |
+| Organizations & Relationships | organization membership and relationship scope where required | evidence or assessment results |
+| Learning | learning context, goals, assignments, learner actions | identity/authentication |
+| Assessment | assessment definition, attempts, assessment results | generic evidence history |
+| Evidence | attributable evidence, provenance, correction/version lineage | authorization decisions |
+| Learner State / Progress | derived learner-state calculations/projections | raw evidence ownership |
+| Communication & Notification | messages and delivery state | authoritative learning state |
+| Follow-up | owned unresolved work and lifecycle | outcome truth |
+| Audit | accountable audit records | generic event sourcing |
+| AI Assistance | bounded assistance, recommendations, explanations | authoritative grades, permissions, payments, or irreversible learner state |
+
+“Module” is an architectural boundary candidate, not a separate deployable service or final bounded context.
+
+### Candidate dependency direction
+
+**Identity/Authorization → Context/Relationships → Learning/Assessment/Evidence → Derived Learner State → Communication/Follow-up projections**
+
+Audit and observability observe authoritative transitions without becoming the source of truth. AI Assistance consumes authorized context/evidence and must not become an implicit dependency of core learning-state mutations.
+
+## First-Slice Consistency Matrix
+
+| Operation | Authoritative mutation | Consistency | Retry | Failure handling |
+|---|---|---|---|---|
+| Create assignment | Learning | Immediate durable commit | Idempotent | Reject invalid scope; safe retry |
+| Submit attempt | Learning | Immediate durable commit | Idempotent | Preserve draft/retry state where applicable |
+| Produce assessment result | Assessment | Durable with provenance | Idempotent by source/version | Reconcile provider/execution failure |
+| Record evidence | Evidence | Immediate durable commit | Idempotent for same source/version | Preserve lineage; never silently overwrite |
+| Record teacher decision | Decision owner candidate | Immediate durable commit | Idempotent | Explicit concurrency conflict |
+| Create next action | Derived learner-facing state | May follow authoritative decision | Safe retry | Rebuild/reconcile if projection fails |
+| Create follow-up | Follow-up | Immediate durable commit | Idempotent | No duplicate work items |
+| Deliver notification | Provider boundary | Eventually consistent | Provider-safe retry | Recover delivery; never roll back learning state |
+| Rebuild progress/dashboard | Derived | Eventually consistent | Repeatable | Recompute from authoritative records |
+
+### Transaction rule
+
+A transaction should cover only authoritative state that must change together within one local consistency boundary. Notifications, search, analytics and external providers are not assumed to share that transaction.
+
+Where reliable asynchronous publication is required, evaluate an outbox-style mechanism. This is a reliability pattern candidate, not a technology decision.
+
+## Idempotency, Concurrency and Reconciliation
+
+Idempotency is required for retriable authoritative commands where duplication could create a second business fact, including assignment, submission, assessment-result ingestion, evidence, teacher decision and follow-up creation.
+
+Idempotency keys are scoped to actor/context/command semantics rather than treated as global business identifiers.
+
+The first slice must not rely on implicit last-write-wins for accountable learning decisions. Conflicts must remain explicit for concurrent teacher decisions, evidence corrections, authorization changes during a command, and stale client submissions.
+
+Reconciliation is required where authoritative state and external/projection state can diverge, including notification delivery, provider-backed assessment/media state, materialized progress, dashboards/search indexes and outbox delivery. Reconciliation repairs derived/external state from authoritative records; it does not rewrite historical evidence.
+
+## Event / Outbox Policy Candidate
+
+1. Authoritative state is committed first.
+2. Required local event/outbox intent is committed atomically with that state when reliable asynchronous publication is required.
+3. Consumers are idempotent and retryable.
+4. Global event ordering is not assumed unless explicitly required.
+5. Events carry stable identifiers and enough context for safe processing without unnecessary personal data.
+6. Events do not grant authorization by themselves.
+7. Event history is not automatically the business source of truth.
+
+**Status:** PROPOSED.
+
+## Tenancy / Relationship / Authorization Constraints
+
+Regardless of tenancy model:
+- commands affecting learning state resolve applicable organization/relationship context where one exists;
+- authorization is evaluated at command time;
+- relationship existence and permission scope remain distinct;
+- parent visibility is a policy-controlled projection;
+- tenant isolation is enforced below UI convenience;
+- historical records remain attributable after relationship end;
+- authorization changes do not retroactively erase valid evidence.
+
+Exact tenancy remains OPEN.
+
+## External Provider Isolation
+
+Provider-backed capabilities require explicit integration boundaries covering provider-neutral domain state, provider-specific state, correlation/idempotency, timeout/retry, failure classification, reconciliation and migration/replacement.
+
+The core learning workflow should remain usable when a non-essential provider is unavailable.
+
+AI, video, messaging, search and payment providers are integrations, not domain owners.
+
+## Observability Contract Candidate
+
+Critical transitions should emit, where safe:
+- correlation/trace identifier;
+- actor/role context;
+- tenant/context identifier;
+- command/workflow identifier;
+- state transition;
+- dependency outcome;
+- retry/reconciliation status;
+- latency;
+- failure category.
+
+Telemetry must minimize sensitive learner content. Operational logs, audit records and business evidence remain distinct.
+
+**Status:** PROPOSED.
+
+## Architecture Option Evaluation — First Slice
+
+| Criterion | Modular Monolith | Services from Start | Hybrid |
+|---|---|---|---|
+| Local transactional learning loop | Strong | Distributed | Strong for core |
+| Early product iteration | Strong | Lower | Strong |
+| Operational burden | Lower | Higher | Medium |
+| Boundary flexibility while semantics evolve | Strong | Lower | Medium |
+| Independent scaling | Later extraction | Strong | Selective |
+| Failure surface | Lower | Higher | Medium |
+| Reversibility | High if disciplined | Lower | High if adapters are explicit |
+| Fit with current evidence state | Strong candidate | Weak candidate | Strong candidate |
+
+### Current architectural recommendation
+
+**PROPOSED — not accepted:** start implementation as a **modular monolith with explicit module contracts**, while isolating infrastructure-heavy external capabilities behind adapters/integration boundaries.
+
+Rationale:
+- the first slice contains authoritative state transitions that benefit from local transactional consistency;
+- domain semantics are explicit enough to define boundaries but not mature enough to justify distributed service ownership;
+- external media/AI/notification/payment concerns can be isolated without distributing the learning core;
+- the approach preserves migration paths when a concrete scaling or organizational boundary justifies extraction.
+
+This is a recommendation for review, not an ADR or implementation authorization.
+
+## Architecture Decisions Required Before Gate PASS
+
+1. Confirm the first-slice domain contract.
+2. Confirm module ownership and dependency direction.
+3. Decide the tenancy/isolation strategy or explicitly scope it as a reversible phase decision.
+4. Define the minimum authorization/relationship contract.
+5. Define first-slice data consistency boundaries.
+6. Confirm idempotency and concurrency semantics.
+7. Confirm outbox/event policy where needed.
+8. Confirm external-provider adapter policy.
+9. Confirm observability baseline.
+10. Record the final architecture decision in an ADR.
+
+## What Architecture Preparation May Proceed With
+
+Allowed:
+- module boundary review;
+- consistency matrices;
+- failure/recovery design;
+- dependency contracts;
+- tenancy option comparison;
+- security constraints;
+- observability requirements;
+- architecture ADR preparation.
+
+Still not authorized:
+- production code;
+- final database schema;
+- final API contract;
+- provider selection;
+- deployment topology;
+- infrastructure provisioning.
 
 ## Consistency Questions
 
@@ -402,11 +571,11 @@ Those remain candidates until the relevant gates provide sufficient evidence.
 
 The repository is now prepared for architecture evaluation, but not architecture commitment.
 
-The immediate product blocker remains direct validation of real recent workflows and initial-segment selection.
+The current blockers for Architecture Gate PASS are decision closure, not absence of a participant sample. Initial segment/commercial scope matters where it changes architecture; targeted validation may be used for material unresolved uncertainty.
 
 Next:
-1. resolve segment-dependent requirements where evidence permits;
-2. collect direct workflow cases;
-3. refine domain ownership/state rules;
-4. evaluate architecture options against the selected workflow;
-5. create an ADR only after an explicit architecture decision.
+1. complete Domain Confirmation Review;
+2. complete UX Confirmation;
+3. review the first-slice architecture boundary and consistency matrix;
+4. close tenancy, authorization, security and provider-boundary decisions that materially affect architecture;
+5. record the final architecture decision as an ADR only after explicit review.
