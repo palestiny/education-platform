@@ -125,6 +125,173 @@ Must wait for stronger evidence:
 - final API/data contracts;
 - implementation.
 
+
+## Minimum Domain Decisions — First Slice
+
+These decisions narrow the domain enough to support Domain Confirmation. They are **PROPOSED**, not silently finalized.
+
+### 1. Goal and Assignment
+
+- **Goal** = intended learning outcome within a learning context.
+- **Assignment** = teacher-authorized learning work directed toward a learner or learning group.
+- An assignment may support one or more goals.
+- A goal may exist without an assignment.
+- Assignment completion is activity state; achievement/outcome requires evidence.
+
+**Status:** PROPOSED  
+**Remaining open:** exact goal structure, assignment cardinality, due-date semantics, recurrence, and group assignment rules.
+
+### 2. Minimum Learning Mode
+
+The first slice does not require a provider-specific video/live/offline model.
+
+**Proposed minimum:** an asynchronous teacher-led learning activity that can produce a learner action/submission and an assessment/evidence result.
+
+This keeps the domain centered on the learning loop while allowing later learning modes to reuse the same semantic model.
+
+**Status:** PROPOSED  
+**Remaining open:** exact first UX modes and whether a reusable Learning Experience abstraction is needed immediately.
+
+### 3. Evidence
+
+Evidence is a first-class learning record with at least:
+
+- source/type;
+- actor or producing system;
+- learner/context reference;
+- timestamp;
+- provenance;
+- quality/uncertainty where meaningful;
+- visibility classification;
+- relationship to the relevant action/assessment.
+
+Evidence should be correction/version aware when a correction changes its meaning or accountability. It is not a generic event log.
+
+**Status:** PROPOSED  
+**Remaining open:** exact evidence taxonomy, version model, conflict representation, retention, and whether all evidence types share one storage abstraction.
+
+### 4. Progress
+
+The first slice requires an explainable progress representation, but not a universal mastery algorithm.
+
+**Proposed rule:** progress is derived from relevant evidence in the context of a goal/assignment and remains traceable to its supporting evidence.
+
+Candidate first-slice states:
+
+- Not Started
+- In Progress
+- Needs Review
+- Demonstrated
+- Not Demonstrated
+- Unknown / Insufficient Evidence
+
+These are candidate states, not approved API/database enums.
+
+**Status:** PROPOSED  
+**Remaining open:** exact state machine, aggregation rules, teacher override semantics, and whether progress is materialized or calculated.
+
+### 5. Student–Teacher Relationship and Authorization
+
+The first slice requires an explicit relationship/context that establishes why a teacher may act on a learner.
+
+**Proposed rule:**
+
+- Identity does not by itself grant learning access.
+- Teacher authority is scoped by an authorized learning context/relationship.
+- Assessment, feedback, assignment, and accountable decisions must be authorized within that scope.
+- Parent access is separately evaluated from the parent relationship plus policy/consent.
+
+**Status:** PROPOSED  
+**Remaining open:** relationship lifecycle owner, organization dependence, delegation, expiry, and group/class membership semantics.
+
+### 6. Parent Visibility
+
+Parent is a controlled projection, not a source of learner truth.
+
+**Proposed rule:**
+
+- Parent visibility is computed from relationship + permission/policy + context.
+- Internal teacher notes and restricted evidence are not exposed merely because a parent relationship exists.
+- Parent-facing status should communicate meaningful state/change without exposing unnecessary internal workflow detail.
+- Parent actions cannot silently mutate teacher-owned learning state.
+
+**Status:** PROPOSED  
+**Remaining open:** age/consent rules, guardian edge cases, visibility categories, and country-specific policy.
+
+### 7. Outcome
+
+Outcome is distinct from activity completion.
+
+**Proposed candidate outcomes:**
+
+- Achieved
+- Partially Achieved
+- Not Demonstrated
+- Contradictory
+- Unevaluable
+
+Outcome must be supported by relevant evidence and may remain uncertain when evidence is insufficient.
+
+**Status:** PROPOSED  
+**Remaining open:** who can declare an outcome, whether it is always required, and how outcome correction/versioning works.
+
+### 8. Durable vs Derived State
+
+**Proposed durable state:**
+
+- authoritative relationships/permissions;
+- teacher-authorized assignments/decisions;
+- learner submissions/attempts;
+- attributable evidence;
+- assessment records/results;
+- follow-up ownership/status;
+- declared outcomes when authoritative;
+- audit records for important accountable actions.
+
+**Proposed derived state:**
+
+- dashboard projections;
+- summarized progress views;
+- recommendation candidates;
+- convenience aggregates that can be rebuilt from authoritative records.
+
+Learner progress may be materialized for performance, but its authoritative basis must remain traceable to evidence and context.
+
+**Status:** PROPOSED  
+**Remaining open:** exact learner-state aggregate ownership and rebuild/reconciliation strategy.
+
+## Minimum Domain Confirmation Checklist
+
+Before declaring Domain Gate PASS:
+
+- [ ] First slice accepted as the current product boundary.
+- [ ] Goal and Assignment distinction accepted.
+- [ ] Minimum learning mode accepted.
+- [ ] Evidence provenance/correction/conflict rules sufficiently defined.
+- [ ] Progress semantics bounded and explainable.
+- [ ] Student–Teacher authorization boundary defined.
+- [ ] Parent visibility boundary defined enough for first-slice UX/security.
+- [ ] Outcome semantics and authority defined.
+- [ ] Durable versus derived state identified.
+- [ ] Atomicity/idempotency boundaries for the first workflow identified.
+- [ ] Material unresolved ambiguity either closed or explicitly deferred without blocking the first slice.
+
+## Current Domain Decision Status
+
+| Area | Status | Implementation consequence |
+|---|---|---|
+| Goal vs Assignment | PROPOSED | Do not collapse into one generic task model yet |
+| Learning mode | PROPOSED | Avoid provider-specific domain commitments |
+| Evidence | PROPOSED | Preserve provenance and correction semantics |
+| Progress | PROPOSED | Avoid opaque mastery score |
+| Teacher authorization | PROPOSED | Authorization must be contextual |
+| Parent projection | PROPOSED | Do not expose internal records by default |
+| Outcome | PROPOSED | Do not infer outcome from completion alone |
+| Durable/derived state | PROPOSED | Dashboards/projections remain rebuildable |
+| Intervention Case | OPEN / DEFERRED | No domain model yet |
+| Recommendation Engine | OPEN / DEFERRED | No domain model yet |
+| Payments / Attendance / Marketplace | OUTSIDE FIRST SLICE | No first-slice dependency |
+
 ## Domain Gate checklist
 
 ### Product / Evidence
