@@ -67,6 +67,32 @@ Therefore:
 
 This decision supersedes the earlier assumption that a direct-case collection gate is the next mandatory project milestone.
 
+
+| DEC-0010 | Product | The platform's first coherent product model is a shared cross-role journey: Context → Goal → Plan → Learn/Practice → Assess → Evidence → Understand → Progress → Next Useful Action → Feedback/Follow-up → New Evidence → Outcome. Role experiences are specialized views/actions over shared context and state, not disconnected products. | PROPOSED | Core Product Journey + Platform Capability Map, 2026-09-28 |
+
+## DEC-0010 Boundary
+
+This is a product semantic decision candidate, not a domain or architecture decision.
+
+It establishes the direction that:
+- student, parent, teacher, and organization experiences remain connected;
+- evidence is distinct from interpretation;
+- progress is distinct from raw activity;
+- recommendations are distinct from decisions;
+- communication is distinct from authoritative learning/business state;
+- follow-up may exist without automatically creating formal intervention cases;
+- critical workflows must preserve context and recoverability.
+
+It does not finalize:
+- the commercial beachhead;
+- MVP scope;
+- role set;
+- tenancy;
+- progress/mastery calculation;
+- intervention semantics;
+- AI scope;
+- APIs, database schema, bounded contexts, or technology.
+
 ## Lifecycle
 
 Statuses: PROPOSED, ACCEPTED, REJECTED, SUPERSEDED, OPEN.
