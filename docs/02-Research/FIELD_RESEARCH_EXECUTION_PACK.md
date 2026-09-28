@@ -1,164 +1,114 @@
 # Field Research Execution Pack
 
-**Status:** Operational Research Pack — PROPOSED  
-**Gate:** Product Foundation — NOT PROVEN  
+**Status:** Optional Targeted Validation Pack — PROPOSED  
+**Gate:** Not a Product Foundation blocker  
 **Date:** 2026-09-28  
-**Implementation:** Not authorized
+**Implementation:** Not authorized by this document
 
 ## Purpose
 
-Make the next project step executable without creating fictional evidence or forcing a preferred initial segment.
+Provide a lightweight mechanism for validating uncertain or materially differentiated product assumptions when direct evidence would materially improve confidence.
 
-The repository already contains the research script, recruitment/consent brief, case template, evidence ledger, validation checklist, and segment-decision protocol. This pack turns those instruments into one execution flow.
+This pack is **not** a prerequisite for building the education platform.
+
+## Product Research Boundary
+
+The project is market-led.
+
+The core product goal is to build one professional platform that brings together students, parents, teachers and educational organizations/centers, using:
+
+- established market capabilities for parity;
+- competitor/product analysis to identify gaps and weaknesses;
+- product synthesis to design a coherent integrated experience;
+- targeted direct research only where a meaningful assumption cannot be responsibly resolved from available evidence.
+
+We are not treating the project as a social study, sample-based market experiment, or participant-research program.
+
+## When To Use This Pack
+
+Use targeted field validation only when one or more of these apply:
+
+- a proposed differentiator is materially uncertain;
+- a workflow has conflicting evidence across products/sources;
+- a high-impact product behavior cannot be safely inferred;
+- a business assumption materially affects product direction;
+- a UX/workflow hypothesis would benefit from real-world confirmation.
+
+Do **not** block normal product work because this pack has no cases.
 
 ## Execution Flow
 
-**Recruit → Consent → Recent Real Case → Reconstruct → Classify Evidence → Redact/Minimize → Case Record → Ledger → Contradiction Review → Segment Readiness → Segment Decision**
+**Question → Existing Evidence → Gap/Uncertainty → Optional Real-World Validation → Product Decision**
 
-No step may be skipped by replacing evidence with a hypothetical answer.
+If no direct evidence is available, record the assumption as OPEN/NOT PROVEN and continue with work that does not depend on it.
 
-## Recruitment Target
+## Evidence Integrity
 
-Recruit across the candidate contexts without presenting any as preferred:
+When direct research is used, keep separate:
 
-- Private tutoring
-- Tutoring center / academy
-- School
+- direct observation;
+- participant report;
+- authorized artifact evidence;
+- researcher interpretation;
+- product hypothesis.
 
-Useful participant roles may include:
+Do not invent cases or upgrade a participant statement into a market fact.
 
-- Tutor / teacher
-- Coordinator / center operator
-- Parent / guardian
-- Student, only where consent/assent and safeguarding permit
+## Outputs
 
-The goal is not to maximize participant count. The goal is to obtain decision-relevant real cases and investigate contradictions.
+A targeted validation effort may produce:
 
-## Session Output
+1. question/hypothesis;
+2. evidence already available;
+3. direct cases if collected;
+4. contradictions and unknowns;
+5. impact on the product decision;
+6. explicit decision or deferred status.
 
-Every useful session should produce:
+A session without a suitable real case is simply **NO SUITABLE CASE**.
 
-1. A case ID.
-2. A reconstructed real workflow.
-3. Evidence classification.
-4. Unknowns.
-5. Contradictory evidence.
-6. Current workaround.
-7. Material friction/cost where actually reported or observed.
-8. Privacy/consent boundaries.
-9. Failure/recovery information when present.
-10. Open questions.
+## Non-Blocking Rule
 
-A session without a suitable real case is recorded as **NO SUITABLE CASE**, not converted into a hypothetical case.
+The following are **not** reasons to stop the project:
 
-## Evidence Handling
+- zero participant cases;
+- inability to recruit participants;
+- lack of a statistically representative sample;
+- lack of social/field-study prevalence data for a conventional capability.
 
-Keep these separate:
+Instead, use the existing market evidence and clearly mark unresolved assumptions.
 
-- what was directly observed;
-- what the participant reported;
-- what an authorized artifact shows;
-- what the researcher inferred;
-- what remains a hypothesis.
+## Relationship To Product Gates
 
-Never upgrade evidence because it fits the expected product story.
+Direct research can strengthen a Product or UX decision, but it does not replace:
 
-## Case Quality Gate
+- Product definition;
+- Requirements;
+- Domain design;
+- UX design;
+- Architecture;
+- Security;
+- Data;
+- API contracts;
+- Testing;
+- Release verification.
 
-Before entering a case into cross-case synthesis, verify:
+The relevant gate determines what evidence is required for the decision being made.
 
-- [ ] Real recent event.
-- [ ] Trigger identifiable.
-- [ ] Evidence source identifiable.
-- [ ] Decision/action ownership reconstructable or explicitly UNKNOWN.
-- [ ] Follow-up/closure status captured or UNKNOWN.
-- [ ] Outcome evidence captured or UNKNOWN.
-- [ ] Workaround captured.
-- [ ] Contradictions captured.
-- [ ] Privacy/consent boundary recorded.
-- [ ] Unnecessary PII removed.
-
-If critical information is missing, keep the case and mark the gap; do not fill it.
-
-## Cohort Review
-
-After multiple cases, review candidate segments side-by-side using narrative evidence:
-
-### Workflow recurrence
-What similar real workflows occurred?
-
-### Materiality
-What concrete consequence, time, friction, missed action, or other material effect was reported or observed?
-
-### Ownership
-Does the workflow repeatedly cross roles or systems? If so, where?
-
-### Evidence
-What evidence actually drives the next action?
-
-### Follow-up
-How is pending work remembered and revisited?
-
-### Closure
-How is resolution established?
-
-### Alternatives
-What already works, and what remains unsolved?
-
-### Contradictions
-What cases weaken the emerging interpretation?
-
-### Segment boundary
-What is genuinely different between private tutoring, centers, and schools?
-
-Do not calculate a score or rank.
-
-## Segment Decision Gate
-
-The segment decision may proceed only when the decision protocol's readiness questions can be answered with traceable evidence and material unknowns are explicit.
-
-The resulting decision record must contain:
-
-- selected segment;
-- evidence basis;
-- contradictions;
-- deferred alternatives;
-- open questions;
-- consequences for Core Journey;
-- gate status.
-
-If readiness is not achieved, status remains **NOT PROVEN** or **GAP** and targeted research continues.
-
-## Core Journey Gate
-
-Only after the segment decision:
-
-**Real Context → Goal/Trigger → Learning Action → Evidence → Interpretation → Progress → Next Useful Action → Human Ownership → Communication/Follow-up → Outcome Evidence → Closure**
-
-Any step lacking evidence remains OPEN/HYPOTHESIS.
-
-## Research Integrity
-
-- Do not invent cases.
-- Do not infer prevalence from a small sample.
-- Do not rank participants or segments numerically.
-- Do not turn complaints into requirements automatically.
-- Do not treat activity counts as learning outcomes.
-- Do not treat operational signals as learning evidence without justification.
-- Do not turn parent involvement into a universal requirement.
-- Do not turn follow-up into a formal case-management domain without evidence.
-- Do not let AI recommendations bypass human accountability.
-- Do not use field research to collect unnecessary sensitive information.
-
-## Repository State
-
-Current expected state before field execution:
+## Current State
 
 - Direct cases: 0
-- Initial segment: NOT SELECTED
-- Product Foundation: NOT PROVEN
-- Domain: NOT PROVEN
-- Architecture: NOT PROVEN
-- Implementation: NOT AUTHORIZED
+- Initial product direction: unified education platform
+- Market capability baseline: established for planning
+- Targeted direct research: optional
+- Product Foundation: still requires explicit product/design decisions
+- Architecture: not finalized
+- Implementation: not authorized until the normal engineering gates are satisfied
 
-The first real case, not another planning document, is the next substantive evidence milestone.
+## Next Project Direction
+
+Return to the actual product:
+
+**Students + Parents + Teachers + Centers/Schools → One coherent platform → Strong baseline capabilities → Identify real market gaps → Design the differentiated workflow → Gate → Build → Verify.**
+
+No additional field-research documentation is required unless a concrete product question calls for it.
