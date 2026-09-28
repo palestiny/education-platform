@@ -98,3 +98,33 @@ It does not finalize:
 Statuses: PROPOSED, ACCEPTED, REJECTED, SUPERSEDED, OPEN.
 
 An architectural decision that materially affects implementation should receive an ADR under adr/.
+
+
+| DEC-0011 | Domain | First-slice domain contract candidate separates Context, Goal, Assignment, Submission/Attempt, Assessment Result, Evidence, Teacher Decision, Next Action, Follow-up and Outcome; authoritative state is attributable/contextual, derived projections are rebuildable, and corrections preserve evidence lineage. | PROPOSED | Domain Readiness Checkpoint, 2026-09-28 |
+
+## DEC-0011 Boundary
+
+This is a **domain-contract proposal** prepared for Domain Confirmation.
+
+It establishes proposed invariants:
+- learning records are interpreted within an applicable learning context;
+- assessment results and evidence are distinct;
+- assignment completion does not prove learning achievement;
+- teacher authority is contextual and time-bounded by valid authorization;
+- evidence corrections preserve historical lineage;
+- conflicting evidence is represented rather than silently overwritten;
+- follow-up closure is distinct from outcome declaration;
+- retriable authoritative mutations require explicit idempotency behavior;
+- derived progress/projections are rebuildable from authoritative records;
+- external delivery failure does not silently undo authoritative learning state.
+
+It does not finalize:
+- database schemas;
+- API contracts;
+- bounded contexts/modules;
+- tenant architecture;
+- exact progress algorithm;
+- privacy/consent policy;
+- technology/provider choices.
+
+Status remains **PROPOSED** until the Domain Confirmation gate is explicitly passed.
