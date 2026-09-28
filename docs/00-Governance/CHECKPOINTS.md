@@ -752,3 +752,43 @@ The domain model is now sufficiently explicit to enter **Domain Confirmation Rev
 Domain Confirmation Review → UX Gate → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate
 
 No implementation should start until the domain contract is accepted and the downstream gates are satisfied.
+
+
+## Checkpoint 023 — First-Slice UX Gate Inputs
+
+**Date:** 2026-09-28  
+**Stage:** UX Gate Preparation  
+**Status:** NOT PROVEN  
+**Implementation authorization:** None
+
+### Completed
+
+- Converted the first-slice domain chain into proposed UX jobs for Student, Teacher, and controlled Parent projection.
+- Defined proposed information architecture without freezing routes or technology.
+- Defined critical UX states including retry, duplicate submission, stale/conflicting evidence, unknown evidence, correction, and external delivery failure.
+- Explicitly separated completion, progress, decision, follow-up closure, and outcome in the UX model.
+- Added accessibility/localization constraints for RTL/LTR and responsive use.
+- Added UX acceptance criteria required before the UX Gate can PASS.
+
+### Current gate state
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR REVIEW — NOT PROVEN |
+| UX | **NOT PROVEN — PREPARATION COMPLETE** |
+| Architecture | NOT PROVEN |
+| Security | NOT PROVEN |
+| Data | NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Guardrail
+
+This checkpoint authorizes structured UX review/design work only. It does not authorize UI implementation, API design, database schema, architecture commitment, or technology selection.
+
+### Next
+
+Domain Confirmation Review → UX Design Review → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate
