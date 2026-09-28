@@ -847,3 +847,64 @@ It does **not** authorize:
 
 **Domain Confirmation Review → UX Confirmation → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
 
+
+
+## Checkpoint 025 — First-Slice Architecture Gate Preparation Candidate
+
+**Date:** 2026-09-28  
+**Stage:** Architecture Gate Preparation  
+**Status:** READY FOR ARCHITECTURE REVIEW — NOT PROVEN  
+**Implementation authorization:** None
+
+### Completed
+
+- Re-reviewed Architecture Gate inputs against the first-slice domain transition chain and UX review candidate.
+- Translated domain invariants into candidate architectural boundaries without turning modules into deployable services.
+- Added a first-slice consistency matrix for authoritative mutations, retries, eventual consistency and provider delivery.
+- Defined candidate idempotency, concurrency and reconciliation rules.
+- Added an outbox/event policy candidate while preserving domain state as the source of truth.
+- Added tenancy/relationship/authorization constraints and external-provider isolation requirements.
+- Added an observability contract candidate with privacy minimization.
+- Compared Modular Monolith, Services-from-Start and Hybrid options against the first slice.
+- Recorded **Modular Monolith + explicit module contracts + isolated external integrations** as a proposed recommendation, not an accepted ADR.
+
+### Architectural boundary
+
+**Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome**
+
+Architecture preparation now focuses on protecting this chain from coupling, duplication, inconsistent state, authorization leakage and provider failures.
+
+### Gate status
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR REVIEW — NOT PROVEN |
+| UX | READY FOR CONFIRMATION — NOT PROVEN |
+| Architecture | **READY FOR REVIEW — NOT PROVEN** |
+| Security | NOT PROVEN |
+| Data | NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Important correction
+
+Direct participant cases remain **0**, but they are not a blocker for normal market-led product and architecture preparation. Targeted real-world validation remains available for material unresolved uncertainty.
+
+### Still open before Architecture Gate PASS
+
+1. Domain Confirmation acceptance.
+2. UX Confirmation.
+3. Tenancy/isolation decision or explicit reversible phase boundary.
+4. Minimum authorization/relationship contract.
+5. Security/privacy constraints that materially affect architecture.
+6. Data/API contract strategy.
+7. Final architecture ADR.
+
+### Next
+
+**Domain Confirmation Review → UX Confirmation → Architecture Review → Security/Data/API Gates → Implementation Gate**
+
+No code is authorized by this checkpoint.
