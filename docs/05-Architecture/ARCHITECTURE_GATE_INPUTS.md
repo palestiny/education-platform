@@ -766,3 +766,113 @@ Architecture Gate PASS requires the architecture implications to be explicit; it
 8. Implementation Gate.
 
 This order prevents the architecture decision from pretending that security or data policy has already been decided.
+
+
+## Security-Impacting Architecture Review — Identity, Relationship, Tenant and Authorization
+
+### Architectural boundary
+
+The platform must distinguish five different concerns:
+
+1. **Identity** — who the person/system is.
+2. **Role** — what capabilities the identity may potentially exercise.
+3. **Relationship** — how the identity is related to another identity or learning context.
+4. **Organization/Tenant** — where the action/data belongs.
+5. **Authorization** — whether this actor may perform this action against this resource in this context at this time.
+
+These are intentionally not collapsed into one enum or one permission flag.
+
+### Proposed authorization evaluation context
+
+A command that can affect protected state should be evaluated against:
+
+**Actor Identity + Effective Roles + Tenant/Organization Context + Relationship Context + Resource + Requested Action + Learning/Business Context + Policy State**
+
+Authorization is evaluated at command time. A historical relationship must remain attributable for historical records but must not automatically grant current access.
+
+### Role is not permission
+
+A role is a capability grouping, not unconditional access.
+
+Examples:
+- Teacher does not automatically access every student.
+- Parent does not automatically access every learner record.
+- Organization membership does not automatically grant access to every organization resource.
+- Platform administration does not automatically imply unrestricted access to tenant learning data; privileged access must remain explicitly governed.
+
+### Relationship is not permission
+
+Relationships such as parent/child, teacher/student, assistant/student or organization/member provide context for policy evaluation.
+
+They do not independently authorize every operation.
+
+### Tenant boundary
+
+Tenant context must be explicit at protected data and command boundaries.
+
+The architecture must prevent a request from silently operating outside its authorized tenant context.
+
+The exact physical isolation strategy (shared database, database-level policy/RLS, schema isolation, or separate database) remains a Security/Data decision and is not silently finalized here.
+
+### Parent visibility boundary
+
+Parent-facing information is treated as a **policy-authorized projection**, not direct access to underlying learning records.
+
+The architecture must therefore support:
+- selecting which state/evidence is visible;
+- applying relationship and consent/policy rules;
+- preventing accidental exposure of restricted teacher/internal information;
+- preserving the authoritative source independently of the parent projection.
+
+Exact age, guardian, consent, country and exceptional-access rules remain Security/Product decisions.
+
+### Authorization failure semantics
+
+Protected commands must distinguish at least:
+- unauthenticated;
+- authenticated but unauthorized;
+- wrong tenant/context;
+- relationship exists but does not authorize requested action;
+- resource no longer accessible because authorization scope changed;
+- semantic conflict after authorization succeeds.
+
+Authorization failure must not mutate authoritative state.
+
+### Historical access vs current authority
+
+Ending or changing a relationship must not rewrite historical attribution.
+
+For example, a teacher who previously assessed a learner remains the attributable actor of that historical assessment, while future commands are evaluated against the teacher's current authority.
+
+### Architectural invariant
+
+No module may infer authorization solely from:
+- role;
+- relationship;
+- tenant membership;
+- possession of an identifier;
+- visibility of a UI element.
+
+The authoritative command path must evaluate the applicable authorization boundary.
+
+### Candidate dependency direction
+
+**Identity → Role/Organization Context → Authorization Policy → Domain Command**
+
+Domain modules may request authorization decisions through the authorization boundary but must not duplicate incompatible authorization rules.
+
+Authorization should not become the owner of learning, assessment, evidence or commerce state.
+
+### Security review blockers remaining
+
+The following remain explicitly open for Security/Product confirmation:
+- exact tenant isolation mechanism;
+- permission model and policy vocabulary;
+- relationship lifecycle and delegation;
+- parent/guardian consent model;
+- age/country-specific visibility rules;
+- privileged support/admin access;
+- audit requirements for sensitive reads and mutations;
+- data retention/deletion requirements.
+
+No final security policy or implementation is implied by this architecture candidate.
