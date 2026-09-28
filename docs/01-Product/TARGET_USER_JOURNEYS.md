@@ -2,7 +2,7 @@
 
 Date: 2026-09-25
 Status: Planning Artifact — PROPOSED
-Gate: Product Foundation / Competitive Intelligence — NOT PROVEN
+Gate: Product Foundation — NOT PROVEN
 Implementation authorization: None
 
 ## Purpose
@@ -164,7 +164,7 @@ This is a candidate differentiator and remains **NOT PROVEN**.
 
 **Signal → Evidence → Interpretation → Human Decision → Action Owner → Intervention → Communication → Follow-up → New Evidence → Close/Escalate**
 
-The journey is only worth making a first-class product workflow if direct research shows recurring material friction.
+The journey remains a differentiation hypothesis. It should become a first-class product workflow only when product/market evidence shows that the coordination problem is material enough to justify the added complexity.
 
 ---
 
@@ -181,16 +181,19 @@ The journey is only worth making a first-class product workflow if direct resear
 9. The same learning story should survive movement across learning modes.
 10. No role should be forced to understand platform internals.
 
-## Validation Needed
+## Decision Validation Boundary
 
-Before converting these journeys into committed requirements:
+These journeys are now allowed to guide normal market-led product design without requiring a participant sample.
 
-- real recent cases,
-- initial segment selection,
-- role-specific frequency/cost,
-- current workaround reconstruction,
-- privacy/consent boundaries,
-- outcome evidence,
-- failure/recovery evidence.
+Targeted real-world validation remains useful when a decision has material unresolved uncertainty, especially around:
+
+- privacy/consent boundaries;
+- workflow frequency or operational cost;
+- failure/recovery behavior;
+- outcome evidence;
+- a proposed differentiation claim;
+- high-impact AI or automation behavior.
+
+Competitor capability, absence of a feature, or a design hypothesis must not be presented as proof of user demand. Unknown high-impact assumptions remain explicitly OPEN/NOT PROVEN until resolved.
 
 No code is authorized by this document.
