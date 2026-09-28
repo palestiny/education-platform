@@ -438,3 +438,44 @@ The platform will combine established market capabilities, solve operational and
 ### Guardrail
 
 Do not invent user research. Do not invent market gaps. Do not treat competitor absence as proof of user demand. But also do not stop the project merely because direct cases are unavailable.
+
+
+## Checkpoint 016 — Unified Platform Capability Map
+
+Date: 2026-09-28
+
+### Completed
+- Added `docs/01-Product/PLATFORM_CAPABILITY_MAP.md`.
+- Consolidated the platform into one capability model spanning Core Platform, Student, Parent, Teacher/TA, Center/School, Communication, Evidence/Analytics, AI, Commerce, and Scale/Ecosystem.
+- Separated market parity from quality requirements, differentiation hypotheses, later capabilities, and unresolved decisions.
+- Mapped the main cross-role product gaps: fragmentation, context loss, data-to-action gaps, follow-up gaps, handoff friction, complexity leakage, AI without product context, and reliability/recovery.
+- Re-aligned the research boundary so targeted direct validation is optional rather than a blocker for conventional product planning.
+- Updated the pre-research audit and field-execution handoff to remove the outdated implication that participant cases block the normal product path.
+
+### Current Gate
+Product Foundation — **NOT PROVEN**
+
+### Current State
+- Unified platform model: **PROPOSED**
+- Capability map: **PROPOSED**
+- Market capability baseline: **ESTABLISHED FOR PLANNING**
+- Direct cases: **0 — NOT A BLOCKER**
+- Initial commercial beachhead: **OPEN**
+- Exact MVP: **OPEN**
+- Requirements: **PROPOSED / OPEN / CONDITIONAL by capability**
+- Domain: **NOT PROVEN**
+- Architecture: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Product Principle
+Do not build separate disconnected products for each role. Build one platform with role-specific experiences over shared context, evidence, permissions, workflows, and state.
+
+### Next Work
+1. Turn the capability map into the coherent Core Product Journey.
+2. Define the first release boundary from the unified platform model without freezing every advanced capability into MVP.
+3. Resolve the minimum evidence/progress semantics.
+4. Refine requirements and remove contradictions caused by the older research-first framing.
+5. Then enter Domain → UX → Architecture → Security → Data → API gates.
+
+### Guardrail
+Targeted real-world validation remains available for material uncertainty or differentiation, but the project continues on the market-led product path without waiting for a participant sample.
