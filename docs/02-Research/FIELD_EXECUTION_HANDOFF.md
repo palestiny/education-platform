@@ -19,36 +19,17 @@ The repository already contains the protocol, case-record template, recruitment/
 
 ## What Counts as Progress Now
 
-A meaningful state change requires a real recent educational case from an actual participant.
+Because the project is market-led, progress is not defined by collecting participant cases.
 
-The case may be captured through:
-- a completed research session;
-- a permitted artifact review;
-- a participant's contemporaneous rough notes;
-- Fast Capture Mode followed by later reconstruction.
+Meaningful progress may come from:
+- current competitor/product capability evidence;
+- capability-gap synthesis;
+- coherent cross-role product journeys;
+- explicit product decisions;
+- requirements/domain/UX preparation;
+- targeted validation where a material uncertainty remains.
 
-A full interview transcript is not required for initial capture.
-
-## Minimum Case Evidence
-
-1. Segment/context and roles.
-2. Trigger.
-3. Actual evidence or observed event.
-4. Interpretation and uncertainty.
-5. Decision owner.
-6. Action owner.
-7. Action/intervention.
-8. Communication or context handoff.
-9. Due state and follow-up.
-10. Outcome evidence.
-11. Closure or unresolved state.
-12. Existing workaround/tools.
-13. Cost/friction.
-14. Failure/recovery.
-15. Privacy/consent/visibility.
-16. AI/automation involvement and human approval.
-17. Contradictions.
-18. Unknowns.
+Direct cases may still be captured when they answer a concrete unresolved product question, but a participant cohort, statistical sample, or full interview program is not required for conventional product development.
 
 ## Evidence Integrity
 
@@ -60,28 +41,24 @@ A full interview transcript is not required for initial capture.
 - No unnecessary PII, credentials, private keys, or account access.
 - A case does not automatically become a requirement.
 
-## Collection Sequence
+## Optional Targeted Validation Sequence
+
+When a material uncertainty requires direct validation:
 
 ### Phase A — Capture
-Record the real case with the minimum evidence above.
+Record a real recent case using the minimum evidence needed for the decision.
 
 ### Phase B — Normalize
-Assign a case ID, remove unnecessary identifiers, classify evidence, and preserve unknowns.
+Preserve source class, uncertainty, context, and relevant unknowns.
 
 ### Phase C — Compare
-Collect comparable cases and actively seek contradictory cases.
+Seek contradictory evidence when the decision could materially change.
 
 ### Phase D — Synthesize
-Evaluate recurrence, material friction/cost, fragmentation, ownership, follow-up, closure, outcome evidence, workaround effectiveness, failure/recovery, privacy/consent, human accountability, and segment fit.
+Translate evidence into a bounded product decision or keep the hypothesis OPEN.
 
 ### Phase E — Gate
-Review the Product Foundation Gate as:
-- PASS
-- GAP
-- NOT PROVEN
-- REJECT/PIVOT
-
-No numeric score or overall ranking is required.
+Update only the affected product decision/gap/checkpoint.
 
 ## Anti-Churn Rule
 
@@ -93,25 +70,18 @@ Additional public research is allowed only when it answers a concrete research q
 
 Current:
 
-Research Preparation -> FIELD EXECUTION
+**Market/Competitor Baseline → Product Capability Synthesis**
 
 Target:
 
-Real Cases -> Cross-Case Evidence -> Product Foundation Decision
+**Unified Product Model → Requirements → Domain → UX → Architecture**
 
-Only after a Product Foundation decision should downstream requirements, domain, UX, architecture, and implementation work be promoted.
+Targeted validation runs in parallel only where it has decision value.
 
 ## Research Boundary Update
 
 Direct participant cases remain valuable for novel, uncertain, segment-specific, materially different, high-impact, or prevalence/severity/cost hypotheses.
 
-They are **not** a prerequisite for conventional competitive-parity planning.
+They are **not** a prerequisite for conventional competitive-parity planning or for continuing the product workflow.
 
-Therefore the project may continue:
-- global feature benchmarking;
-- conventional requirements drafting;
-- parity backlog refinement;
-
-while direct cases remain at zero.
-
-Issue #1 remains a targeted validation track for the intervention/differentiation hypothesis rather than a blocker for all standard feature planning.
+The current platform direction is unified and market-led. The repository should not accumulate research-process documents as a substitute for product decisions.
