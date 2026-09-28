@@ -560,3 +560,48 @@ No schema, API, aggregate, bounded context, technology choice, or implementation
 
 ### Next Gate Work
 **First Product Slice → Minimum Domain Decisions → Domain Confirmation → UX/Architecture/Security/Data/API gates**
+
+
+## Checkpoint 019 — First Product Slice Proposal
+
+Date: 2026-09-28
+
+### Completed
+- Added `docs/01-Product/FIRST_PRODUCT_SLICE_DECISION.md`.
+- Compared four coherent slice shapes: student self-learning, teacher-led learning, managed center/school, and full cross-role.
+- Proposed the **Teacher-Led Learning Loop** as the first product slice.
+- Kept Parent as a controlled projection rather than a mandatory workflow owner.
+- Kept organization operations, payments, attendance, marketplace, white-label, broad autonomous AI and other scale capabilities outside the first slice by default.
+- Connected the slice proposal to the requirements/domain-readiness delta.
+
+### Proposed First Slice
+**Student + Teacher:** Goal/Assignment → Learn/Practice → Assess → Evidence → Teacher Decision → Student Next Action → Follow-up → New Evidence → Outcome.
+
+**Parent:** permitted visibility projection when the relationship and policy allow it.
+
+**Organization:** contextual boundary only where needed; operational management remains outside first slice by default.
+
+### Current Gate
+- Product Foundation: **NOT PROVEN**
+- Requirements Consolidation: **COMPLETE FOR CURRENT PRODUCT MODEL**
+- First Product Slice: **PROPOSED**
+- Domain Readiness: **IMPROVED / NOT PROVEN**
+- UX: **NOT PROVEN**
+- Architecture: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Minimum Remaining Domain Decisions
+1. Goal/assignment semantics.
+2. Minimum learning mode(s).
+3. Evidence schema/provenance and correction/conflict rules.
+4. Progress representation and calculation boundary.
+5. Student-teacher relationship/authorization semantics.
+6. Parent visibility/consent details.
+7. Outcome semantics.
+8. Durable vs derived learner state.
+
+### Guardrail
+The proposed slice is a product recommendation, not an implementation authorization or irreversible commercial decision. New market/business evidence can change it.
+
+### Next Gate Work
+**Review First Slice → Minimum Domain Decisions → Domain Confirmation → UX → Architecture → Security → Data → API**
