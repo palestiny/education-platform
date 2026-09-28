@@ -515,3 +515,48 @@ Product Foundation — **NOT PROVEN**
 
 ### Guardrail
 No database schema, API contract, aggregate, bounded context, technology choice, or implementation should be treated as approved merely because the operating model exists.
+
+
+## Checkpoint 018 — Requirements Consolidation & Domain Readiness Delta
+
+Date: 2026-09-28
+
+### Completed
+- Consolidated PRODUCT_REQUIREMENTS_MAP.md against the Product Operating Model.
+- Explicitly aligned requirements with Context, Goal, Learning Action, Evidence, Interpretation, Progress State, Recommendation, Decision, Follow-up and Outcome.
+- Removed the implication that participant cases are required for ordinary parity/product planning.
+- Updated DOMAIN_MAP.md to use the semantic backbone and replaced the old validated-segment prerequisite with the first committed product/commercial slice.
+- Updated DOMAIN_READINESS_CHECKPOINT.md to reflect the market-led product path.
+- Added docs/03-Requirements/REQUIREMENTS_CONSOLIDATION_AND_DOMAIN_READINESS_DELTA.md.
+
+### Current Gate
+- Requirements Consolidation: **COMPLETE FOR CURRENT PRODUCT MODEL**
+- Domain Readiness: **IMPROVED / NOT PROVEN**
+- Product Foundation: **NOT PROVEN**
+- UX: **NOT PROVEN**
+- Architecture: **NOT PROVEN**
+- Implementation: **NOT AUTHORIZED**
+
+### Stable Domain Semantics
+- Evidence is attributable evidence, not a generic event bus.
+- Interpretation is distinct from evidence.
+- Progress is distinct from activity and remains evidence-traceable.
+- Recommendation is distinct from authorized Decision.
+- Communication and dashboards are not authoritative learning state.
+- Follow-up does not imply Intervention Case.
+- Outcome is distinct from activity completion and may remain uncertain.
+
+### Remaining Minimum Product Decisions
+1. First coherent product/commercial journey slice.
+2. Participating roles and relationship boundaries.
+3. Minimum learning modes.
+4. Minimum evidence/progress semantics.
+5. Visibility/consent boundary.
+6. Whether organization/tenant and commerce are inside the first slice.
+7. Any high-impact assumption requiring targeted validation.
+
+### Guardrail
+No schema, API, aggregate, bounded context, technology choice, or implementation is approved by this checkpoint.
+
+### Next Gate Work
+**First Product Slice → Minimum Domain Decisions → Domain Confirmation → UX/Architecture/Security/Data/API gates**
