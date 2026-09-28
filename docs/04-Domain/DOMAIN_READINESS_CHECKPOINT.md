@@ -1,12 +1,12 @@
 # Domain Readiness & Requirement Dependency Checkpoint
 
 **Status:** Domain Preparation Checkpoint — NOT PROVEN  
-**Date:** 2026-09-26  
+**Date:** 2026-09-28  
 **Implementation authorization:** None
 
 ## Purpose
 
-Reconcile the requirements review with the segment-dependency analysis before the Domain Gate.
+Reconcile the consolidated requirements with the Product Operating Model and identify the minimum domain decisions required for the first committed product slice.
 
 The goal is to prevent:
 1. turning candidate requirements into hidden commitments;
@@ -19,7 +19,7 @@ The goal is to prevent:
 |---|---|---|---|
 | Identity / roles | High | Low | Candidate foundation |
 | Permissions / authorization | High | Medium | Candidate foundation |
-| Relationships | Medium | High | Requires selected segment |
+| Relationships | Medium | Medium/High | Policy and first-slice dependent |
 | Organization / tenant | Medium | High | Conditional |
 | Learning context | Medium | High | Candidate; exact ownership open |
 | Learning experience | High | Medium | Candidate foundation |
@@ -29,11 +29,11 @@ The goal is to prevent:
 | Evidence | Medium | Medium | Candidate; semantics still need definition |
 | Evidence quality / provenance | Medium | Medium | Candidate; rules open |
 | Learner state / progress | Medium | Medium | Candidate; durable-vs-derived state open |
-| Teacher decision/action workflow | Medium | High | Candidate; direct cases required |
+| Teacher decision/action workflow | Medium | Medium/High | Candidate; workflow semantics defined, exact scope open |
 | Parent visibility | Low/Medium | High | Conditional |
 | Communication | High | Medium/High | Candidate foundation |
 | Notification | High | Medium | Candidate foundation |
-| Follow-up / work item | Medium | High | Candidate; lifecycle needs validation |
+| Follow-up / work item | Medium | Medium | Candidate; lifecycle and closure authority open |
 | Intervention case | Low | High | NOT PROVEN; do not model yet |
 | Recommendation engine | Low | High | NOT PROVEN; keep recommendation as behavior/concept, not domain |
 | Payment | Medium | High | Conditional |
@@ -127,11 +127,12 @@ Must wait for stronger evidence:
 
 ## Domain Gate checklist
 
-### Evidence
-- [ ] Initial segment selected from direct evidence
-- [ ] Real cases reconstructed
-- [ ] Contradictions reviewed
-- [ ] Evidence quality understood
+### Product / Evidence
+- [ ] First committed product/commercial boundary defined
+- [ ] Coherent first journey slice defined
+- [ ] Market baseline and requirement traceability reviewed
+- [ ] Evidence quality/provenance semantics understood
+- [ ] Targeted direct validation completed where a material uncertainty requires it
 
 ### Ownership
 - [ ] Learner context owner defined
@@ -165,8 +166,10 @@ Must wait for stronger evidence:
 
 This checkpoint reduces ambiguity but does not create evidence that is not available.
 
-The correct sequence remains:
+The current sequence is:
 
-**Direct cases → Segment decision → Requirements commitment → Domain confirmation → Architecture Gate → Implementation.**
+**Product boundary → Requirements consolidation → Domain readiness → Domain confirmation → UX/Architecture/Security/Data/API gates → Implementation.**
+
+Targeted direct cases are optional evidence for material uncertainty; they are not a prerequisite for ordinary parity/product planning.
 
 No architecture or implementation decision is authorized by this document.
