@@ -15,6 +15,25 @@ Translate the reviewed requirements into candidate domain concepts without prema
 - SCENARIO-DERIVED: necessary to express the current target scenario but not yet directly validated.
 - OPEN: materially depends on segment or unresolved product evidence.
 
+## Semantic Backbone from Product Operating Model
+
+The current product semantics that the domain must be able to represent are:
+
+**Context → Goal → Learning Action → Evidence → Interpretation → Progress State → Recommendation → Decision → Follow-up → Outcome**
+
+These are semantic concepts, not automatically separate entities, aggregates, tables, or bounded contexts. Domain design must preserve the distinctions even when implementation later combines or derives them.
+
+### Source-of-truth constraints
+
+- Evidence records attributable observations/submissions; it is not a generic event bus.
+- Interpretation explains evidence and may be derived or persisted according to later business value/audit needs.
+- Progress is traceable to evidence and context; exact calculation remains open.
+- Recommendation proposes; Decision is an authorized commitment.
+- Communication carries context but does not own authoritative learning/commerce state.
+- Follow-up tracks remaining work; it is not automatically an Intervention Case.
+- Outcome represents result, including uncertainty; it is not equivalent to activity completion.
+- Dashboards are projections, not lifecycle owners.
+
 ## Candidate Concept Map
 
 | Concept | Classification | Candidate responsibility | Current confidence |
@@ -28,18 +47,18 @@ Translate the reviewed requirements into candidate domain concepts without prema
 | Learning Content | EVIDENCE-BACKED | Reusable learning material and delivery metadata | High |
 | Assignment / Practice | EVIDENCE-BACKED | Assigned work and practice activity | High |
 | Assessment | EVIDENCE-BACKED | Attempts, questions, submissions and assessment results | High |
-| Evidence | SCENARIO-DERIVED | Time/context/source-bound learning evidence | Medium |
-| Learner State / Progress | SCENARIO-DERIVED | Evidence-derived learner state and progress views | Medium |
+| Evidence | SCENARIO-DERIVED | Attributable evidence with source/context/time/provenance/quality | Medium |
+| Learner State / Progress | SCENARIO-DERIVED | Evidence- and goal-relative learner state/progress | Medium |
 | Communication | EVIDENCE-BACKED | Contextual messages and role handoffs | High |
 | Notification | EVIDENCE-BACKED | User notification lifecycle and delivery state | High |
 | Follow-up / Work Item | SCENARIO-DERIVED | Ownership, due state and completion of asynchronous work | Medium |
 | Payment | EVIDENCE-BACKED | Paid transaction lifecycle where applicable | High |
 | Audit | EVIDENCE-BACKED | Traceability of important state-changing actions | High |
-| AI Assistance | SCENARIO-DERIVED | Bounded AI-assisted workflows with human accountability | Medium |
-| Intervention Case | OPEN | Cross-role intervention lifecycle | Low |
-| Recommendation | OPEN | Evidence-based next-action recommendations | Low |
+| Decision | SCENARIO-DERIVED | Authorized commitment/action or state change | Medium |
+| Interpretation | SCENARIO-DERIVED | Meaning assigned to evidence; human/system/AI-assisted | Medium |
+| Recommendation | OPEN | Proposed next useful action; not authoritative state | Low |
 | Marketplace | OPEN | Multi-party discovery/commerce | Low |
-| Social / Community | OPEN | Peer/community interaction | Low |
+| Follow-up / Work Item | SCENARIO-DERIVED | Remaining work, ownership and due state | Medium |
 
 ## Candidate Ownership Boundaries
 
@@ -103,9 +122,9 @@ No aggregate is approved yet. Domain Gate must answer:
 - Which state transitions require transactions?
 - Which external events require idempotency?
 
-## Segment-Dependent Branches
+## Product-Boundary-Dependent Branches
 
-The following must remain conditional until the beachhead is selected:
+The following remain conditional until the first committed product slice/commercial boundary is selected:
 
 - Parent domain/relationship behavior
 - Organization/branch management
@@ -116,7 +135,9 @@ The following must remain conditional until the beachhead is selected:
 - Live learning
 - Intervention Case
 - AI assistance
+- Intervention Case
 - Marketplace
+- Social / Community
 - White-label
 
 ## Domain Risks
@@ -133,18 +154,18 @@ The following must remain conditional until the beachhead is selected:
 
 Before Architecture Gate:
 
-1. What is the validated initial segment?
-2. Which roles actually participate in the first workflow?
+1. What is the first committed product/commercial boundary and coherent journey slice?
+2. Which roles and relationships actually participate in that slice?
 3. Which domain owns learner context?
 4. What is authoritative evidence for each first workflow?
-5. What state must be durable?
-6. What state can be derived?
-7. What is the required consistency level?
-8. What privacy/consent boundary applies to each role?
-9. Which capabilities are inside the first transaction?
-10. Which concepts should be modular boundaries versus internal models?
-11. Which external providers are allowed to be failure-prone dependencies?
-12. What observability and audit guarantees are required?
+5. What state must be durable and what state can be derived?
+6. What is the required consistency level for evidence-to-state transitions?
+7. What privacy/consent boundary applies to each role and relationship?
+8. Which capabilities are inside the first transaction?
+9. Which concepts should be modular boundaries versus internal models?
+10. Which external providers are allowed to be failure-prone dependencies?
+11. What observability and audit guarantees are required?
+12. Which open semantics can remain configurable/derived without blocking the first slice?
 
 ## Current Decision
 
@@ -152,4 +173,4 @@ Before Architecture Gate:
 
 This document authorizes only further domain analysis. It does not approve bounded contexts, aggregates, database schemas, APIs, technology choices, or implementation.
 
-Next step: produce Architecture Gate inputs after segment and requirement decisions are sufficiently resolved.
+Next step: produce the Domain Readiness Delta after requirements consolidation, then resolve only the domain decisions required by the first committed product slice.
