@@ -579,3 +579,82 @@ Next:
 3. review the first-slice architecture boundary and consistency matrix;
 4. close tenancy, authorization, security and provider-boundary decisions that materially affect architecture;
 5. record the final architecture decision as an ADR only after explicit review.
+
+
+## Architecture Review Candidate — Post Domain/UX Review
+
+**Date:** 2026-09-28  
+**Status:** READY FOR EXPLICIT ARCHITECTURE REVIEW — NOT PROVEN  
+**Implementation authorization:** None
+
+The Domain and UX review candidates are now explicit enough to test whether the proposed architecture is internally coherent. This review does not accept the domain contract, UX model, or architecture recommendation.
+
+### Readiness matrix
+
+| Architecture concern | Current state | Gate impact |
+|---|---|---|
+| First-slice state chain | PROPOSED and internally coherent | Must be confirmed before Architecture PASS |
+| Module ownership | PROPOSED | Must be confirmed before implementation |
+| Dependency direction | PROPOSED | Must be confirmed |
+| Authoritative vs derived state | PROPOSED | Must be resolved before Data/API PASS |
+| Idempotency | PROPOSED for critical mutations | Must be reflected in API/Data contracts |
+| Concurrency/conflict handling | PROPOSED | Must be reflected in domain/API behavior |
+| Evidence versioning/correction | PROPOSED | Must be reflected in Data/API contracts |
+| Tenant isolation | OPEN | Architecture-impacting decision |
+| Relationship/authorization contract | OPEN | Architecture/Security blocker |
+| Parent visibility policy | OPEN | Security/Data blocker |
+| Security/privacy baseline | OPEN | Downstream Security Gate; architecture constraints required |
+| External provider isolation | PROPOSED | Must be confirmed before provider-dependent implementation |
+| Observability baseline | PROPOSED | Must be confirmed before implementation/release |
+| Deployment topology | OPEN | Can remain deferred if first-slice operational assumptions are explicit |
+| Technology stack | OPEN | Not yet required for architecture commitment |
+| Final ADR | OPEN | Required for Architecture Gate PASS |
+
+### Review findings
+
+1. **No internal architectural contradiction is currently identified** between the proposed first-slice state chain and the candidate modular boundary map.
+2. The strongest architectural pressure is around **authorization, tenancy/isolation, evidence correction/versioning, and authoritative-vs-derived state**. These should be closed before implementation rather than hidden inside code.
+3. The first slice does not currently require independently deployable services merely because the future platform may become large. Scale remains an input to later extraction decisions.
+4. External providers should remain replaceable dependencies. Provider-specific state must not become the learning domain's source of truth.
+5. Progress, dashboards, notifications and search should remain recoverable projections where their derived nature is accepted; authoritative learning records must remain durable.
+6. Architecture should preserve explicit human accountability for Teacher Decision and should not let AI Assistance become a mandatory dependency for the core learning-state transition.
+7. The remaining architecture blockers are primarily **decision-closure blockers**, not missing implementation artifacts.
+
+### Architecture review decision boundary
+
+The following may be confirmed during Architecture Review:
+
+- modular boundary and dependency direction;
+- local consistency boundary for the first slice;
+- idempotency/concurrency/reconciliation policy;
+- provider isolation;
+- observability baseline;
+- whether tenancy is solved now or explicitly deferred as a reversible architecture phase.
+
+The following must **not** be silently decided during Architecture Review:
+
+- exact database tables/schema;
+- final REST/GraphQL endpoints;
+- exact cloud/provider selection;
+- final privacy/consent policy;
+- detailed UI/navigation;
+- implementation details.
+
+### Candidate architecture conclusion
+
+**Current recommendation remains:** Modular Monolith with explicit module contracts and isolated external integrations.
+
+This remains **PROPOSED**. It is supported by the current first-slice consistency needs and the still-evolving domain semantics, but it becomes an accepted architecture only through an explicit Architecture Gate decision and ADR.
+
+### Immediate next gate sequence
+
+1. Explicit Domain Confirmation.
+2. Explicit UX Confirmation.
+3. Architecture Review and closure of architecture-impacting decisions.
+4. Security Gate.
+5. Data Gate.
+6. API Contract Gate.
+7. Architecture ADR / Architecture Gate PASS decision.
+8. Implementation Gate.
+
+Until these are closed, implementation remains unauthorized.
