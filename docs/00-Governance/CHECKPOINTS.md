@@ -712,3 +712,43 @@ These are explicit design proposals, not hidden commitments. No schema, API, agg
 
 **Domain Confirmation → UX Gate → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
 
+
+## Checkpoint 022 — First-Slice Domain Transition Invariants
+
+**Date:** 2026-09-28  
+**Stage:** Domain Confirmation Preparation  
+**Status:** READY FOR DOMAIN CONFIRMATION — NOT PROVEN  
+**Implementation authorization:** None
+
+### Completed
+
+- Added explicit preconditions and authoritative results for the first-slice state transitions.
+- Defined failure/conflict behavior for assignment, submission, assessment result, evidence, teacher decision, next action, follow-up, outcome, and evidence correction.
+- Established cross-transition invariants for authorization, idempotency, external delivery failure, rebuildable derived state, evidence lineage, concurrency, attribution, and parent projection.
+- Registered the domain contract candidate as DEC-0011.
+
+### Current boundary
+
+The domain model is now sufficiently explicit to enter **Domain Confirmation Review** without designing the database, APIs, bounded contexts, or implementation.
+
+### Gate status
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Readiness | IMPROVED |
+| Domain Confirmation | **READY FOR REVIEW — NOT PROVEN** |
+| UX | NOT PROVEN |
+| Architecture | NOT PROVEN |
+| Security | NOT PROVEN |
+| Data | NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Next
+
+Domain Confirmation Review → UX Gate → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate
+
+No implementation should start until the domain contract is accepted and the downstream gates are satisfied.
