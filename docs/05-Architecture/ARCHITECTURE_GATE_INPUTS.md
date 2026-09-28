@@ -876,3 +876,193 @@ The following remain explicitly open for Security/Product confirmation:
 - data retention/deletion requirements.
 
 No final security policy or implementation is implied by this architecture candidate.
+
+
+## Data-Impacting Architecture Review — Authoritative State, Evidence and Recovery
+
+**Date:** 2026-09-28  
+**Status:** READY FOR DATA/DOMAIN REVIEW — NOT PROVEN  
+**Implementation authorization:** None
+
+This review closes the architectural implications of data semantics without selecting database technology, tables, indexes, schemas, ORM mappings or API shapes.
+
+### 1. Authoritative durable facts vs derived state
+
+The first slice should distinguish **durable business facts** from **derived/read-optimized state**.
+
+Candidate authoritative records:
+- learning context and applicable authorization context;
+- goals and assignments;
+- learner submissions/attempts;
+- assessment definitions, attempts and assessment results;
+- attributable evidence and its lineage;
+- accountable teacher decisions;
+- explicit next-action commitments where they are business state;
+- follow-up work items and their lifecycle;
+- outcomes and their attribution;
+- required audit records.
+
+Candidate derived/rebuildable state:
+- learner progress summaries;
+- dashboards;
+- attention/priority views;
+- recommendation candidates;
+- notification delivery projections;
+- search indexes;
+- analytics aggregates;
+- convenience counters and cached summaries.
+
+**Invariant:** a derived projection may be stale or unavailable temporarily, but its failure must not corrupt authoritative learning state.
+
+### 2. Evidence is first-class and history-preserving
+
+Evidence must not behave like a mutable status field.
+
+Each accepted evidence record should preserve, at minimum, enough information to establish:
+- source;
+- actor/system;
+- learner and learning context;
+- originating action/assessment when applicable;
+- observation time;
+- provenance;
+- quality/uncertainty;
+- visibility classification;
+- version/supersession lineage.
+
+A correction must preserve the prior record and create an attributable correction/superseding version. The system must be able to distinguish:
+- original evidence;
+- corrected evidence;
+- superseded evidence;
+- conflicting evidence;
+- insufficient evidence.
+
+**Invariant:** correction changes the current interpretation of evidence without silently erasing historical provenance.
+
+### 3. Assessment Result vs Evidence
+
+Assessment owns assessment semantics: definition, attempt and result.
+
+Evidence owns attributable observations and provenance.
+
+An assessment result may produce or contribute evidence, but not every evidence record is an assessment result.
+
+This separation prevents assessment storage from becoming the universal learning-history model and preserves room for teacher observation, learner self-report, attendance-related evidence and other evidence sources without conflating them.
+
+### 4. Outcome authority and durability
+
+Outcome is a durable business fact only when an authorized actor/system has sufficient basis to declare it.
+
+Outcome must remain distinct from:
+- assignment completion;
+- submission existence;
+- assessment score;
+- progress percentage;
+- follow-up closure.
+
+The architecture must support outcome correction/versioning and attribution without rewriting the evidence that supported the original outcome.
+
+The exact authority rules remain a Domain/Product decision.
+
+### 5. Learner State and progress
+
+Learner State/Progress should be treated as a derived projection in the first slice unless a later explicit domain decision proves that a specific learner-state fact must itself be authoritative.
+
+Progress calculations must be traceable to authoritative evidence/context and rebuildable.
+
+Teacher override, where permitted, must be represented as an attributable business decision or interpretation; it must not overwrite or delete the underlying evidence.
+
+**Invariant:** progress is not the source of truth for the evidence from which it was derived.
+
+### 6. Concurrency and semantic conflicts
+
+The first slice must not rely on implicit last-write-wins for semantically accountable mutations.
+
+Concurrency controls should distinguish:
+- stale client state;
+- concurrent teacher decisions;
+- concurrent evidence corrections;
+- authorization scope changes during a command;
+- duplicate retries.
+
+A semantic conflict should remain explicit and recoverable rather than silently selecting one mutation.
+
+Exact version/token mechanics remain an API/Data implementation concern.
+
+### 7. Idempotency semantics
+
+Retriable authoritative commands must have deterministic duplicate behavior.
+
+At minimum:
+- assignment creation;
+- learner submission/attempt creation;
+- assessment-result ingestion;
+- evidence recording;
+- teacher decision;
+- follow-up creation.
+
+A duplicate retry for the same command intent should return/reuse the established business result rather than create a second business fact.
+
+Idempotency identity must be scoped to the relevant actor/context/command semantics and must not be confused with a business entity identifier.
+
+### 8. Local atomicity and outbox
+
+Where an authoritative mutation requires reliable asynchronous publication, the authoritative state change and the local publication intent should commit atomically within the local transaction boundary.
+
+External delivery is outside that transaction.
+
+Therefore:
+**Authoritative State → Local Outbox/Intent → External/Asynchronous Effect → Provider/Projection State → Reconciliation**
+
+The outbox is a reliability pattern candidate, not a technology commitment.
+
+### 9. Projection recovery and reconciliation
+
+Every derived projection with business visibility must have a defined recovery path.
+
+Recovery should:
+- rebuild from authoritative records;
+- be safe to repeat;
+- tolerate duplicate delivery;
+- preserve evidence lineage;
+- avoid rewriting authoritative history;
+- expose degraded/stale state where necessary.
+
+External-provider reconciliation follows the same principle: reconcile provider state against the platform's authoritative record rather than allowing provider state to silently redefine business truth.
+
+### 10. Retention, deletion and sensitive data
+
+Data retention, deletion, legal holds, child/minor safeguards, sensitive-data classification and tenant-specific lifecycle rules remain Security/Data decisions.
+
+Architecture must nevertheless preserve enough lineage and ownership information to implement those policies later without requiring a redesign of the core semantic model.
+
+### Data-impacting architecture decision matrix
+
+| Concern | Proposed direction | Status |
+|---|---|---|
+| Authoritative business facts | Durable, attributable records | PROPOSED |
+| Derived learner progress | Rebuildable projection | PROPOSED |
+| Evidence correction | Version/supersession lineage | PROPOSED |
+| Conflicting evidence | Explicitly representable | PROPOSED |
+| Assessment Result | Owned by Assessment | PROPOSED |
+| Evidence | First-class provenance-bearing capability | PROPOSED |
+| Outcome | Durable, attributable when authorized | PROPOSED |
+| Teacher override | Explicit decision/interpretation; never erase evidence | PROPOSED |
+| Concurrency | Explicit conflict handling | PROPOSED |
+| Retriable commands | Idempotent | PROPOSED |
+| Async publication | Local atomic intent/outbox where required | PROPOSED |
+| Projection recovery | Rebuild/reconcile from authoritative state | PROPOSED |
+| Retention/deletion | Security/Data policy | OPEN |
+
+### Data review blockers
+
+Before Data Gate PASS, the following still require explicit closure:
+- exact authoritative fields/facts for the first slice;
+- evidence taxonomy and minimum storage model;
+- version/supersession representation;
+- learner-state materialization/rebuild policy;
+- exact concurrency/version semantics;
+- retention/deletion policy;
+- tenant data isolation implementation;
+- data classification and sensitive-read rules.
+
+No database schema or persistence implementation is authorized by this review.
