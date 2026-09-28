@@ -530,3 +530,41 @@ The current sequence is:
 Targeted direct cases are optional evidence for material uncertainty; they are not a prerequisite for ordinary parity/product planning.
 
 No architecture or implementation decision is authorized by this document.
+
+
+## Domain Confirmation Review Candidate — 2026-09-28
+
+This section records the internal review state before Product Owner confirmation. It does not convert proposals into accepted decisions.
+
+### Review disposition
+
+| Domain contract area | Review result | Gate impact |
+|---|---|---|
+| First-slice boundary | Coherent and internally consistent | Ready for confirmation |
+| Goal vs Assignment | Sufficiently separated | Ready for confirmation |
+| Minimum learning mode | Bounded to asynchronous teacher-led activity | Ready for confirmation |
+| Evidence provenance/correction/conflict | Direction defined; taxonomy/storage still open | Confirm boundary, defer implementation detail |
+| Progress | Explainable/evidence-derived; algorithm intentionally open | Ready for confirmation |
+| Teacher authorization | Contextual and time-bounded | Security confirmation still required |
+| Parent projection | Controlled projection, not source of truth | Security/privacy confirmation required |
+| Outcome | Distinct from completion and evidence | Authority rule needs confirmation |
+| Durable vs derived state | Recovery model defined | Data/architecture confirmation required |
+| Atomicity/idempotency | First-slice transitions identified | API/data confirmation required |
+| Reconciliation | Derived/external state repair without rewriting history | Architecture confirmation required |
+
+### Remaining confirmation decisions
+
+1. Accept the first-slice state chain as the product/domain boundary.
+2. Accept Goal and Assignment as distinct concepts.
+3. Accept the minimum asynchronous learning mode for the first slice.
+4. Accept evidence provenance, versioning, and conflict principles.
+5. Accept evidence-derived progress without freezing a universal mastery algorithm.
+6. Accept contextual teacher authorization and separate parent projection policy.
+7. Confirm who may declare/correct an Outcome.
+8. Confirm which unresolved ambiguities are intentionally deferred to Security/Data/API gates.
+
+### Review conclusion
+
+**Domain Gate: READY FOR PRODUCT-OWNER CONFIRMATION — NOT PROVEN**
+
+No domain proposal in this review authorizes database schema, API contract, bounded-context finalization, or implementation.
