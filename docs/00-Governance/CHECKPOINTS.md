@@ -908,3 +908,35 @@ Direct participant cases remain **0**, but they are not a blocker for normal mar
 **Domain Confirmation Review → UX Confirmation → Architecture Review → Security/Data/API Gates → Implementation Gate**
 
 No code is authorized by this checkpoint.
+
+
+## Checkpoint 026 — Domain + UX Confirmation Review Candidate
+
+**Date:** 2026-09-28  
+**Stage:** Domain Confirmation + UX Confirmation Review  
+**Status:** READY FOR EXPLICIT CONFIRMATION — NOT PROVEN  
+**Implementation:** None
+
+### Completed
+- Reviewed the first-slice domain contract against requirements and architecture inputs.
+- Reviewed UX flows, hierarchy, evidence/provenance, progress boundaries, and failure/recovery states.
+- Kept DEC-0011 as PROPOSED; no domain decision was silently accepted.
+- Kept UX as READY FOR CONFIRMATION rather than PASS.
+- Preserved the rule that direct participant cases are optional targeted validation, not a generic blocker.
+
+### Remaining gate decisions
+- Product-owner confirmation of the first-slice domain contract.
+- UX confirmation of the first-slice interaction model.
+- Security/privacy confirmation for authorization and parent visibility.
+- Data/API confirmation for authoritative vs derived state, idempotency, and correction/version semantics.
+
+### Explicit non-actions
+- No database schema.
+- No API contracts.
+- No final bounded contexts/modules.
+- No technology/provider commitment.
+- No implementation authorization.
+- PR #2 remains open and unmerged.
+
+### Next
+**Explicit Domain Confirmation → Explicit UX Confirmation → Architecture Review → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
