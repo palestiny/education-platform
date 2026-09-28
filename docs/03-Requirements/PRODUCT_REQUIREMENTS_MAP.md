@@ -49,14 +49,14 @@ Create traceability from the target product scenario and planning artifacts into
 
 ## Open Requirement Questions
 
-1. What is the initial beachhead segment?
+1. What is the initial commercial beachhead?
 2. Which roles are truly first-class in that segment?
 3. What learning mode is essential for the beachhead?
 4. Is parent participation essential, optional, or absent?
 5. Is organization/tenant support required in the first release?
 6. Which evidence types are actually available and trustworthy?
 7. What constitutes sufficient evidence for a recommendation?
-8. Which intervention workflow, if any, has demonstrated recurring material friction?
+8. Which differentiation/intervention workflow, if any, is worth committing after product and market analysis?
 9. What privacy/consent rules apply to the chosen segment and age groups?
 10. What is the initial business transaction?
 11. Which capabilities are free vs paid?
@@ -72,7 +72,7 @@ Every committed requirement must trace to at least one of:
 - regulatory/security requirement,
 - technical constraint.
 
-A requirement without a traceable reason remains OPEN.
+A requirement without a traceable reason remains OPEN. Market-established parity is a valid traceable basis for planning; it becomes COMMITTED only after the relevant Product Gate decision.
 
 ## Downstream Rule
 
@@ -86,5 +86,5 @@ It does not authorize implementation by itself.
 
 **Product Foundation / Competitive Intelligence: NOT PROVEN**
 
-The conventional feature baseline is now sufficiently established to continue parity and requirements planning. The remaining blocker is not the absence of a user case for every standard feature; it is the unresolved initial segment, business model, and targeted evidence needed for novel or differentiating workflows.
+The conventional feature baseline is now sufficiently established to continue parity and requirements planning. The remaining Product Foundation work is explicit product commitment: initial commercial beachhead, business model, first coherent journey boundary, and targeted evidence only where a novel/differentiating/high-impact workflow cannot be responsibly defined from current market evidence. Standard parity capabilities do not require reconstructed participant cases.
 
