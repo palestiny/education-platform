@@ -992,4 +992,15 @@ The owner does not need to decide every implementation detail now. The minimum b
 
 All other implementation details remain downstream of these decisions.
 
-**Current status:** Architecture PASS; Security/Data remain OPEN pending explicit owner decision.
+**Current status:** Architecture PASS; Security/Data baseline ACCEPTED; deferred physical/legal-policy decisions remain OPEN.
+
+
+## Security/Data Acceptance — 2026-09-29
+
+The Project Owner explicitly accepted the recommended Security and Data baselines.
+
+**Accepted:** security baseline, contextual authorization model, relationship lifecycle, parent projection model, configurable policy boundary, privileged-access controls, sensitive-access controls, policy-driven lifecycle, baseline abuse controls, authoritative-vs-derived data model, evidence lineage/correction/conflict semantics, learner-state rebuildability, concurrency/atomicity principles, classification baseline and tenant defense-in-depth.
+
+**Deferred:** final physical tenant-isolation mechanism, jurisdiction-specific legal/retention rules, exact retention periods, database schema, API contracts, cloud/vendor choices.
+
+**Gate status:** Security/Data baseline = PASS for downstream API design; deferred items remain explicit OPEN constraints.
