@@ -705,3 +705,51 @@ This checkpoint does not accept the proposed architecture, finalize privacy/lega
 **Explicit Architecture Decision → Security Decision Set → Data Decision Set → Architecture Impact Reconciliation → API Contract Gate → Implementation Gate**
 
 No merge is implied by this checkpoint; PR #2 remains open and unmerged.
+
+
+## Checkpoint 038 — Decision Closure Owner Review Packet
+
+Date: 2026-09-29
+
+### Current Stage
+Architecture / Security / Data Decision Closure Preparation
+
+### Completed
+- Re-verified PR #2 and ADR-0001 state.
+- Confirmed the proposed Modular Monolith architecture remains PROPOSED.
+- Added a bounded Decision Closure Worksheet to ARCHITECTURE_GATE_INPUTS.md.
+- Consolidated the remaining owner decisions into four explicit areas: architecture, domain contract, security and data.
+- Explicitly separated decisions that may become accepted from downstream decisions that remain deferred.
+- Added a gate transition rule preventing downstream API/data/implementation work from silently inventing unresolved security, privacy, tenancy or retention behavior.
+
+### Current Gate Status
+- Product Foundation: NOT PROVEN
+- Requirements: COMPLETE
+- First Product Slice: PROPOSED
+- Domain: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN
+- UX: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN
+- Architecture: READY FOR EXPLICIT DECISION — NOT PROVEN
+- Security: READY FOR EXPLICIT DECISIONS — NOT PROVEN
+- Data: READY FOR EXPLICIT DECISIONS — NOT PROVEN
+- API Contract: NOT PROVEN
+- Implementation: NOT AUTHORIZED
+
+### Decision Boundary
+No architecture, domain, security or data proposal was silently accepted.
+
+The next owner-level decisions are:
+1. accept/reject/change the proposed first-slice architecture;
+2. confirm/revise the first-slice domain contract;
+3. close the explicit Security decision set;
+4. close the explicit Data decision set.
+
+If a decision changes an existing assumption, affected artifacts must be reconciled before the next gate.
+
+### Verification
+- PR #2 remains open and unmerged.
+- No production implementation was authorized.
+- No database schema or API contract was created.
+- Latest head has no registered commit status checks; therefore no CI/test pass is claimed.
+
+### Next Gate
+Explicit owner decision closure, followed by Security/Data → Architecture Impact Reconciliation → API Contract Gate → Implementation Gate.
