@@ -753,3 +753,49 @@ If a decision changes an existing assumption, affected artifacts must be reconci
 
 ### Next Gate
 Explicit owner decision closure, followed by Security/Data → Architecture Impact Reconciliation → API Contract Gate → Implementation Gate.
+
+
+## Checkpoint 038 — Explicit Decision Closure Worksheet
+
+**Date:** 2026-09-29  
+**Stage:** Architecture / Security / Data Decision Closure Preparation  
+**Status:** OWNER DECISION REQUIRED — NOT PROVEN  
+**Implementation authorization:** None
+
+### Completed
+
+- Re-verified ADR-0001, DEC-0012 and PR #2 remain consistent and explicitly **PROPOSED**.
+- Added a consolidated Decision Closure Worksheet to the architecture gate inputs.
+- The worksheet provides one closure surface for Architecture acceptance/rejection, the Security decision set, the Data decision set, downstream closure sequence, and decision-integrity/change-control rules.
+- Preserved the boundary that architecture acceptance does not silently finalize database schema, API contracts, physical tenant isolation, detailed privacy/consent policy, retention/deletion, or provider selection.
+
+### Current gate status
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| UX | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| Architecture | READY FOR EXPLICIT DECISION — NOT PROVEN |
+| Security | READY FOR EXPLICIT DECISIONS — NOT PROVEN |
+| Data | READY FOR EXPLICIT DECISIONS — NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Decision boundary
+
+The next owner-level decision is whether to accept the proposed first-slice architecture:
+
+**Modular Monolith + explicit logical module contracts + isolated external integration adapters.**
+
+No downstream artifact has been marked accepted on the owner's behalf.
+
+### Verification
+
+- ADR-0001 status: **PROPOSED**
+- DEC-0012 status: **PROPOSED**
+- PR #2: **OPEN / UNMERGED**
+- No implementation authorization added.
+- No merge performed.
