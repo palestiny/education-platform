@@ -975,3 +975,39 @@ The API surface remains **PROPOSED**. Domain Confirmation is still not proven, s
 Domain/UX confirmation of the first-slice semantics → API contract review/closure → Implementation Gate.
 
 No merge performed.
+
+
+## Checkpoint 043 — Domain + UX Confirmation Closure Packets
+
+**Date:** 2026-09-29  
+**Stage:** Domain / UX Confirmation Preparation  
+**Status:** READY FOR EXPLICIT OWNER CONFIRMATION — NOT PROVEN  
+**Implementation authorization:** NOT AUTHORIZED
+
+### Completed
+
+- Added a Domain Confirmation Closure Packet to the existing domain readiness document.
+- Added a UX Confirmation Closure Packet to the existing first-slice UX document.
+- Both packets distinguish accepted-candidate invariants from intentionally deferred implementation/policy details.
+- No Domain or UX decision was silently accepted.
+- API Gate remains blocked from PASS until these confirmations and contract review are complete.
+
+### Recommended owner decision
+
+Accept the proposed first-slice Domain and UX contracts as currently bounded, while carrying detailed goal rules, evidence taxonomy, mastery algorithm, parent-field policy, accessibility target and other deferred details to their owning downstream decisions.
+
+### Current gate status
+
+| Gate | Status |
+|---|---|
+| Architecture | **PASS — ACCEPTED** |
+| Security | **PASS — BASELINE ACCEPTED** |
+| Data | **PASS — BASELINE ACCEPTED** |
+| Domain | **READY FOR EXPLICIT CONFIRMATION — NOT PROVEN** |
+| UX | **READY FOR EXPLICIT CONFIRMATION — NOT PROVEN** |
+| API Contract | **READY FOR REVIEW — NOT PROVEN** |
+| Implementation | **NOT AUTHORIZED** |
+
+### Next owner decision
+
+Explicit confirmation of the proposed Domain + UX first-slice contracts. After confirmation: API contract closure review, then Implementation Gate preparation.
