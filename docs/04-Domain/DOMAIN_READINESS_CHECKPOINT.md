@@ -568,3 +568,30 @@ This section records the internal review state before Product Owner confirmation
 **Domain Gate: READY FOR PRODUCT-OWNER CONFIRMATION — NOT PROVEN**
 
 No domain proposal in this review authorizes database schema, API contract, bounded-context finalization, or implementation.
+
+
+## Domain Confirmation Closure Packet — 2026-09-29
+
+**Status:** PROPOSED — OWNER CONFIRMATION REQUIRED
+
+### Recommendation
+Accept the minimum first-slice domain contract as currently defined:
+
+**Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up (if needed) → New Evidence → Outcome**
+
+Accept as domain invariants:
+- Goal and Assignment remain distinct.
+- Minimum first-slice learning mode is asynchronous teacher-led activity producing learner action/submission and evidence.
+- Evidence is attributable, provenance-aware, version-aware and conflict-capable.
+- Progress is evidence-derived and explainable without freezing a universal mastery algorithm.
+- Teacher authority is contextual and time-bounded.
+- Parent access is a controlled projection, not source-of-truth access.
+- Completion is not achievement; Assessment Result is not Evidence; Recommendation is not Decision; Follow-up closure is not Outcome.
+- Authoritative facts are durable; derived state is rebuildable.
+- Critical mutations are idempotent and concurrency conflicts are explicit.
+- Corrections preserve historical lineage.
+
+### Intentionally deferred
+Exact goal cardinality/structure, recurrence rules, detailed evidence taxonomy/storage, universal mastery algorithm, detailed outcome authority implementation, consent/age/country policy, database schema, API field contracts and implementation details.
+
+**Recommended decision:** ACCEPT the proposed domain contract and carry deferred details into their owning downstream gates.
