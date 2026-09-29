@@ -842,3 +842,41 @@ The Project Owner explicitly accepted:
 **Security Decision Set → Data Decision Set → Security/Data Architecture Impact Reconciliation → API Contract Gate → Implementation Gate**
 
 No merge performed.
+
+
+## Checkpoint 040 — Post-Architecture Security/Data Closure Review
+
+**Date:** 2026-09-29  
+**Stage:** Security + Data Gate Closure Preparation  
+**Status:** READY FOR EXPLICIT OWNER DECISION — NOT PROVEN  
+**Implementation authorization:** NOT AUTHORIZED
+
+### Completed
+
+- Architecture is now accepted and remains the prerequisite for downstream closure.
+- Added a post-architecture Security/Data closure review.
+- Converted the previous broad matrices into a minimum owner decision set.
+- Preserved explicit trade-offs and the distinction between recommendation and acceptance.
+- No database schema, API contract, privacy/legal policy, provider selection, or implementation was silently finalized.
+
+### Recommended baseline under review
+
+**Security:** tenant-context enforcement + defense-in-depth; RBAC + relationship/context-aware authorization; scoped/revocable relationships; policy/consent-controlled parent projections; configurable age/country boundary; scoped break-glass privileged access; audited sensitive access; policy-driven retention/deletion; baseline abuse/security controls.
+
+**Data:** durable authoritative facts; first-class extensible evidence with provenance; explicit evidence correction/supersession; explicit conflict/insufficient states; rebuildable learner-state projections; optimistic concurrency + domain conflict handling; small local transactions + outbox where needed; domain-level classification; defense-in-depth tenant boundary; policy-driven retention/deletion.
+
+### Current gate status
+
+| Gate | Status |
+|---|---|
+| Architecture | **PASS — ACCEPTED** |
+| Security | READY FOR EXPLICIT DECISION — NOT PROVEN |
+| Data | READY FOR EXPLICIT DECISION — NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Next transition
+
+Explicit owner Security/Data decision → Security/Data Architecture Impact Reconciliation → API Contract Gate.
+
+No merge performed.
