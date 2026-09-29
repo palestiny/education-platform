@@ -1,7 +1,7 @@
 # API Contract Gate Inputs — First Slice
 
 **Date:** 2026-09-29  
-**Status:** CLOSURE REVIEW — API Gate NOT PROVEN  
+**Status:** ACCEPTED — API GATE PASS  
 **Architecture:** ACCEPTED  
 **Security/Data baseline:** ACCEPTED  
 **Implementation authorization:** None
@@ -129,7 +129,7 @@ API Gate may pass only when each authoritative mutation has an explicit contract
 
 These are implementation/API details, not unresolved domain semantics. They must be closed during the API Gate review before implementation authorization.
 
-**Current recommendation:** API Gate is ready to close after endpoint-level contract specification and review; it is not yet PASS.
+**Current recommendation:** API Gate is accepted and PASS.
 
 ## API Contract Closure Proposal — 2026-09-29
 
@@ -183,3 +183,27 @@ The API contract is the source of truth for externally observable behavior. Open
 The remaining API questions are bounded to contract mechanics and infrastructure selection rather than unresolved product/domain semantics. DB schema, ORM, cloud/provider, jurisdiction-specific policy, exact retention periods, and implementation remain downstream decisions.
 
 **Recommendation:** ACCEPT this API contract baseline and mark API Gate → PASS, then open the Implementation Gate. Production implementation still requires the Implementation Gate to verify traceability, test obligations, observability, security enforcement, and Definition of Done.
+
+
+## API Gate Acceptance — 2026-09-29
+
+The Project Owner accepted the API Contract Closure Proposal.
+
+### Accepted baseline
+
+- Versioned /api/v1 boundary.
+- Stable opaque resource identifiers.
+- Explicit authentication and authorization context.
+- Stable machine-readable error categories.
+- Idempotency for critical mutations.
+- Explicit concurrency/conflict semantics; no implicit last-write-wins for accountable state.
+- Cursor-based pagination for scalable collections.
+- OpenAPI maintained as the externally observable contract.
+- Contract tests required for request/response/error behavior.
+- Correlation identifiers and safe diagnostics.
+- Parent and other protected projections remain policy-controlled.
+- DB schema, ORM, provider/cloud, jurisdiction-specific rules and exact retention periods remain downstream/open.
+
+**API Gate: PASS.**
+
+API acceptance does not authorize production implementation by itself. Implementation Gate remains required.
