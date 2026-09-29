@@ -1081,3 +1081,35 @@ API acceptance does not authorize production implementation. The next gate is **
 Build the Implementation Readiness Matrix and identify the smallest complete first vertical slice without inventing unresolved product/domain behavior.
 
 No merge performed.
+
+
+## Checkpoint 046 — First Slice Implementation Design Prepared
+
+**Date:** 2026-09-29  
+**Stage:** Implementation Gate Preparation  
+**Status:** NOT PROVEN
+
+### Completed
+
+- API Gate accepted and PASS.
+- First-slice implementation readiness matrix created.
+- Logical module ownership mapped.
+- Transaction/aggregate direction defined.
+- Authoritative vs derived persistence boundary defined.
+- Command/query boundary defined.
+- Cross-module contract rules defined.
+- Idempotency/concurrency/reconciliation behavior mapped.
+- Security enforcement points mapped.
+- API adapter boundary mapped.
+- Test architecture and observability obligations mapped.
+- Migration/recovery obligations mapped.
+
+### Still blocking Implementation Gate
+
+Exact persistence schema, API JSON schemas, authentication/session mechanism, physical tenant isolation, jurisdiction-specific policy, retention periods, provider/cloud choices and other explicitly open downstream decisions remain unresolved.
+
+### Next
+
+Review the first-slice persistence model, module contracts and exact API schemas before any production implementation.
+
+**No production code started. No merge performed.**
