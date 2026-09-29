@@ -859,3 +859,83 @@ Architecture Decision → Domain Confirmation → UX Confirmation → Security/D
 If an owner decision changes a prior assumption, affected requirements, domain boundaries, UX, security, data and API artifacts must be reconciled before implementation.
 
 Current overall status: decision-ready, not approved, implementation not authorized.
+
+
+## Decision Closure Worksheet — Architecture → Security → Data
+
+**Date:** 2026-09-29  
+**Purpose:** One explicit closure surface for the Project Owner before API Contract and implementation work.  
+**Status:** OPEN FOR OWNER DECISION — NO DECISION IMPLIED
+
+### A. Architecture Decision
+
+**Decision under review**
+
+Accept or reject the proposed first-slice architecture:
+
+**Modular Monolith + explicit logical module contracts + isolated external integration adapters**
+
+If accepted, first-slice commitments are: explicit logical module boundaries; contract-based cross-module dependencies; durable attributable authoritative facts; rebuildable derived projections; deterministic idempotency for critical commands; explicit concurrency/conflict handling; replaceable/reconcilable external providers; bounded AI assistance that is not required for authoritative core learning-state transitions.
+
+**Not decided by this acceptance:** database tables/indexes, API shapes, physical tenant isolation, detailed consent/age/country policy, retention/deletion/legal-hold rules, cloud/vendor selection, implementation details.
+
+**Owner decision:** OPEN  
+**Required transition:** ADR-0001 + DEC-0012 may become ACCEPTED only after explicit owner acceptance.
+
+### B. Security Decision Set
+
+| Decision | Review direction | Owner decision |
+|---|---|---|
+| Tenant isolation | Phaseable isolation with enforced tenant context at every protected boundary and later migration path | OPEN |
+| Authorization | RBAC + relationship/context-aware policy | OPEN |
+| Relationship lifecycle | Scoped, attributable, revocable relationships | OPEN |
+| Parent/guardian visibility | Policy/consent-controlled projection with least privilege | OPEN |
+| Age/country policy | Configurable policy boundary; country rules not hard-coded | OPEN |
+| Privileged support/admin | Scoped, time-bounded/break-glass access with audit | OPEN |
+| Sensitive access | Audit sensitive reads + high-impact mutations with minimization | OPEN |
+| Retention/deletion | Policy-driven lifecycle with correction/deletion/legal-hold semantics | OPEN |
+| Abuse controls | Baseline controls first; adaptive controls only where justified | OPEN |
+
+**Security acceptance condition:** API and persistence designs must not claim guarantees stronger than the accepted decisions.
+
+### C. Data Decision Set
+
+| Decision | Review direction | Owner decision |
+|---|---|---|
+| Authoritative facts | Durable domain records + rebuildable projections | OPEN |
+| Evidence taxonomy | Extensible typed evidence with provenance/context | OPEN |
+| Evidence storage | First-class evidence capability; Assessment owns assessment semantics | OPEN |
+| Evidence correction | Preserve original lineage + explicit correction/supersession | OPEN |
+| Conflicting evidence | Explicit conflict/insufficient representation; no silent LWW | OPEN |
+| Learner state | Rebuildable projection; materialize only when justified | OPEN |
+| Concurrency | Explicit conflict + optimistic version mechanics where needed | OPEN |
+| Atomicity | Small local transactions + outbox where required | OPEN |
+| Classification | Domain-level classification with stricter learner/assessment/communication/audit handling | OPEN |
+| Tenant data boundary | Defense-in-depth; physical mechanism follows Security/scale/regulatory decision | OPEN |
+| Retention/deletion | Policy-driven lifecycle preserving required lineage/legal holds | OPEN |
+
+**Data acceptance condition:** The first persistence model must preserve accepted provenance, correction, conflict, ownership, concurrency, classification and recovery semantics.
+
+### D. Closure Sequence
+
+1. Owner accepts/rejects Architecture proposal.
+2. If accepted, mark ADR-0001 and DEC-0012 ACCEPTED and close Architecture Gate.
+3. Resolve Security Decision Set.
+4. Resolve Data Decision Set.
+5. Reconcile any Security/Data decision that changes architecture.
+6. Confirm affected Domain and UX decisions.
+7. Build API Contract Gate from accepted semantics.
+8. Build persistence design from accepted domain/data/security semantics.
+9. Authorize implementation only after those gates pass.
+
+A rejection or material architecture change requires impact review rather than silently editing downstream artifacts.
+
+### E. Decision Integrity Rule
+
+No OPEN item may become ACCEPTED through implementation convenience, code structure, database schema, API behavior, provider choice, or framework defaults.
+
+If a decision changes after implementation begins:
+
+**New Evidence → Impact Analysis → Change Proposal → Decision → Affected Artifacts → Implementation → Verification**
+
+**Current closure status:** **NOT PROVEN / OWNER DECISION REQUIRED**
