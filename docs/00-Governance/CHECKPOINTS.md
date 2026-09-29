@@ -1011,3 +1011,41 @@ Accept the proposed first-slice Domain and UX contracts as currently bounded, wh
 ### Next owner decision
 
 Explicit confirmation of the proposed Domain + UX first-slice contracts. After confirmation: API contract closure review, then Implementation Gate preparation.
+
+
+## Checkpoint 044 — Domain + UX Gates Accepted
+
+**Date:** 2026-09-29  
+**Stage:** Domain + UX Gate Closure  
+**Status:** PASS — DOMAIN + UX ACCEPTED  
+**Implementation authorization:** NOT AUTHORIZED
+
+### Explicit owner decision
+
+The Project Owner accepted the proposed first-slice Domain and UX contracts.
+
+### Recorded decisions
+
+- DEC-0015 — Domain → **ACCEPTED**
+- DEC-0016 — UX → **ACCEPTED**
+- Domain Gate → **PASS**
+- UX Gate → **PASS**
+- Deferred domain/UX details remain OPEN and must not be invented during implementation.
+
+### Current gate status
+
+| Gate | Status |
+|---|---|
+| Architecture | **PASS — ACCEPTED** |
+| Security | **PASS — BASELINE ACCEPTED** |
+| Data | **PASS — BASELINE ACCEPTED** |
+| Domain | **PASS — ACCEPTED** |
+| UX | **PASS — ACCEPTED** |
+| API Contract | **READY FOR CLOSURE REVIEW — NOT PROVEN** |
+| Implementation | **NOT AUTHORIZED** |
+
+### Next
+
+API endpoint-by-endpoint contract closure → API Gate PASS → Implementation Gate preparation.
+
+No merge performed.
