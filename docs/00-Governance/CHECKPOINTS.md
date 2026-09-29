@@ -937,3 +937,41 @@ The Project Owner accepted the recommended Security and Data baseline.
 **Security/Data → Architecture Impact Reconciliation → API Contract Gate**
 
 No merge performed.
+
+
+## Checkpoint 042 — API Contract Gate Preparation
+
+**Date:** 2026-09-29  
+**Stage:** API Contract Gate Preparation  
+**Status:** READY FOR REVIEW — NOT PROVEN  
+**Implementation authorization:** NOT AUTHORIZED
+
+### Completed
+
+- Reconciled the accepted Architecture, Security and Data baselines against the first-slice domain state chain.
+- Created `docs/06-API/API_CONTRACT_GATE_INPUTS.md`.
+- Defined the candidate first-slice command/resource surface without finalizing database schema or implementation details.
+- Defined candidate idempotency, concurrency/conflict, authorization, error, audit and external-failure semantics.
+- Preserved deferred decisions for physical tenant isolation, jurisdiction-specific policy, exact retention periods, provider/cloud and schema.
+
+### Important boundary
+
+The API surface remains **PROPOSED**. Domain Confirmation is still not proven, so API Gate cannot be passed merely because the endpoint list exists.
+
+### Current gate status
+
+| Gate | Status |
+|---|---|
+| Architecture | **PASS — ACCEPTED** |
+| Security | **PASS — BASELINE ACCEPTED** |
+| Data | **PASS — BASELINE ACCEPTED** |
+| Domain | **READY FOR EXPLICIT CONFIRMATION — NOT PROVEN** |
+| UX | **READY FOR EXPLICIT CONFIRMATION — NOT PROVEN** |
+| API Contract | **READY FOR REVIEW — NOT PROVEN** |
+| Implementation | **NOT AUTHORIZED** |
+
+### Next
+
+Domain/UX confirmation of the first-slice semantics → API contract review/closure → Implementation Gate.
+
+No merge performed.
