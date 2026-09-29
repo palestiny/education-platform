@@ -130,3 +130,56 @@ API Gate may pass only when each authoritative mutation has an explicit contract
 These are implementation/API details, not unresolved domain semantics. They must be closed during the API Gate review before implementation authorization.
 
 **Current recommendation:** API Gate is ready to close after endpoint-level contract specification and review; it is not yet PASS.
+
+## API Contract Closure Proposal — 2026-09-29
+
+### 1. Public contract baseline
+
+- API versioning: /api/v1 for the first public contract.
+- JSON: UTF-8 JSON request/response bodies.
+- Resource identifiers: opaque stable IDs; clients must not depend on database keys.
+- Timestamps: ISO 8601 with explicit offset/UTC normalization at the API boundary.
+- Mutation responses return the authoritative resulting resource/state plus a correlation identifier.
+- Reads return policy-filtered projections; protected-resource non-disclosure follows the security policy.
+
+### 2. Authentication/session contract
+
+Protected resources require an authenticated principal. The concrete token/session provider remains an infrastructure choice, but every protected command is evaluated against resolved identity and authorization context before mutation.
+
+### 3. Error contract
+
+Stable machine-readable error codes are required:
+- AUTHENTICATION_REQUIRED
+- FORBIDDEN
+- RESOURCE_NOT_FOUND
+- VALIDATION_FAILED
+- BUSINESS_RULE_VIOLATION
+- IDEMPOTENCY_CONFLICT
+- CONCURRENCY_CONFLICT
+- RATE_LIMITED
+- DEPENDENCY_UNAVAILABLE
+- UNEXPECTED_ERROR
+
+Responses include a correlation ID and safe actionable detail; sensitive internal diagnostics never cross the API boundary.
+
+### 4. Idempotency contract
+
+All critical POST mutations require an idempotency key. The key is scoped to authenticated actor + tenant/context + operation. Repeating the same semantic request returns the original authoritative result. Reusing the key for a materially different request returns IDEMPOTENCY_CONFLICT. Fail-after-commit retries reconcile against the durable idempotency record rather than executing the mutation again.
+
+### 5. Concurrency contract
+
+Accountable state mutations use an expected-version/concurrency token where concurrent modification is possible. A stale mutation returns CONCURRENCY_CONFLICT; no implicit last-write-wins for teacher decisions, evidence corrections, outcomes, or equivalent accountable state.
+
+### 6. Pagination/read contract
+
+Collection endpoints use cursor-based pagination by default. The cursor is opaque. Default ordering is stable and server-defined; clients may request only explicitly supported sort/filter fields. Pagination must respect the caller's authorized projection.
+
+### 7. OpenAPI/contract workflow
+
+The API contract is the source of truth for externally observable behavior. OpenAPI is maintained alongside the codebase, contract tests validate request/response/error shapes, and observable semantic changes require contract review before merge.
+
+### Closure assessment
+
+The remaining API questions are bounded to contract mechanics and infrastructure selection rather than unresolved product/domain semantics. DB schema, ORM, cloud/provider, jurisdiction-specific policy, exact retention periods, and implementation remain downstream decisions.
+
+**Recommendation:** ACCEPT this API contract baseline and mark API Gate → PASS, then open the Implementation Gate. Production implementation still requires the Implementation Gate to verify traceability, test obligations, observability, security enforcement, and Definition of Done.
