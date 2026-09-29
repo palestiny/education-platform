@@ -880,3 +880,60 @@ No merge performed.
 Explicit owner Security/Data decision → Security/Data Architecture Impact Reconciliation → API Contract Gate.
 
 No merge performed.
+
+
+## Checkpoint 041 — Security + Data Baseline Accepted
+
+**Date:** 2026-09-29  
+**Stage:** Security/Data Gate Closure  
+**Status:** PASS — BASELINE ACCEPTED  
+**Implementation authorization:** NOT AUTHORIZED
+
+### Explicit owner decision
+
+The Project Owner accepted the recommended Security and Data baseline.
+
+### Accepted
+
+- Tenant context enforcement + defense-in-depth.
+- RBAC + relationship/context-aware authorization.
+- Scoped, attributable, revocable relationships.
+- Policy/consent-controlled parent projections.
+- Configurable age/country policy boundary.
+- Scoped, time-bounded privileged access with audit.
+- Sensitive access auditing and minimized telemetry.
+- Policy-driven retention/deletion architecture.
+- Baseline abuse/security controls.
+- Durable authoritative domain records + rebuildable projections.
+- First-class evidence with provenance and lineage.
+- Explicit correction/supersession and conflict semantics.
+- Rebuildable learner-state projections.
+- Optimistic concurrency + explicit domain conflict handling.
+- Small local transactions + outbox where required.
+- Domain-level classification.
+- Defense-in-depth tenant boundary.
+
+### Explicitly deferred
+
+- Final physical tenant-isolation mechanism.
+- Jurisdiction-specific legal rules.
+- Exact retention periods.
+- Database schema.
+- API contracts.
+- Cloud/provider selection.
+
+### Gate status
+
+| Gate | Status |
+|---|---|
+| Architecture | **PASS — ACCEPTED** |
+| Security | **PASS — BASELINE ACCEPTED** |
+| Data | **PASS — BASELINE ACCEPTED** |
+| API Contract | **NOT PROVEN** |
+| Implementation | **NOT AUTHORIZED** |
+
+### Next
+
+**Security/Data → Architecture Impact Reconciliation → API Contract Gate**
+
+No merge performed.
