@@ -1,9 +1,9 @@
 # ADR-0001 — Initial Modular Monolith Architecture for the First Product Slice
 
-**Status:** PROPOSED  
+**Status:** ACCEPTED  
 **Date:** 2026-09-28  
 **Decision owner:** Project Owner  
-**Gate:** Architecture Gate — NOT PROVEN
+**Gate:** Architecture Gate — PASSED
 
 ## Context
 
@@ -21,7 +21,7 @@ We need an initial architecture that preserves strong domain boundaries, keeps a
 
 ## Decision
 
-**PROPOSED:** Start the first product slice as a **Modular Monolith** with explicit logical module boundaries, internal contracts and isolated external integration adapters.
+**ACCEPTED:** Start the first product slice as a **Modular Monolith** with explicit logical module boundaries, internal contracts and isolated external integration adapters.
 
 The initial deployment should be a single deployable application unless an operational constraint proves that separate deployment is necessary.
 
@@ -152,7 +152,7 @@ Advantages: local transactions, simpler operations, explicit domain boundaries, 
 
 Trade-offs: module boundaries require discipline; the single deployment can become a scaling boundary; future extraction may require distributed coordination.
 
-**Disposition:** Proposed initial architecture.
+**Disposition:** Accepted initial architecture.
 
 ## Consequences
 
@@ -200,9 +200,6 @@ This is a proposal derived from the current first-slice requirements, not proof 
 
 ## Acceptance boundary
 
-This ADR becomes **ACCEPTED** only after explicit Architecture Gate review confirms the decision and its policies.
+This ADR was explicitly accepted by the Project Owner on 2026-09-29.
 
-Until then:
-- the ADR is PROPOSED;
-- Architecture Gate remains NOT PROVEN;
-- implementation remains unauthorized.
+Acceptance does not authorize implementation by itself; downstream Domain, UX, Security, Data and API gates remain required.
