@@ -413,7 +413,7 @@ Open questions remain bounded and can be carried into Product, Domain, Security,
 
 ## UX Confirmation Closure Packet — 2026-09-29
 
-**Status:** PROPOSED — OWNER CONFIRMATION REQUIRED
+**Status:** ACCEPTED — UX GATE PASS
 
 ### Recommendation
 Accept the first-slice UX contract as currently defined:
@@ -430,4 +430,4 @@ Accept the first-slice UX contract as currently defined:
 ### Intentionally deferred
 Exact learning-mode presentation, exact progress wording, attention-signal design, evidence-density/detail level, parent fields pending final policy, follow-up reminder details and formal accessibility conformance target.
 
-**Recommended decision:** ACCEPT the proposed UX contract and carry deferred details into their owning product/security/accessibility decisions.
+**Decision:** ACCEPTED by Project Owner on 2026-09-29. UX Gate is PASS. Deferred UX details remain explicitly OPEN and are not authorized for invention during implementation.
