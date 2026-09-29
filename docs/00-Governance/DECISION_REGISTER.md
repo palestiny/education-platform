@@ -158,3 +158,5 @@ These decisions establish baseline invariants required before API/persistence de
 
 | DEC-0015 | Domain | First-slice domain contract accepted: Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome, with the defined semantic boundaries and durable-vs-derived rules. | ACCEPTED | Domain Confirmation, 2026-09-29 |
 | DEC-0016 | UX | First-slice UX contract accepted: role-specific views over shared context/evidence/state, evidence-backed next actions, explicit uncertainty/conflict/recovery, controlled parent projection, responsive/mobile and RTL/LTR baseline. | ACCEPTED | UX Confirmation, 2026-09-29 |
+
+| DEC-0017 | API | First-slice API contract baseline accepted: versioned /api/v1, stable IDs, explicit auth context, stable errors, critical-mutation idempotency, explicit concurrency conflicts, cursor pagination, OpenAPI contract source, contract tests, safe diagnostics and controlled projections. | ACCEPTED | API Gate, 2026-09-29 |
