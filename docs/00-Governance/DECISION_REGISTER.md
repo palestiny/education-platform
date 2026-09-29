@@ -154,3 +154,7 @@ If accepted, later decisions may refine or supersede this architecture without s
 ## DEC-0013 / DEC-0014 Boundary
 
 These decisions establish baseline invariants required before API/persistence design. They do not choose final physical tenant isolation, country-specific legal rules, exact retention periods, database schema, API shapes, cloud/vendor, or implementation details.
+
+
+| DEC-0015 | Domain | First-slice domain contract accepted: Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome, with the defined semantic boundaries and durable-vs-derived rules. | ACCEPTED | Domain Confirmation, 2026-09-29 |
+| DEC-0016 | UX | First-slice UX contract accepted: role-specific views over shared context/evidence/state, evidence-backed next actions, explicit uncertainty/conflict/recovery, controlled parent projection, responsive/mobile and RTL/LTR baseline. | ACCEPTED | UX Confirmation, 2026-09-29 |
