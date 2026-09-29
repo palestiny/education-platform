@@ -748,3 +748,114 @@ Security and Data decisions do not require the final API schema to be written fi
 Conversely, API/Data implementation must not invent unresolved Security policy, consent rules, retention rules or tenant-isolation guarantees.
 
 **Current status:** Security/Data architecture impact is sufficiently mapped for explicit decision review; neither gate is PASS.
+
+## Decision Closure Worksheet — Owner Review Packet
+
+Date: 2026-09-29
+Status: READY FOR EXPLICIT OWNER DECISION — NOT PROVEN
+Implementation authorization: None
+
+This section converts the remaining architecture/security/data work into a bounded owner-review packet. It does not accept any proposal automatically.
+
+### A. Architecture decision
+
+Question: Accept the proposed first-slice architecture?
+
+Proposal under review:
+- Modular Monolith;
+- explicit logical module contracts;
+- isolated external integration adapters;
+- local consistency for authoritative first-slice mutations;
+- rebuildable derived projections;
+- explicit idempotency/concurrency/reconciliation;
+- command-time authorization;
+- human accountability for high-impact decisions.
+
+If accepted:
+- ADR-0001 may move from PROPOSED to ACCEPTED;
+- DEC-0012 may move from PROPOSED to ACCEPTED;
+- Architecture Gate can be closed subject to its remaining dependent gates;
+- implementation is still NOT AUTHORIZED until Security, Data and API gates are closed.
+
+If not accepted:
+- keep ADR-0001 and DEC-0012 PROPOSED;
+- record the rejected/changed architecture and affected downstream decisions before continuing.
+
+Decision status: OPEN — Project Owner.
+
+### B. Domain contract decision
+
+The owner review packet for the first slice is:
+
+Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome
+
+The following semantic distinctions are part of the proposal:
+- Goal ≠ Assignment;
+- completion ≠ achievement/outcome;
+- Assessment Result ≠ Evidence;
+- Evidence ≠ Interpretation;
+- Recommendation ≠ authorized Decision;
+- Follow-up closure ≠ Outcome;
+- historical evidence ≠ mutable current fact;
+- projection ≠ source of truth.
+
+Decision status: OPEN — Project Owner.
+
+### C. Security decisions
+
+The Security Gate still requires explicit closure of:
+1. tenant isolation;
+2. authorization vocabulary;
+3. relationship lifecycle/delegation;
+4. parent/guardian visibility and consent;
+5. age/country policy boundary;
+6. privileged support/admin access;
+7. sensitive-read/high-impact mutation audit;
+8. retention/deletion lifecycle;
+9. baseline abuse/security controls.
+
+The current review recommendations remain proposals only.
+
+Decision status: OPEN — Security/Product Owner review.
+
+### D. Data decisions
+
+The Data Gate still requires explicit closure of:
+1. authoritative first-slice facts;
+2. evidence taxonomy and storage;
+3. correction/supersession lineage;
+4. conflicting/insufficient evidence representation;
+5. learner-state materialization/rebuild policy;
+6. concurrency/version mechanics;
+7. transaction/outbox boundaries;
+8. data classification;
+9. tenant data boundary;
+10. retention/deletion lifecycle.
+
+The current review recommendations remain proposals only.
+
+Decision status: OPEN — Data/Architecture/Product Owner review.
+
+### E. Decisions that remain intentionally deferred
+
+Even after the above decision set is closed, the following remain downstream or evidence-dependent unless separately promoted:
+- exact database schema/tables/indexes;
+- final REST/GraphQL contract;
+- exact cloud/vendor;
+- final video/AI/payment provider;
+- deployment topology beyond the accepted first-slice architecture boundary;
+- universal mastery/progress algorithm;
+- advanced intervention/recommendation engine;
+- marketplace/social/advanced adaptive-learning domains.
+
+### F. Gate transition rule
+
+No downstream gate may silently consume an unresolved decision.
+
+Required sequence after owner review:
+
+Architecture Decision → Domain Confirmation → UX Confirmation → Security/Data Decision Closure → Architecture Impact Reconciliation → API Contract Gate → Implementation Gate
+
+If an owner decision changes a prior assumption, affected requirements, domain boundaries, UX, security, data and API artifacts must be reconciled before implementation.
+
+Current overall status: decision-ready, not approved, implementation not authorized.
