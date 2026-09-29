@@ -572,7 +572,7 @@ No domain proposal in this review authorizes database schema, API contract, boun
 
 ## Domain Confirmation Closure Packet — 2026-09-29
 
-**Status:** PROPOSED — OWNER CONFIRMATION REQUIRED
+**Status:** ACCEPTED — DOMAIN GATE PASS
 
 ### Recommendation
 Accept the minimum first-slice domain contract as currently defined:
@@ -594,4 +594,4 @@ Accept as domain invariants:
 ### Intentionally deferred
 Exact goal cardinality/structure, recurrence rules, detailed evidence taxonomy/storage, universal mastery algorithm, detailed outcome authority implementation, consent/age/country policy, database schema, API field contracts and implementation details.
 
-**Recommended decision:** ACCEPT the proposed domain contract and carry deferred details into their owning downstream gates.
+**Decision:** ACCEPTED by Project Owner on 2026-09-29. Domain Gate is PASS. Deferred details remain explicitly OPEN and are not authorized for invention during implementation.
