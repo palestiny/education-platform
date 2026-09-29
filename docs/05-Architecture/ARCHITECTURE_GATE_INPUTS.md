@@ -939,3 +939,57 @@ If a decision changes after implementation begins:
 **New Evidence → Impact Analysis → Change Proposal → Decision → Affected Artifacts → Implementation → Verification**
 
 **Current closure status:** **ARCHITECTURE ACCEPTED / DOWNSTREAM SECURITY + DATA + API GATES OPEN**
+
+
+## Security + Data Closure Review — Post-Architecture Acceptance
+
+**Date:** 2026-09-29  
+**Architecture prerequisite:** ACCEPTED (ADR-0001 / DEC-0012)  
+**Status:** SECURITY/DATA PROPOSALS READY FOR OWNER DECISION
+
+### Security closure — recommended baseline
+
+The following is the review recommendation, not an automatic acceptance:
+
+1. **Tenant isolation:** application-enforced tenant context plus database-level defense-in-depth where supported; retain a migration path to stronger physical isolation for regulated/high-scale tenants.
+2. **Authorization:** RBAC combined with relationship/context-aware policy. A role alone must not grant access to another person's learning data.
+3. **Relationship lifecycle:** scoped, attributable and revocable. Historical records retain the actor/relationship context that existed when the record was created.
+4. **Parent/guardian access:** least-privilege, policy/consent-controlled projections. Parent access is not a direct read-through to all learner/teacher records.
+5. **Age/country:** policy-driven configuration boundary. Country-specific rules must not be embedded into core domain behavior.
+6. **Privileged access:** scoped, time-bounded/break-glass access for exceptional support/admin operations, with attribution and audit.
+7. **Sensitive reads/mutations:** audit sensitive reads and high-impact mutations; minimize content in telemetry.
+8. **Retention/deletion:** policy-driven lifecycle supporting correction, deletion and legal-hold semantics without silently destroying required provenance.
+9. **Abuse/security baseline:** baseline authentication, authorization, rate limiting, audit, anomaly/error telemetry and recovery controls first; adaptive controls are added when a concrete risk justifies them.
+
+**Security trade-off:** This baseline favors strong contextual authorization and future scalability over the simplicity of role-only/application-only controls. It intentionally avoids committing the project to database-per-tenant or a country-specific legal model before scale/regulatory evidence requires it.
+
+### Data closure — recommended baseline
+
+1. **Authoritative facts:** durable domain records; derived projections remain rebuildable.
+2. **Evidence:** first-class extensible typed evidence with mandatory provenance/context.
+3. **Assessment:** Assessment owns assessment semantics; Evidence owns attributable observations. One assessment result may produce evidence, but evidence is not synonymous with assessment.
+4. **Correction:** preserve original lineage and represent correction/supersession explicitly.
+5. **Conflict:** represent conflicting/insufficient evidence explicitly; never silently resolve semantic conflict through last-write-wins.
+6. **Learner state:** rebuildable derived projection; materialize only where read/performance requirements justify it.
+7. **Concurrency:** optimistic versioning plus explicit domain conflict handling for accountable mutations.
+8. **Atomicity:** small local transactions for facts that must change together; outbox intent for reliable asynchronous side effects where required.
+9. **Classification:** domain-level classification, with stricter treatment for learner, assessment, communication and audit data.
+10. **Tenant boundary:** defense-in-depth; exact physical mechanism remains a security/scale decision.
+11. **Retention/deletion:** policy-driven lifecycle that preserves required lineage and legal holds.
+
+**Data trade-off:** This favors traceability, recovery and semantic correctness over the lowest possible schema/storage complexity. It also keeps derived learner state from becoming an accidental source of truth.
+
+### Minimum owner decisions required before API Gate
+
+The owner does not need to decide every implementation detail now. The minimum blocking decisions are:
+
+- Security baseline above: **ACCEPT / MODIFY**
+- Data baseline above: **ACCEPT / MODIFY**
+- Tenant physical-isolation strategy: **DEFER to scale/regulatory evidence / choose now**
+- Retention/deletion policy boundary: **ACCEPT policy-driven / MODIFY**
+- Parent/guardian visibility model: **ACCEPT policy/consent projection / MODIFY**
+- Privileged access model: **ACCEPT scoped break-glass / MODIFY**
+
+All other implementation details remain downstream of these decisions.
+
+**Current status:** Architecture PASS; Security/Data remain OPEN pending explicit owner decision.
