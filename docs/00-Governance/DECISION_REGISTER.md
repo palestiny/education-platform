@@ -134,7 +134,7 @@ Status remains **PROPOSED** until the Domain Confirmation gate is explicitly pas
 
 ## DEC-0012 Boundary
 
-This decision is represented by ADR-0001 and remains **PROPOSED** until the Architecture Gate is explicitly passed.
+This decision is represented by ADR-0001 and was explicitly **ACCEPTED** by the Project Owner on 2026-09-29. Architecture Gate is PASSED.
 
 It does not finalize:
 - database schema;
@@ -146,3 +146,11 @@ It does not finalize:
 - implementation.
 
 If accepted, later decisions may refine or supersede this architecture without silently changing its meaning.
+
+
+| DEC-0013 | Security | Security baseline: enforced tenant context + defense-in-depth; RBAC plus relationship/context-aware authorization; scoped/revocable relationships; policy/consent-controlled parent projections; configurable age/country policy boundary; scoped time-bounded privileged access with audit; sensitive access auditing/minimized telemetry; policy-driven retention/deletion; baseline abuse/security controls. | ACCEPTED | Security/Data Closure Review, 2026-09-29 |
+| DEC-0014 | Data | Data baseline: durable authoritative domain records; first-class extensible evidence with provenance; explicit correction/supersession and conflict semantics; rebuildable learner-state projections; optimistic concurrency with domain conflict handling; small local transactions plus outbox where required; domain-level classification; defense-in-depth tenant boundary; policy-driven retention/deletion. | ACCEPTED | Security/Data Closure Review, 2026-09-29 |
+
+## DEC-0013 / DEC-0014 Boundary
+
+These decisions establish baseline invariants required before API/persistence design. They do not choose final physical tenant isolation, country-specific legal rules, exact retention periods, database schema, API shapes, cloud/vendor, or implementation details.
