@@ -1,7 +1,7 @@
 # API Contract Gate Inputs — First Slice
 
 **Date:** 2026-09-29  
-**Status:** PROPOSED — API Gate NOT PROVEN  
+**Status:** CLOSURE REVIEW — API Gate NOT PROVEN  
 **Architecture:** ACCEPTED  
 **Security/Data baseline:** ACCEPTED  
 **Implementation authorization:** None
@@ -88,3 +88,45 @@ Database tables/indexes, ORM, exact field naming where domain decisions remain o
 **API Contract Gate: READY FOR REVIEW — NOT PROVEN**
 
 No implementation is authorized by this document.
+
+## API Contract Closure Review — 2026-09-29
+
+### Preconditions now satisfied
+
+- Architecture Gate: PASS
+- Security baseline: PASS
+- Data baseline: PASS
+- Domain Gate: PASS
+- UX Gate: PASS
+
+### Closure rule
+
+API Gate may pass only when each authoritative mutation has an explicit contract for authorization, validation, business preconditions, idempotency, concurrency/conflict, response, errors, audit and recovery, and when each read has explicit visibility/data ownership semantics.
+
+### Endpoint review matrix
+
+| Operation | Authorization | Idempotency | Concurrency | Evidence/State | Audit | Status |
+|---|---|---|---|---|---|---|
+| Read learning context | Identity + relationship + tenant/context | N/A | N/A | projection | sensitive read where applicable | READY |
+| Create assignment | Teacher authority + context | Required | Expected version where needed | authoritative assignment/goal | Required | READY |
+| Create submission | Learner authority + assignment scope | Required | Assignment version/availability | authoritative submission | Required | READY |
+| Record assessment result | Assessment authority | Required | Expected version | assessment result | Required | READY |
+| Create evidence | Source/actor authority + context | Required | Evidence lineage/version | authoritative evidence | Required | READY |
+| Create teacher decision | Teacher authority + context | Required | Required | authoritative decision | Required | READY |
+| Create next action | Authorized decision/context | Required | Required | authoritative commitment | Required | READY |
+| Create/update follow-up | Owner authority + context | Required for create | Required for state change | follow-up state | Required | READY |
+| Declare outcome | Explicit outcome authority + evidence sufficiency | Required | Required | authoritative outcome | Required | READY |
+| Parent projection | Parent relationship + policy/consent | N/A | N/A | controlled projection | sensitive read | READY |
+
+### Remaining API decisions
+
+1. Final public resource names and exact JSON schemas.
+2. Exact stable domain error-code vocabulary.
+3. Exact idempotency header/storage/retention mechanics.
+4. Exact pagination/filtering/sorting contract for reads.
+5. Exact authentication token/session mechanism.
+6. Formal OpenAPI version and generated-contract workflow.
+
+These are implementation/API details, not unresolved domain semantics. They must be closed during the API Gate review before implementation authorization.
+
+**Current recommendation:** API Gate is ready to close after endpoint-level contract specification and review; it is not yet PASS.
