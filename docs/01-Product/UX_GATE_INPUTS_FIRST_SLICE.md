@@ -409,3 +409,25 @@ This review checks whether the first-slice UX model is sufficiently bounded for 
 **UX Gate: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN**
 
 Open questions remain bounded and can be carried into Product, Domain, Security, or Accessibility decisions without authorizing implementation.
+
+
+## UX Confirmation Closure Packet — 2026-09-29
+
+**Status:** PROPOSED — OWNER CONFIRMATION REQUIRED
+
+### Recommendation
+Accept the first-slice UX contract as currently defined:
+
+- Student sees current context, useful next action, evidence-backed state and safe recovery.
+- Teacher sees context → evidence → interpretation/recommendation → decision → next action → follow-up.
+- Parent receives only the policy-authorized projection.
+- Completion is never presented as achievement without supporting semantics.
+- Unknown, insufficient, conflicting and corrected evidence remain explicit.
+- Retry/reconciliation never creates duplicate authoritative actions.
+- Responsive/mobile and RTL/LTR are baseline requirements.
+- Accessibility is a product baseline; formal conformance target remains a later explicit requirement decision.
+
+### Intentionally deferred
+Exact learning-mode presentation, exact progress wording, attention-signal design, evidence-density/detail level, parent fields pending final policy, follow-up reminder details and formal accessibility conformance target.
+
+**Recommended decision:** ACCEPT the proposed UX contract and carry deferred details into their owning product/security/accessibility decisions.
