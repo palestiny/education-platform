@@ -130,7 +130,7 @@ It does not finalize:
 Status remains **PROPOSED** until the Domain Confirmation gate is explicitly passed.
 
 
-| DEC-0012 | Architecture | Initial architecture candidate: Modular Monolith with explicit logical module contracts, command-time authorization, authoritative-vs-derived state policy, evidence lineage, idempotency/concurrency/reconciliation policies and isolated external integrations. | PROPOSED | ADR-0001 + Architecture Closure Review, 2026-09-28 |
+| DEC-0012 | Architecture | Initial architecture: Modular Monolith with explicit logical module contracts, command-time authorization, authoritative-vs-derived state policy, evidence lineage, idempotency/concurrency/reconciliation policies and isolated external integrations. | ACCEPTED | ADR-0001 + Architecture Closure Review, 2026-09-28 |
 
 ## DEC-0012 Boundary
 
