@@ -799,3 +799,46 @@ No downstream artifact has been marked accepted on the owner's behalf.
 - PR #2: **OPEN / UNMERGED**
 - No implementation authorization added.
 - No merge performed.
+
+
+## Checkpoint 039 — Architecture Gate Accepted
+
+**Date:** 2026-09-29  
+**Stage:** Architecture Gate Closure  
+**Status:** PASS — ARCHITECTURE ACCEPTED  
+**Implementation authorization:** NOT YET AUTHORIZED
+
+### Explicit owner decision
+
+The Project Owner explicitly accepted:
+
+**Modular Monolith + explicit logical module contracts + isolated external integration adapters**
+
+### Recorded changes
+
+- ADR-0001 status changed from **PROPOSED** to **ACCEPTED**.
+- DEC-0012 status changed from **PROPOSED** to **ACCEPTED**.
+- Architecture Gate is now **PASSED**.
+- Architecture acceptance does **not** finalize database schema, API contracts, physical tenant-isolation mechanism, detailed consent/age/country policy, retention/deletion/legal-hold policy, or cloud/provider selection.
+- Implementation remains unauthorized until downstream gates close.
+
+### Current gate status
+
+| Gate | Status |
+|---|---|
+| Product Foundation | NOT PROVEN |
+| Requirements Consolidation | COMPLETE |
+| First Product Slice | PROPOSED |
+| Domain Confirmation | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| UX | READY FOR EXPLICIT CONFIRMATION — NOT PROVEN |
+| Architecture | **PASS — ACCEPTED** |
+| Security | READY FOR EXPLICIT DECISIONS — NOT PROVEN |
+| Data | READY FOR EXPLICIT DECISIONS — NOT PROVEN |
+| API Contract | NOT PROVEN |
+| Implementation | NOT AUTHORIZED |
+
+### Next gate sequence
+
+**Security Decision Set → Data Decision Set → Security/Data Architecture Impact Reconciliation → API Contract Gate → Implementation Gate**
+
+No merge performed.
