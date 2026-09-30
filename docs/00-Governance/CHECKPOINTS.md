@@ -1421,3 +1421,28 @@ The test-framework choice is an implementation-level proposal and has not been s
 **GREEN implementation:** BLOCKED
 
 No fake implementation will be introduced merely to turn RED tests green.
+
+
+## Checkpoint 056 — xUnit Test Harness Skeleton — 2026-09-30
+
+**Stage:** TDD RED  
+**Status:** TEST PROJECT SKELETON CREATED — EXECUTABLE RED PENDING APPLICATION HOST
+
+### Accepted decision
+xUnit is now the selected test framework.
+
+### Added
+- `EducationPlatform.sln`
+- `tests/EducationPlatform.UnitTests/EducationPlatform.UnitTests.csproj`
+- `tests/EducationPlatform.ApplicationTests/EducationPlatform.ApplicationTests.csproj`
+- `tests/EducationPlatform.IntegrationTests/EducationPlatform.IntegrationTests.csproj`
+
+The integration project includes the PostgreSQL client dependency required for later real persistence tests.
+
+### Important boundary
+No production learning behavior has been implemented.
+
+The repository still needs the minimum application/host boundary required for executable application/API RED tests. We must not manufacture failing tests with `Assert.Fail` or equivalent; RED must fail because the intended application behavior is absent.
+
+### Next
+Create the minimum application/host project structure and then translate RED-001 through RED-010 into executable tests. GREEN behavior remains blocked until RED has genuine intended failures.
