@@ -1113,3 +1113,32 @@ Exact persistence schema, API JSON schemas, authentication/session mechanism, ph
 Review the first-slice persistence model, module contracts and exact API schemas before any production implementation.
 
 **No production code started. No merge performed.**
+
+
+## Checkpoint 047 — Persistence + Module Contract Design
+
+**Date:** 2026-09-29  
+**Stage:** Implementation Gate Preparation  
+**Status:** NOT PROVEN
+
+### Completed
+- Persistence ownership mapped by logical module.
+- Core logical records defined without freezing physical tables.
+- Idempotency record semantics defined.
+- Concurrency/version semantics defined.
+- Module command/query contracts drafted.
+- Transaction and cross-module side-effect rules defined.
+- Rebuild principle defined for derived projections.
+
+### Still open
+- Exact relational schema and indexes.
+- Exact API JSON schemas.
+- Authentication/session mechanism.
+- Physical tenant isolation.
+- Jurisdiction-specific policy and retention.
+- Provider/cloud choices.
+
+### Next
+Translate these contracts into an exact first-slice persistence schema and endpoint request/response contracts, then run the Implementation Gate review.
+
+**No production code. No merge performed.**
