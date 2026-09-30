@@ -151,3 +151,41 @@ Required outputs:
 6. revised Implementation Gate checklist
 
 After those are reviewed, the gate can be reassessed.
+
+
+## 9. Implementation Boundary Closure Review — 2026-09-30
+
+A focused closure artifact was added at `docs/05-Architecture/IMPLEMENTATION_BOUNDARY_CLOSURE_REVIEW.md`.
+
+It covers the three blockers without silently accepting owner-level choices:
+
+- authentication/session boundary;
+- enforceable server-derived tenant context;
+- narrow first-slice physical persistence mapping;
+- versioned migration strategy;
+- domain/application/persistence/API test harness;
+- exact first RED suite.
+
+### Proposed boundary
+
+Authentication is proposed as a provider-neutral application authentication context behind the ASP.NET Core host boundary. Production identity-provider selection remains open.
+
+Tenant authority is proposed as server-derived from authenticated membership plus protected resource/learning-context resolution. Client-supplied tenant identifiers are never treated as proof of authority.
+
+The first technical persistence boundary is proposed as a narrow relational mapping for:
+
+**Learning Context → Goal → Assignment → Submission**
+
+plus idempotency, audit and outbox records required by the accepted reliability/accountability contract.
+
+### Important decision status
+
+These implementation-boundary choices are **PROPOSED — OWNER CONFIRMATION REQUIRED**.
+
+No migration, controller, production identity provider, cloud provisioning or production application code has been authorized.
+
+### Gate status
+
+**Implementation Gate remains NOT PROVEN.**
+
+The next owner-level closure decision is limited to the proposed implementation boundary. Once accepted, the gate can be reassessed before the first RED test.
