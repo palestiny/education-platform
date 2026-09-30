@@ -1483,3 +1483,25 @@ This is test infrastructure only. No application behavior was implemented and no
 
 ### Next
 Translate RED-001 through RED-010 into executable tests, then run them and classify every failure before GREEN.
+
+
+## Checkpoint 056 — xUnit Accepted / Executable RED Boundary — 2026-09-30
+
+**Stage:** TDD RED  
+**Status:** TEST PROJECT CREATION / APPLICATION BOUNDARY SETUP
+
+### Owner decision
+DEC-0019 accepted **xUnit** as the test framework.
+
+### Important verification
+The repository still has no executable .NET application/test project structure. Creating tests that fail because referenced projects/types do not exist would not constitute valid RED.
+
+### Next authorized implementation step
+Create only the minimum .NET solution/application/test boundaries required to compile the RED suite. The application boundary must remain behaviorally unimplemented.
+
+Then:
+- write RED-001 through RED-010;
+- run them;
+- verify intended behavioral failures;
+- do not add GREEN behavior.
+
