@@ -1142,3 +1142,26 @@ Review the first-slice persistence model, module contracts and exact API schemas
 Translate these contracts into an exact first-slice persistence schema and endpoint request/response contracts, then run the Implementation Gate review.
 
 **No production code. No merge performed.**
+
+
+## Checkpoint 048 — Exact Persistence + API Draft
+
+**Date:** 2026-09-29  
+**Stage:** Implementation Gate Preparation  
+**Status:** NOT PROVEN
+
+### Completed
+- Concrete first-slice logical persistence model drafted.
+- Core relationships and integrity rules mapped.
+- Evidence lineage model drafted.
+- Idempotency and outbox records drafted.
+- Endpoint-by-endpoint request/response direction drafted.
+- Common error contract and contract-test obligations mapped.
+
+### Important boundary
+The schema and API artifacts are drafts. They do not authorize migrations, controllers, or UI implementation. Exact field/cardinality decisions still require review.
+
+### Next
+Perform a consistency review across Domain → Persistence → API, then close the remaining exact contract mechanics before Implementation Gate decision.
+
+**No production code. No merge performed.**
