@@ -184,3 +184,18 @@ This decision does not select a production identity provider, physical tenant-is
 ### Consequence
 The Implementation Gate must now be reassessed. Acceptance of this boundary does not by itself authorize production implementation or migrations.
 
+
+
+## DEC-0019 — TDD Test Framework Accepted
+
+**Date:** 2026-09-30  
+**Status:** ACCEPTED
+
+### Decision
+Use **xUnit** as the test framework for the first .NET test harness.
+
+### Scope
+This is an implementation-level decision for the test harness. It does not change product/domain semantics, API contracts, architecture, security baseline, data baseline, or deferred provider decisions.
+
+### Consequence
+Test-project creation and executable RED test translation are authorized.
