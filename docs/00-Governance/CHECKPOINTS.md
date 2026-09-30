@@ -1446,3 +1446,16 @@ The repository still needs the minimum application/host boundary required for ex
 
 ### Next
 Create the minimum application/host project structure and then translate RED-001 through RED-010 into executable tests. GREEN behavior remains blocked until RED has genuine intended failures.
+
+
+## Checkpoint 056 — xUnit Accepted / Test Project Authorized — 2026-09-30
+
+**Stage:** TDD RED  
+**Status:** TEST PROJECT CREATION AUTHORIZED
+
+The Project Owner accepted xUnit as the first .NET test framework (DEC-0019).
+
+### Next executable work
+Create the minimum .NET solution/test-project structure and translate the approved RED specification into executable tests.
+
+**RED execution remains the only authorized implementation activity. GREEN remains blocked until RED has been demonstrated and reviewed.**
