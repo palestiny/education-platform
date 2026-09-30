@@ -72,11 +72,11 @@ Until then:
 
 ## Framework Baseline Verification — 2026-09-30
 
-The current .NET LTS release is .NET 10, and the first test projects target `net10.0`. Microsoft lists .NET 10 as active LTS through November 14, 2028. citeturn0search0
+The current .NET LTS release is .NET 10, and the first test projects target `net10.0`. Microsoft lists .NET 10 as active LTS through November 14, 2028.
 
 The test harness package baseline was refreshed against current NuGet listings:
 - `xunit.v3` 4.0.1
 - `xunit.runner.visualstudio` 4.0.0
 - `Microsoft.NET.Test.Sdk` 18.10.0
 
-NuGet currently identifies xUnit v2 2.9.3 as legacy/deprecated, so the harness uses xUnit v3 instead. citeturn3search0turn2search0turn1search5
+NuGet currently identifies xUnit v2 2.9.3 as legacy/deprecated, so the harness uses xUnit v3 instead.
