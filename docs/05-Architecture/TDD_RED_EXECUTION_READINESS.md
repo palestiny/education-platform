@@ -80,3 +80,20 @@ The test harness package baseline was refreshed against current NuGet listings:
 - `Microsoft.NET.Test.Sdk` 18.10.0
 
 NuGet currently identifies xUnit v2 2.9.3 as legacy/deprecated, so the harness uses xUnit v3 instead.
+
+
+## 2026-09-30 Execution Boundary Note
+
+xUnit has now been explicitly accepted (DEC-0019).
+
+Before translating the ten RED scenarios into executable C# tests, the repository still needs a minimal .NET solution/application boundary to compile against. Creating tests that fail because types/projects are absent would be a harness failure, not valid RED evidence.
+
+Therefore the correct next implementation step is:
+
+1. establish the minimal solution and application/test project boundaries;
+2. establish the provider-neutral application interfaces required by the accepted contract;
+3. write RED tests against those boundaries;
+4. run the tests and verify each failure is behavioral and intentional;
+5. only then enter GREEN.
+
+The application boundary must remain minimal and must not implement the requested behavior merely to satisfy the tests.
