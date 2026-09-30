@@ -1,7 +1,7 @@
 # Implementation Boundary Closure Review — First Technical Slice
 
 **Date:** 2026-09-30  
-**Status:** PROPOSED — IMPLEMENTATION GATE NOT PROVEN
+**Status:** ACCEPTED — IMPLEMENTATION GATE REASSESSMENT REQUIRED
 
 ## 1. Purpose
 
@@ -27,7 +27,7 @@ No production implementation, migration or provider commitment is authorized by 
 | Migration strategy | NOT PROVEN | Versioned forward-compatible migrations with recovery discipline |
 | Test harness | NOT PROVEN | Deterministic domain/application tests + real PostgreSQL integration boundary |
 
-The first three items remain **PROPOSED until explicitly accepted**.
+The Project Owner explicitly accepted the recommended boundary on 2026-09-30. Production implementation still requires Implementation Gate reassessment; acceptance of this boundary does not authorize code or migrations by itself.
 
 # 3. Authentication / Session Boundary
 
@@ -106,7 +106,7 @@ That means:
 - Production provider selection remains OPEN.
 - Domain/application semantics never depend on provider-specific token/session objects.
 
-**Decision status: PROPOSED — OWNER CONFIRMATION REQUIRED.**
+**Decision status: ACCEPTED — 2026-09-30.**
 
 # 4. Tenant Context Enforcement
 
@@ -151,7 +151,7 @@ Adopt **explicit logical tenant context + server-side authorization + persistenc
 
 Do not make a client header, route parameter or UI state the source of tenant authority.
 
-**Decision status: PROPOSED — OWNER CONFIRMATION REQUIRED.**
+**Decision status: ACCEPTED — 2026-09-30.**
 
 # 5. First-Slice Physical Persistence Mapping
 
@@ -271,7 +271,7 @@ This mapping is intentionally narrow. It does not freeze the future platform dat
 
 ## 5.3 Important boundary
 
-The exact SQL types, index names, ORM mappings, database extensions and naming conventions remain implementation details to be reviewed with the chosen persistence stack.
+The exact SQL types, index names, ORM mappings, database extensions and naming conventions remain implementation details for the implementation review; they are not being invented by this acceptance.
 
 # 6. Migration Strategy
 
@@ -303,7 +303,7 @@ Migration recovery must distinguish:
 
 Before the first production deployment, each migration must have deterministic ordering, tested application compatibility, failure visibility, recovery procedure and backup/restore validation appropriate to the environment.
 
-**Decision status: PROPOSED — OWNER CONFIRMATION REQUIRED.**
+**Decision status: ACCEPTED — 2026-09-30.**
 
 # 7. Test Harness Strategy
 
@@ -340,7 +340,7 @@ Verify request validation, response shape, error codes, authentication failures,
 9. closed assignment rejects submission;
 10. audit record exists for authoritative mutation.
 
-No implementation code should be written until these RED tests are reviewed as the executable interpretation of the accepted contract.
+The first RED suite is accepted as the executable interpretation of the accepted contract. Production implementation still waits for the Implementation Gate reassessment.
 
 # 8. Closure Matrix
 
@@ -390,6 +390,6 @@ The recommended path is:
 5. reassess Implementation Gate;
 6. only then write the first RED tests.
 
-**Current status: IMPLEMENTATION GATE NOT PROVEN.**
+**Current status: IMPLEMENTATION GATE REASSESSMENT REQUIRED.**
 
 **No production implementation is authorized by this document.**
