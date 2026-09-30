@@ -1394,3 +1394,30 @@ The RED suite must not invent:
 
 ### Exit condition
 RED is complete only when all ten tests exist in the test project and fail for their intended reasons. GREEN remains blocked until RED review passes.
+
+
+## Checkpoint 055 — RED Execution Readiness — 2026-09-30
+
+**Stage:** TDD RED  
+**Status:** READY TO CREATE TEST PROJECT — TEST FRAMEWORK DECISION OPEN
+
+### Finding
+The branch currently has no application/test project structure. The RED specification is complete, but executable tests cannot be honestly claimed until a test-project boundary exists.
+
+### Added
+`docs/05-Architecture/TDD_RED_EXECUTION_READINESS.md`
+
+### Proposed implementation detail
+- Candidate test framework: xUnit.
+- Alternative: NUnit.
+- Proposed test layout: Unit / Application / Integration.
+- Persistence integration tests use a real PostgreSQL-compatible database.
+
+The test-framework choice is an implementation-level proposal and has not been silently accepted.
+
+### Current boundary
+**RED specification:** READY  
+**Executable RED tests:** NOT CREATED  
+**GREEN implementation:** BLOCKED
+
+No fake implementation will be introduced merely to turn RED tests green.
