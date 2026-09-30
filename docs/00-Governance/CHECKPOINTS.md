@@ -1165,3 +1165,34 @@ The schema and API artifacts are drafts. They do not authorize migrations, contr
 Perform a consistency review across Domain → Persistence → API, then close the remaining exact contract mechanics before Implementation Gate decision.
 
 **No production code. No merge performed.**
+
+
+## Checkpoint 048 — Persistence Constraint Review
+
+**Date:** 2026-09-30  
+**Stage:** Implementation Gate Preparation  
+**Status:** NOT PROVEN
+
+### Completed
+- Reviewed exact persistence draft against accepted domain/API semantics.
+- Defined tenant/context ownership constraints.
+- Defined historical attribution and evidence lineage constraints.
+- Defined optimistic concurrency and scoped idempotency constraints.
+- Defined minimal lifecycle direction for assignment, submission, follow-up and outcome.
+- Defined retention/deletion boundary and indexing direction.
+- Confirmed local transaction boundaries and recoverable cross-module propagation.
+
+### Open
+- Exact physical schema and foreign keys.
+- Exact JSON request/response shapes.
+- Authentication/session mechanism.
+- Physical tenant isolation.
+- Evidence taxonomy and goal/scheduling cardinality.
+- Outcome authority implementation.
+- Retention/legal policy details.
+- ORM/provider choices.
+
+### Next
+Complete exact first-slice contract specification and acceptance scenarios, then perform the Implementation Gate review.
+
+**No production code. No migrations. No merge.**
