@@ -1547,3 +1547,25 @@ The test project skeleton is infrastructure only. No fake domain/application beh
 
 ### Next
 Translate RED-001 through RED-010 into executable tests against the accepted application contracts. If an executable test cannot fail for the intended semantic reason without inventing an implementation contract, stop and close that contract gap first.
+
+
+## Checkpoint 056 — Executable RED Suite Created — 2026-09-30
+
+**Stage:** TDD RED  
+**Status:** EXECUTION / VERIFICATION PENDING
+
+### Created
+- ASP.NET Core API host skeleton.
+- xUnit application test project.
+- `FirstSliceRedTests.cs` containing RED-001 through RED-010.
+
+### Important
+The host contains no business implementation. The tests are therefore expected to fail until the required behavior is implemented.
+
+### Verification status
+The tests have been committed to GitHub, but no local/CI test execution result is being claimed yet.
+
+### Next
+Run the test suite in a controlled environment and inspect each failure. If failures are caused by missing routing/host scaffolding rather than the intended contract behavior, refine the harness before GREEN.
+
+**GREEN remains blocked until RED evidence is valid.**
