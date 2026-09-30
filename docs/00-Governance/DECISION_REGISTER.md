@@ -199,3 +199,18 @@ This is an implementation-level decision for the test harness. It does not chang
 
 ### Consequence
 Test-project creation and executable RED test translation are authorized.
+
+
+## DEC-0020 — First Test Harness Target: .NET 10 LTS
+
+**Date:** 2026-09-30  
+**Status:** ACCEPTED FOR IMPLEMENTATION BASELINE
+
+### Decision
+The first test projects target **.NET 10 (net10.0)**.
+
+### Rationale
+The project charter requires .NET LTS as the backend direction. At the current project date, .NET 10 is the active LTS release.
+
+### Boundary
+This establishes the target framework for the initial test harness. It does not finalize the complete production runtime/infrastructure strategy or any cloud/provider decision.
