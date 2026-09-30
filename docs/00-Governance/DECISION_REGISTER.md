@@ -160,3 +160,27 @@ These decisions establish baseline invariants required before API/persistence de
 | DEC-0016 | UX | First-slice UX contract accepted: role-specific views over shared context/evidence/state, evidence-backed next actions, explicit uncertainty/conflict/recovery, controlled parent projection, responsive/mobile and RTL/LTR baseline. | ACCEPTED | UX Confirmation, 2026-09-29 |
 
 | DEC-0017 | API | First-slice API contract baseline accepted: versioned /api/v1, stable IDs, explicit auth context, stable errors, critical-mutation idempotency, explicit concurrency conflicts, cursor pagination, OpenAPI contract source, contract tests, safe diagnostics and controlled projections. | ACCEPTED | API Gate, 2026-09-29 |
+
+
+## DEC-0018 — Implementation Boundary Closure Accepted
+
+**Date:** 2026-09-30  
+**Status:** ACCEPTED
+
+### Decision
+The Project Owner accepted the proposed implementation boundary for the first technical slice:
+
+1. Provider-neutral application authentication context behind the ASP.NET Core host authentication boundary. Production identity-provider selection remains deferred.
+2. Server-derived tenant context from authenticated membership and protected resource/learning-context resolution. Client-supplied tenant identifiers are not authority.
+3. Logical tenant isolation with defense-in-depth for the first slice; physical isolation remains phaseable.
+4. Narrow relational persistence mapping for Learning Context → Goal → Assignment → Submission, plus idempotency, audit and outbox records as required.
+5. Version-controlled, forward-compatible migration strategy using Expand → Compatible Deploy → Backfill/Migrate → Switch → Contract/Remove.
+6. Domain/application/API tests plus real PostgreSQL-compatible persistence integration tests.
+7. First RED suite covering authentication/authorization, tenant isolation, assignment lifecycle, idempotency, submission lifecycle and audit.
+
+### Boundaries
+This decision does not select a production identity provider, physical tenant-isolation mechanism, cloud provider, ORM, final SQL types/indexes, evidence taxonomy, mastery algorithm, advanced scheduling, final retention periods, or jurisdiction-specific legal policy.
+
+### Consequence
+The Implementation Gate must now be reassessed. Acceptance of this boundary does not by itself authorize production implementation or migrations.
+
