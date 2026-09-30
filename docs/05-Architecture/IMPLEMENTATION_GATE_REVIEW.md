@@ -219,3 +219,61 @@ The Implementation Gate is **not automatically PASS**. It now requires a focused
 **Production implementation: NOT YET AUTHORIZED**
 
 Next: conduct the Implementation Gate reassessment, then enter TDD RED if the gate passes.
+
+
+## 10. Implementation Gate Reassessment — 2026-09-30
+
+### Reassessment result
+
+The previously identified implementation-boundary blockers are now explicitly accepted under DEC-0018.
+
+| Gate requirement | Result |
+|---|---|
+| Authentication application boundary | PASS |
+| Tenant-context enforcement boundary | PASS |
+| First-slice persistence mapping | PASS FOR IMPLEMENTATION ENTRY |
+| Migration strategy | PASS FOR IMPLEMENTATION ENTRY |
+| Test harness strategy | PASS |
+| First RED suite | PASS |
+| Deferred semantics remain explicit | PASS |
+| Production identity provider selection | DEFERRED — not required for the first testable application boundary |
+| Physical tenant isolation | DEFERRED — logical enforcement is the accepted first-slice boundary |
+| Final SQL/ORM/provider details | DEFERRED — implementation-level details, not product semantics |
+
+### Gate decision
+
+**IMPLEMENTATION GATE: PASS — TDD RED ENTRY AUTHORIZED**
+
+This PASS authorizes only the disciplined RED phase for the accepted first technical slice:
+
+**Authenticated Principal → Tenant Membership → Learning Context → Goal → Assignment → Submission**
+
+It does **not** authorize:
+- production deployment;
+- production identity-provider selection;
+- cloud provisioning;
+- broad feature implementation;
+- migrations against production;
+- silently resolving deferred product semantics.
+
+### TDD boundary
+
+The next work is the first executable RED suite. Tests must be written against the accepted contracts and must fail for the intended reason before GREEN implementation begins.
+
+Target RED scenarios:
+1. unauthenticated assignment creation is rejected;
+2. authenticated but unauthorized teacher is rejected;
+3. authorized teacher creates assignment;
+4. same idempotency key + same request replays the original result;
+5. same idempotency key + different request returns conflict;
+6. cross-tenant assignment creation is rejected;
+7. authorized learner submits;
+8. duplicate submission retry does not create a duplicate;
+9. closed assignment rejects submission;
+10. authoritative mutation creates an audit record.
+
+### Verification rule
+
+The RED suite itself must be reviewed for semantic correctness before GREEN implementation. A failing test that encodes an invented requirement is not valid RED evidence.
+
+**Current status: IMPLEMENTATION GATE PASS — TDD RED ENTRY.**
