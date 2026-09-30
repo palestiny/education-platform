@@ -1,7 +1,7 @@
 # TDD RED Execution Readiness
 
 **Date:** 2026-09-30  
-**Status:** READY TO CREATE TEST PROJECT — TEST FRAMEWORK DECISION OPEN
+**Status:** ACCEPTED — TEST PROJECT CREATION AUTHORIZED
 
 ## Current finding
 
@@ -26,13 +26,11 @@ Therefore the RED specification can be translated into executable tests only aft
 
 A concrete .NET test framework/runner has not been explicitly selected in the repository.
 
-Candidate: xUnit
+Selected: xUnit
 
-Alternative: NUnit
+NUnit remains an alternative but is not selected for this project.
 
-Recommendation: xUnit because it is a conventional .NET test framework and keeps the first test harness small.
-
-**Status: PROPOSED — not an owner-level product/architecture decision.**
+**Decision status: ACCEPTED — 2026-09-30.**
 
 ### Test project layout
 
