@@ -1360,3 +1360,37 @@ RED is limited to:
 
 ### Next
 Write and review the first executable RED suite. Each test must fail for the intended reason and must map to an already accepted requirement/contract.
+
+
+## Checkpoint 054 — First Slice RED Specification — 2026-09-30
+
+**Stage:** TDD RED  
+**Status:** SPECIFICATION READY FOR REVIEW
+
+### Added
+Created:
+`docs/05-Architecture/FIRST_SLICE_TDD_RED_SPECIFICATION.md`
+
+The specification defines ten executable scenarios covering:
+- authentication;
+- authorization;
+- assignment creation;
+- idempotent replay;
+- idempotency conflict;
+- tenant isolation;
+- learner submission;
+- duplicate submission retry;
+- closed-assignment rejection;
+- auditability.
+
+### Discipline
+The RED suite must not invent:
+- production identity-provider choice;
+- physical tenant isolation;
+- evidence taxonomy;
+- mastery/progress algorithm;
+- advanced scheduling;
+- deferred legal/policy semantics.
+
+### Exit condition
+RED is complete only when all ten tests exist in the test project and fail for their intended reasons. GREEN remains blocked until RED review passes.
