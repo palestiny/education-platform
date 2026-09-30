@@ -1569,3 +1569,27 @@ The tests have been committed to GitHub, but no local/CI test execution result i
 Run the test suite in a controlled environment and inspect each failure. If failures are caused by missing routing/host scaffolding rather than the intended contract behavior, refine the harness before GREEN.
 
 **GREEN remains blocked until RED evidence is valid.**
+
+
+## Checkpoint 056 — TDD RED Test Project Boundary — 2026-10-01
+
+**Stage:** TDD RED  
+**Status:** PROJECT SKELETON DESIGN READY
+
+### Added
+`docs/05-Architecture/TDD_RED_TEST_PROJECT_BOUNDARY.md`
+
+### Defined
+- Minimal .NET layer boundary: API / Application / Domain / Infrastructure.
+- Test boundary: Unit / Application / Integration.
+- Dependency direction.
+- RED test placement.
+- Separation between RED contracts and GREEN infrastructure implementation.
+
+### Current status
+**Test framework:** xUnit — ACCEPTED (DEC-0019)  
+**Project skeleton:** DESIGN READY  
+**Executable RED tests:** NOT CREATED  
+**GREEN:** BLOCKED
+
+Next: create the minimum solution/project skeleton, then translate RED-001 through RED-010 into executable tests.
