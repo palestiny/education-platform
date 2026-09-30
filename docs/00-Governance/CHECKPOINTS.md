@@ -1196,3 +1196,26 @@ Perform a consistency review across Domain → Persistence → API, then close t
 Complete exact first-slice contract specification and acceptance scenarios, then perform the Implementation Gate review.
 
 **No production code. No migrations. No merge.**
+
+
+## Checkpoint 049 — Exact First-Slice Contract Specification
+
+**Date:** 2026-09-30  
+**Stage:** Implementation Gate Preparation  
+**Status:** READY FOR GATE REVIEW
+
+### Completed
+- Defined concrete behavior for first-slice endpoints.
+- Defined standard success/error response shape.
+- Defined mutation metadata and idempotency/concurrency requirements.
+- Defined authorization and protected projection behavior.
+- Defined acceptance scenarios for assignment, submission, evidence, teacher decision, next action, follow-up and outcome.
+- Preserved explicitly deferred semantics rather than inventing them.
+
+### Gate impact
+The contract is now concrete enough to conduct an Implementation Gate review.
+
+### Still open
+Physical schema details, auth/session mechanism, physical tenant isolation, jurisdiction policy, retention, evidence taxonomy, deferred scheduling/cardinality and infrastructure/provider choices.
+
+**No production code. No migrations. No merge.**
