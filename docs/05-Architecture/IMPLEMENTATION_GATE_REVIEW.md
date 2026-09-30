@@ -189,3 +189,33 @@ No migration, controller, production identity provider, cloud provisioning or pr
 **Implementation Gate remains NOT PROVEN.**
 
 The next owner-level closure decision is limited to the proposed implementation boundary. Once accepted, the gate can be reassessed before the first RED test.
+
+
+## 9. Implementation Boundary Closure Accepted — 2026-09-30
+
+DEC-0018 records explicit Project Owner acceptance of the implementation boundary.
+
+### Accepted
+- Provider-neutral application authentication context behind the ASP.NET Core host boundary.
+- Server-derived tenant context and tenant-scoped persistence enforcement.
+- Logical tenant isolation with defense-in-depth; physical isolation remains phaseable.
+- Narrow first-slice relational persistence mapping.
+- Version-controlled forward-compatible migration strategy.
+- Real PostgreSQL-compatible persistence integration testing.
+- First RED suite as the executable interpretation of the accepted contract.
+
+### Remaining Gate Work
+The Implementation Gate is **not automatically PASS**. It now requires a focused reassessment of:
+- concrete implementation-level schema mechanics;
+- authentication test adapter and claims mapping contract;
+- tenant-context enforcement testability;
+- migration/test harness readiness;
+- exact RED test review;
+- preservation of all deferred semantics without invention.
+
+### Transition
+**Implementation Boundary: PASS / ACCEPTED**  
+**Implementation Gate: REASSESSMENT REQUIRED**  
+**Production implementation: NOT YET AUTHORIZED**
+
+Next: conduct the Implementation Gate reassessment, then enter TDD RED if the gate passes.
