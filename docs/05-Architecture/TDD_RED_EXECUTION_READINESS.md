@@ -36,7 +36,7 @@ The executable harness uses xUnit v3 (`xunit.v3` 4.0.1) with the Visual Studio a
 
 ### Test project layout
 
-Proposed minimum:
+Accepted minimum:
 
 ```text
 tests/
