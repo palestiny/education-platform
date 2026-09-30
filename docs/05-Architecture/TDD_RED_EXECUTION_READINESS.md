@@ -7,7 +7,7 @@
 
 The repository now contains the minimum test-project structure required to begin executable RED work.
 
-Therefore the RED specification can be translated into executable tests only after establishing the minimum test-project boundary.
+The test-project boundary exists. The next step is to add executable RED tests only after the application boundary types they exercise are defined without inventing deferred semantics.
 
 ## What is already fixed
 
