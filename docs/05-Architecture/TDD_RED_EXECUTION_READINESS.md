@@ -97,3 +97,16 @@ Therefore the correct next implementation step is:
 5. only then enter GREEN.
 
 The application boundary must remain minimal and must not implement the requested behavior merely to satisfy the tests.
+
+
+## Test Project Skeleton — 2026-10-01
+
+The branch now contains the minimum xUnit test-project boundaries:
+
+- `tests/EducationPlatform.UnitTests/`
+- `tests/EducationPlatform.ApplicationTests/`
+- `tests/EducationPlatform.IntegrationTests/`
+
+The projects intentionally contain no fake implementation and no artificial failing assertions.
+
+Executable RED tests remain the next task because the application boundary they will exercise does not yet exist.
