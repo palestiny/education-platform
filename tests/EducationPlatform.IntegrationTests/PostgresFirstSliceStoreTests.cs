@@ -7,7 +7,7 @@ using Xunit;
 namespace EducationPlatform.IntegrationTests;
 
 [CollectionDefinition("PostgresPersistence", DisableParallelization = true)]
-public sealed class PostgresPersistenceCollection;
+public sealed class PostgresPersistenceCollection { }
 
 [Collection("PostgresPersistence")]
 public sealed class PostgresFirstSliceStoreTests
