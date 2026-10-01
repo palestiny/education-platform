@@ -1646,3 +1646,30 @@ The current API host has only the empty ASP.NET Core pipeline; the first-slice e
 - GREEN implementation: BLOCKED
 
 Next: obtain a GitHub Actions run (or equivalent real test execution), inspect compile/runtime failures, correct only harness defects, then verify the ten tests fail for intended missing application behavior.
+
+
+## Checkpoint 056 — Executable RED Suite Created — 2026-10-01
+
+**Stage:** TDD RED  
+**Status:** EXECUTION VERIFICATION PENDING
+
+### Completed
+- xUnit accepted as the test framework (DEC-0019).
+- Solution/project skeleton is present.
+- API test host dependency added.
+- API project file syntax corrected.
+- Solution now registers the domain, application, API and test projects.
+- `FirstSliceRedTests.cs` contains RED-001 through RED-010.
+
+### Important verification boundary
+The tests have **not been executed in this environment**, so no PASS/FAIL test result is being claimed.
+
+The expected RED condition is that the executable tests fail because the required application behavior/endpoints are not implemented yet. Any compile/setup failure must be fixed before interpreting the tests as valid RED evidence.
+
+### Next
+Run the test project, classify every failure:
+1. test/build infrastructure failure;
+2. contract/test defect;
+3. intended missing implementation.
+
+Only category 3 counts as valid RED evidence.
