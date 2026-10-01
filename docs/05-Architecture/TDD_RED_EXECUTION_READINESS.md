@@ -131,3 +131,40 @@ GitHub Actions run **#36** is currently executing the test workflow for the late
 
 **Current result: IN PROGRESS — no PASS/FAIL conclusion yet.**
 
+
+
+## Execution Root-Cause Correction — 2026-10-01
+
+The first executable RED CI attempt did **not** reach test execution.
+
+GitHub Actions run #41 successfully completed checkout, .NET 10 setup, and restore, but the test command failed before discovery because .NET 10 was invoking the legacy VSTest path against Microsoft.Testing.Platform-based xUnit v3 projects.
+
+The exact failure was:
+
+> Testing with VSTest target is no longer supported by Microsoft.Testing.Platform on .NET 10 SDK and later.
+
+This was a **test infrastructure configuration failure**, not valid RED evidence.
+
+### Corrective action
+
+The harness was corrected to use the native .NET 10 Microsoft Testing Platform path:
+
+- added root `global.json` selecting `Microsoft.Testing.Platform`;
+- configured all three xUnit test projects as executable test applications;
+- enabled the xUnit Microsoft Testing Platform runner;
+- removed the VSTest-specific TRX logger argument from the CI `dotnet test` invocation.
+
+This follows the .NET 10 testing model and xUnit v3 guidance.
+
+### Current verification status
+
+The correction has been committed to the working branch, but a new GitHub Actions run has not yet completed.
+
+Therefore:
+
+- Test harness infrastructure: **CORRECTED**
+- Restore: **previously verified PASS**
+- RED behavioral execution: **PENDING NEW CI RUN**
+- RED-001..009: **defined and executable**
+- RED-010: **deferred to the real persistence/audit seam; no fake API**
+- GREEN: **BLOCKED**
