@@ -1,14 +1,15 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using EducationPlatform.Domain.FirstSlice;
 
 namespace EducationPlatform.Application.FirstSlice;
 
-// Development/test adapter. The durable PostgreSQL adapter is the next GREEN slice.
 public sealed class InMemoryFirstSliceStore : IFirstSliceStore
 {
     private readonly ConcurrentDictionary<string, Assignment> _assignments = new();
     private readonly ConcurrentDictionary<string, Submission> _submissions = new();
     private readonly ConcurrentDictionary<string, (string Fingerprint, object Response)> _idempotency = new();
+    private readonly object _gate = new();
 
     public InMemoryFirstSliceStore()
     {
@@ -28,41 +29,81 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
     public Assignment? GetAssignment(string id) =>
         _assignments.TryGetValue(id, out var assignment) ? assignment : null;
 
-    public Assignment CreateAssignment(string tenantId, string contextId, string goalId, string learnerId, string work)
+    public FirstSliceMutation<Assignment> CreateAssignment(
+        string tenantId, string actorId, string contextId, string goalId,
+        string learnerId, string work, string? idempotencyKey,
+        string requestFingerprint, string correlationId)
     {
-        var assignment = new Assignment
+        lock (_gate)
         {
-            Id = Guid.NewGuid().ToString("N"),
-            TenantId = tenantId, ContextId = contextId, GoalId = goalId,
-            LearnerId = learnerId, Work = work
-        };
-        _assignments[assignment.Id] = assignment;
-        return assignment;
+            var existing = TryGetIdempotency(tenantId, actorId, "assignment.create", idempotencyKey);
+            if (existing is not null)
+                return new FirstSliceMutation<Assignment>(ReadAssignment(existing.Value.Response), true);
+
+            var assignment = new Assignment
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                TenantId = tenantId, ContextId = contextId, GoalId = goalId,
+                LearnerId = learnerId, Work = work
+            };
+            _assignments[assignment.Id] = assignment;
+            SaveIdempotency(tenantId, actorId, "assignment.create", idempotencyKey, requestFingerprint, assignment);
+            return new FirstSliceMutation<Assignment>(assignment, false);
+        }
     }
 
-    public Submission CreateSubmission(string tenantId, Assignment assignment, string learnerId, string payload)
+    public FirstSliceMutation<Submission> CreateSubmission(
+        string tenantId, string actorId, Assignment assignment, string learnerId,
+        string payload, string? idempotencyKey, string requestFingerprint, string correlationId)
     {
-        var submission = new Submission
+        lock (_gate)
         {
-            Id = Guid.NewGuid().ToString("N"),
-            AssignmentId = assignment.Id, TenantId = tenantId,
-            LearnerId = learnerId, Payload = payload
-        };
-        _submissions[submission.Id] = submission;
-        return submission;
+            var existing = TryGetIdempotency(tenantId, actorId, "submission.create", idempotencyKey);
+            if (existing is not null)
+                return new FirstSliceMutation<Submission>(ReadSubmission(existing.Value.Response), true);
+
+            var submission = new Submission
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                AssignmentId = assignment.Id, TenantId = tenantId,
+                LearnerId = learnerId, Payload = payload
+            };
+            _submissions[submission.Id] = submission;
+            SaveIdempotency(tenantId, actorId, "submission.create", idempotencyKey, requestFingerprint, submission);
+            return new FirstSliceMutation<Submission>(submission, false);
+        }
     }
 
-    public Submission? GetSubmissionByIdempotency(string tenantId, string actorId, string operation, string key)
+    private (string Fingerprint, object Response)? TryGetIdempotency(
+        string tenantId, string actorId, string operation, string? key)
     {
-        var value = GetIdempotency(tenantId, actorId, operation, key);
-        return value?.Response as Submission;
+        if (string.IsNullOrWhiteSpace(key)) return null;
+        return _idempotency.TryGetValue(Key(tenantId, actorId, operation, key), out var value)
+            ? value
+            : null;
     }
 
-    public void SaveIdempotency(string tenantId, string actorId, string operation, string key, string fingerprint, object response) =>
-        _idempotency[$"{tenantId}:{actorId}:{operation}:{key}"] = (fingerprint, response);
-
-    public (string Fingerprint, object Response)? GetIdempotency(string tenantId, string actorId, string operation, string key)
+    private void SaveIdempotency(
+        string tenantId, string actorId, string operation, string? key,
+        string fingerprint, object response)
     {
-        return _idempotency.TryGetValue($"{tenantId}:{actorId}:{operation}:{key}", out var value) ? value : null;
+        if (string.IsNullOrWhiteSpace(key)) return;
+        var storageKey = Key(tenantId, actorId, operation, key);
+        if (_idempotency.TryGetValue(storageKey, out var existing))
+        {
+            if (existing.Fingerprint != fingerprint)
+                throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+            return;
+        }
+        _idempotency[storageKey] = (fingerprint, JsonSerializer.Serialize(response));
     }
+
+    private static string Key(string tenantId, string actorId, string operation, string key) =>
+        $"{tenantId}:{actorId}:{operation}:{key}";
+
+    private static Assignment ReadAssignment(object response) =>
+        JsonSerializer.Deserialize<Assignment>((string)response)!;
+
+    private static Submission ReadSubmission(object response) =>
+        JsonSerializer.Deserialize<Submission>((string)response)!;
 }
