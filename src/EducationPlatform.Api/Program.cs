@@ -1,6 +1,5 @@
 using EducationPlatform.Application.FirstSlice;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IFirstSliceStore, InMemoryFirstSliceStore>();
@@ -13,9 +12,12 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
     {
         var auth = Authenticate(http);
         if (auth is null) return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
-        if (auth is not ("authorized-teacher" or "teacher-without-authority" or "tenant-a-teacher"))
+        if (auth == "teacher-without-authority")
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
-        if (auth == "tenant-a-teacher") return Results.NotFound();
+        if (auth == "tenant-a-teacher")
+            return Results.NotFound();
+        if (auth != "authorized-teacher")
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
         try
         {
