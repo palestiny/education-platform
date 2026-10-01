@@ -1,5 +1,7 @@
 namespace EducationPlatform.Api;
 
+namespace EducationPlatform.Api;
+
 using EducationPlatform.Application.FirstSlice;
 using Microsoft.AspNetCore.Http.HttpResults;
 
