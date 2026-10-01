@@ -47,7 +47,7 @@ Cross-cutting behavior:
 | RED-007 | Authorized learner submits active assignment | 201; SUBMITTED submission; correct tenant/context ownership | API §4 / Domain |
 | RED-008 | Same submission request is retried | Original result replayed; exactly one authoritative submission | Reliability |
 | RED-009 | Submission against closed assignment | 422 BUSINESS_RULE_VIOLATION; no submission mutation | Domain lifecycle |
-| RED-010 | Successful authoritative assignment/submission mutation | Required audit record exists with actor/context/correlation | Audit contract |
+| RED-010 | Successful authoritative assignment/submission mutation | Required audit record exists with actor/context/correlation | Audit contract | **PENDING PERSISTENCE OBSERVATION SEAM** |
 
 ## 4. Test Identity Model
 
@@ -168,7 +168,15 @@ RED-010 → Audit/observability contract
 - [ ] Cross-tenant access is tested server-side.
 - [ ] Audit assertions do not turn logs into business truth.
 
-## 12. Entry / Exit
+## 12. RED-010 Observation Boundary
+
+RED-010 is intentionally not implemented through a new HTTP endpoint. The accepted API contract does not define an audit-read endpoint, and adding one only to make the test observable would invent product/API behavior.
+
+The executable audit assertion will be added at the application/persistence integration boundary once the first-slice audit persistence mapping and test observation mechanism are implemented. It must verify the persisted accountability record directly through the test-owned persistence boundary, without turning audit records into business source of truth.
+
+Therefore RED exit is currently **9 executable RED scenarios + 1 bounded persistence-observation test pending**.
+
+## 13. Entry / Exit
 
 **RED entry:** authorized by Implementation Gate PASS.
 
