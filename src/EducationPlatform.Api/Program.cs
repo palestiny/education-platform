@@ -1,5 +1,6 @@
 using EducationPlatform.Application.FirstSlice;
 using EducationPlatform.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -38,7 +39,7 @@ app.Use(async (http, next) =>
 });
 
 app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
-    (HttpContext http, FirstSliceService service, string contextId, AssignmentRequest request) =>
+    (HttpContext http, FirstSliceService service, string contextId, [FromBody] AssignmentRequest request) =>
     {
         var auth = Authenticate(http);
         if (auth is null) return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
@@ -65,7 +66,7 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
-    (HttpContext http, FirstSliceService service, string assignmentId, AssignmentLookup lookup, SubmissionRequest request) =>
+    (HttpContext http, FirstSliceService service, string assignmentId, [FromServices] AssignmentLookup lookup, [FromBody] SubmissionRequest request) =>
     {
         var auth = Authenticate(http);
         if (auth is null) return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
