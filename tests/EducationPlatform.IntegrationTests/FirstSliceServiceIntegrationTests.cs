@@ -17,7 +17,8 @@ public sealed class FirstSliceServiceIntegrationTests
         var second = service.CreateAssignment(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key");
 
-        Assert.Equal(first.Id, second.Id);
-        Assert.Same(first, second);
+        Assert.Equal(first.Value.Id, second.Value.Id);
+        Assert.True(second.Replayed);
+        Assert.Equal(first.Value.Id, second.Value.Id);
     }
 }
