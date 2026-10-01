@@ -1673,3 +1673,30 @@ Run the test project, classify every failure:
 3. intended missing implementation.
 
 Only category 3 counts as valid RED evidence.
+
+
+## Checkpoint 056 — Executable RED In Progress — 2026-10-01
+
+**Stage:** TDD RED  
+**Status:** VERIFICATION IN PROGRESS
+
+### Completed
+- Confirmed the repository already had the intended .NET solution/test-project skeleton; no duplicate structure was introduced.
+- Aligned test projects with the accepted xUnit.net v3 decision.
+- Aligned the ASP.NET Core application test project with Web SDK requirements for WebApplicationFactory.
+- Added executable RED-001 through RED-009 contract tests.
+- Removed an unapproved test-only audit HTTP endpoint from RED-010.
+
+### Important correction
+RED-010 cannot legitimately observe an audit record through a new API endpoint because no such endpoint is part of the accepted API contract.
+
+The audit test is therefore bounded to the persistence observation seam and will be added when the first-slice audit persistence mapping is implemented.
+
+### Verification
+GitHub Actions run #36 was observed executing against the test changes; at the latest observation it was still **IN PROGRESS**. No test PASS has been claimed.
+
+### Next
+1. Verify RED-001 through RED-009 failure reasons from CI.
+2. Close or correct any test-harness failures.
+3. Add RED-010 at the persistence boundary.
+4. Only then declare RED exit and begin GREEN.
