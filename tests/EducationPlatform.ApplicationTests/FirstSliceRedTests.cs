@@ -2,11 +2,10 @@ using Xunit;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
-using EducationPlatform.Api;
 
 namespace EducationPlatform.ApplicationTests;
 
-public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<global::Program>>
 {
     private readonly HttpClient _client;
 
