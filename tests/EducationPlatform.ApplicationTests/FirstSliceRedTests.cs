@@ -9,7 +9,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
 {
     private readonly HttpClient _client;
 
-    public FirstSliceRedTests(WebApplicationFactory<Program> factory)
+    public FirstSliceRedTests(WebApplicationFactory<global::Program> factory)
     {
         _client = factory.CreateClient();
     }
