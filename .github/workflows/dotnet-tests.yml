@@ -23,4 +23,4 @@ jobs:
         run: dotnet restore EducationPlatform.sln
 
       - name: Test
-        run: dotnet test EducationPlatform.sln --no-restore --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test EducationPlatform.sln --no-restore
