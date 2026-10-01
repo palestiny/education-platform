@@ -10,6 +10,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: education_platform_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d education_platform_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      EDUCATION_PLATFORM_TEST_CONNECTION: Host=localhost;Port=5432;Database=education_platform_test;Username=postgres;Password=postgres
     steps:
       - name: Checkout
         uses: actions/checkout@v4
