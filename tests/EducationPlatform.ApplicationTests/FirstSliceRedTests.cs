@@ -110,8 +110,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
     private Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
-        string learnerId = "learner-a",
-        )
+        string learnerId = "learner-a")
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
