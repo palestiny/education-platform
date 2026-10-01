@@ -38,7 +38,11 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
         {
             var existing = TryGetIdempotency(tenantId, actorId, "assignment.create", idempotencyKey);
             if (existing is not null)
+            {
+                if (existing.Value.Fingerprint != requestFingerprint)
+                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
                 return new FirstSliceMutation<Assignment>(ReadAssignment(existing.Value.Response), true);
+            }
 
             var assignment = new Assignment
             {
@@ -60,7 +64,11 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
         {
             var existing = TryGetIdempotency(tenantId, actorId, "submission.create", idempotencyKey);
             if (existing is not null)
+            {
+                if (existing.Value.Fingerprint != requestFingerprint)
+                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
                 return new FirstSliceMutation<Submission>(ReadSubmission(existing.Value.Response), true);
+            }
 
             var submission = new Submission
             {
