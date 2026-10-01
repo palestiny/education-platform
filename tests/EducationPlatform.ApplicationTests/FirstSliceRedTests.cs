@@ -63,7 +63,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
     [Fact]
     public async Task RED_006_Cross_tenant_assignment_is_rejected()
     {
-        var response = await PostAssignment("tenant-a-teacher", tenant: "tenant-b");
+        var response = await PostAssignment("tenant-a-teacher");
         Assert.True(
             response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.NotFound,
             $"Unexpected status: {(int)response.StatusCode}");
@@ -111,7 +111,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
         string? actor = null,
         string? idempotencyKey = null,
         string learnerId = "learner-a",
-        string tenant = "tenant-a")
+        )
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
