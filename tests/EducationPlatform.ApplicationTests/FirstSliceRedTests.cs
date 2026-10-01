@@ -98,7 +98,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
     }
 
 
-    private Task<HttpResponseMessage> PostAssignment(
+    private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
         string learnerId = "learner-a")
@@ -120,10 +120,10 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
             work = new { }
         });
 
-        return _client.SendAsync(request);
+        return await _client.SendAsync(request);
     }
 
-    private Task<HttpResponseMessage> PostSubmission(
+    private async Task<HttpResponseMessage> PostSubmission(
         string actor,
         string? idempotencyKey = null,
         string assignmentId = "assignment-a")
@@ -139,6 +139,6 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
 
         request.Content = JsonContent.Create(new { payload = new { answer = "test" } });
 
-        return _client.SendAsync(request);
+        return await _client.SendAsync(request);
     }
 }
