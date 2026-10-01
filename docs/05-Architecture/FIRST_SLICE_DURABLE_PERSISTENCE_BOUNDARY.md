@@ -40,3 +40,32 @@ Reliability records are intentionally the next persistence increment:
 ## Verification boundary
 
 The current Infrastructure project and DbContext establish the persistence boundary only. They do not constitute durable first-slice completion. The API still uses the temporary in-memory adapter until the transactional PostgreSQL adapter and failure-mode tests are proven in CI.
+
+
+## Durable Mutation Contract — 2026-10-01
+
+The first-slice persistence boundary now treats a critical mutation as one atomic operation rather than separate application-level writes.
+
+For assignment/submission creation, the durable adapter is responsible for the transaction containing:
+1. authoritative resource creation;
+2. idempotency reservation/result persistence when a key is supplied;
+3. audit record creation;
+4. outbox message creation.
+
+The database uniqueness constraint on `(tenant_id, actor_id, operation_scope, idempotency_key)` is part of the correctness mechanism. A concurrent unique-key race is reconciled to the already committed idempotent result rather than creating a second authoritative resource.
+
+The Application layer remains provider-independent. The first-slice service computes semantic request fingerprints and delegates the atomic persistence boundary through the store contract. PostgreSQL-specific transaction and constraint handling remains in Infrastructure.
+
+### Verification status
+
+- PostgreSQL EF model: IMPLEMENTED.
+- PostgreSQL atomic store: IMPLEMENTED.
+- Idempotency/audit/outbox persistence: IMPLEMENTED.
+- PostgreSQL CI service: IMPLEMENTED.
+- PostgreSQL integration tests: IMPLEMENTED.
+- CI verification of the latest persistence changes: PENDING (GitHub Actions queue).
+- Production migration strategy: NOT YET CLOSED.
+- Optimistic concurrency behavior test: NOT YET CLOSED.
+- Durable API end-to-end test: NOT YET CLOSED.
+
+Therefore the Persistence Gate remains **OPEN / IN PROGRESS**.
