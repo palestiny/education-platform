@@ -1618,3 +1618,31 @@ No fake production implementation and no artificial failing assertions were adde
 
 ### Next
 Define the executable test contracts and fixtures against the actual application boundary, then run the suite and verify intended RED failures.
+
+
+## Checkpoint 056 — Executable RED Harness Wired — 2026-10-01
+
+**Stage:** TDD RED  
+**Status:** HARNESS WIRED — EXECUTION VERIFICATION PENDING
+
+### Completed
+- Confirmed the repository already had the .NET solution and Unit/Application/Integration test projects.
+- Confirmed xUnit is already configured.
+- Wired ApplicationTests to the ASP.NET Core API host through `Microsoft.AspNetCore.Mvc.Testing`.
+- Removed the client-supplied tenant header from the RED suite because tenant authority must be server-derived.
+- Added a GitHub Actions .NET test workflow.
+
+### Important verification result
+Local execution from the current environment is blocked because external GitHub network resolution is unavailable. No test-pass claim is made.
+
+The current API host has only the empty ASP.NET Core pipeline; the first-slice endpoints/authentication behavior are not implemented yet. Therefore the executable RED suite cannot honestly be declared RED-exit complete until its failures are observed and attributed to the intended missing behavior rather than compile/harness defects.
+
+### Current state
+- Test framework: ACCEPTED — xUnit
+- Test harness: WIRED
+- RED tests: PRESENT
+- RED execution: PENDING
+- RED exit: NOT PROVEN
+- GREEN implementation: BLOCKED
+
+Next: obtain a GitHub Actions run (or equivalent real test execution), inspect compile/runtime failures, correct only harness defects, then verify the ten tests fail for intended missing application behavior.
