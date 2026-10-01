@@ -110,3 +110,24 @@ The branch now contains the minimum xUnit test-project boundaries:
 The projects intentionally contain no fake implementation and no artificial failing assertions.
 
 Executable RED tests remain the next task because the application boundary they will exercise does not yet exist.
+
+## Execution Update — 2026-10-01
+
+The repository already contained the first .NET solution/test-project skeleton, so no duplicate project structure was created.
+
+The test harness was aligned with the accepted xUnit decision using the current xUnit.net v3 line. The application test project was also aligned with the ASP.NET Core Web SDK requirement for `WebApplicationFactory`.
+
+### Executable RED
+
+RED-001 through RED-009 are now represented as executable HTTP contract tests.
+
+RED-010 is deliberately not represented through a fabricated `/test-observability/audit` endpoint. That would introduce an API contract that was never approved.
+
+RED-010 therefore remains bounded to the persistence observation seam: once the first-slice audit persistence mapping exists, the test will verify the persisted audit record directly through the test-owned persistence boundary.
+
+### Verification
+
+GitHub Actions run **#36** is currently executing the test workflow for the latest commit.
+
+**Current result: IN PROGRESS — no PASS/FAIL conclusion yet.**
+
