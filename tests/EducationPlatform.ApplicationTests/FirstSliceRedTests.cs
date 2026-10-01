@@ -123,7 +123,6 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
         if (idempotencyKey is not null)
             request.Headers.Add("Idempotency-Key", idempotencyKey);
 
-        request.Headers.Add("X-Test-Tenant", tenant);
         request.Content = JsonContent.Create(new
         {
             goalId = "goal-a",
