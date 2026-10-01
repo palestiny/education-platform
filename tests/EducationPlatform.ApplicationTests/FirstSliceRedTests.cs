@@ -2,6 +2,7 @@ using Xunit;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
+using EducationPlatform.Api;
 
 namespace EducationPlatform.ApplicationTests;
 
