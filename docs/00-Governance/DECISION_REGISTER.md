@@ -192,13 +192,13 @@ The Implementation Gate must now be reassessed. Acceptance of this boundary does
 **Status:** ACCEPTED
 
 ### Decision
-Use **xUnit** as the test framework for the first .NET test harness.
+Use **xUnit.net v3** as the test framework for the first .NET test harness. The repository will use the current stable v3 line rather than legacy xUnit v2.
 
 ### Scope
 This is an implementation-level decision for the test harness. It does not change product/domain semantics, API contracts, architecture, security baseline, data baseline, or deferred provider decisions.
 
 ### Consequence
-Test-project creation and executable RED test translation are authorized.
+Test-project creation and executable RED test translation are authorized. Package versions must be pinned in project files and reviewed during dependency maintenance.
 
 
 ## DEC-0020 — First Test Harness Target: .NET 10 LTS
