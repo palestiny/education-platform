@@ -25,7 +25,7 @@ public sealed class PostgresFirstSliceStoreTests
         using (var setup = new EducationPlatformDbContext(options))
         {
             setup.Database.EnsureDeleted();
-            setup.Database.EnsureCreated();
+            setup.Database.Migrate();
         }
 
         using (var db = new EducationPlatformDbContext(options))
