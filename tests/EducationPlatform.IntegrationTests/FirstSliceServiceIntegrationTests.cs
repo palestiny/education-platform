@@ -12,7 +12,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store);
 
         var first = service.CreateAssignment(
-            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key");
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a");
 
         var second = service.CreateAssignment(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key");
