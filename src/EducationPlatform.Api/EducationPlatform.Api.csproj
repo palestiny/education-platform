@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../EducationPlatform.Application/EducationPlatform.Application.csproj" />
+    <ProjectReference Include="../EducationPlatform.Infrastructure/EducationPlatform.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
