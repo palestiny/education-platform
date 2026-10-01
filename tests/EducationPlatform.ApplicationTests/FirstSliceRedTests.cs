@@ -86,8 +86,8 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
         Assert.Equal(first.StatusCode, second.StatusCode);
         Assert.Equal(
-            await first.Content.ReadAsStringAsync(),
-            await second.Content.ReadAsStringAsync());
+            await first.Content.ReadAsStringAsync(TestContext.Current.CancellationToken),
+            await second.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
