@@ -1,7 +1,7 @@
 # First Slice TDD RED Specification
 
 **Date:** 2026-09-30  
-**Status:** PROPOSED — RED SUITE READY FOR REVIEW  
+**Status:** EXECUTABLE RED SUITE CREATED — VERIFICATION PENDING  
 **Gate:** Implementation Gate PASS — TDD RED Entry
 
 ## 1. Purpose
@@ -176,4 +176,4 @@ RED-010 → Audit/observability contract
 
 Only after RED exit may GREEN implementation begin.
 
-**Current status: RED SUITE SPECIFICATION READY FOR REVIEW.**
+**Current status: executable RED suite created; execution verification is pending.**
