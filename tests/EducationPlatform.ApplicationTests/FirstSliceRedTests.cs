@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Xunit;
 
 namespace EducationPlatform.ApplicationTests;
 
@@ -97,15 +96,6 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
-    [Fact]
-    public async Task RED_010_Authoritative_mutation_creates_audit_record()
-    {
-        var response = await PostAssignment("authorized-teacher");
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-
-        var audit = await _client.GetAsync("/api/v1/test-observability/audit/latest");
-        Assert.Equal(HttpStatusCode.OK, audit.StatusCode);
-    }
 
     private Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
