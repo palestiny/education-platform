@@ -168,3 +168,48 @@ Therefore:
 - RED-001..009: **defined and executable**
 - RED-010: **deferred to the real persistence/audit seam; no fake API**
 - GREEN: **BLOCKED**
+
+
+## Behavioral RED Verification — 2026-10-01
+
+GitHub Actions run **#61** on commit `137824498d95c54e4cb0daf40aa9586d8e094b85` reached actual xUnit execution.
+
+The previous `StreamContent` disposal failure was confirmed as a test-harness lifetime bug and was corrected by awaiting `HttpClient.SendAsync` before disposing each request.
+
+### Result
+
+- ApplicationTests: **9 RED scenarios executed**
+- Behavioral failures: **8**
+- Behavioral passes: **1**
+- Harness/runtime crash: **none in ApplicationTests**
+- Restore/build/discovery: **PASS**
+- UnitTests and IntegrationTests currently contain zero executable tests; this is separate from the first-slice RED suite.
+
+The observed failures are intentional evidence that the production API boundary is not implemented yet. The current API returns **404 Not Found** because `Program.cs` does not yet register the first-slice endpoints.
+
+Observed:
+- RED-001 expected 401, actual 404
+- RED-002 expected 403, actual 404
+- RED-003 expected 201, actual 404
+- RED-004 expected 201, actual 404
+- RED-005 expected 201, actual 404
+- RED-006 expected 403/404, actual 404
+- RED-007 expected 201, actual 404
+- RED-008 expected 201, actual 404
+- RED-009 expected 422, actual 404
+
+RED-006 therefore currently passes because the accepted contract permits 404 as a non-disclosing cross-tenant response.
+
+### Gate interpretation
+
+The executable RED suite has now crossed the important boundary from **test-harness failure** to **behavioral failure against missing implementation**.
+
+Therefore:
+
+**RED execution infrastructure = PASS**  
+**RED behavioral evidence = PASS**  
+**RED-001..009 = executable**  
+**RED-010 = intentionally deferred to real audit persistence seam**  
+**GREEN implementation = UNBLOCKED**
+
+The next phase is GREEN, beginning with the smallest coherent vertical slice: authentication/authorization boundary → learning context/goal/assignment creation → submission, while preserving idempotency, tenant authority, audit and outbox boundaries. No fake endpoint or shortcut implementation should be introduced.
