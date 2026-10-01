@@ -16,5 +16,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <ProjectReference Include="../../src/EducationPlatform.Application/EducationPlatform.Application.csproj" />
+    <ProjectReference Include="../../src/EducationPlatform.Infrastructure/EducationPlatform.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
