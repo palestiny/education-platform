@@ -1,11 +1,41 @@
 using EducationPlatform.Application.FirstSlice;
+using EducationPlatform.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IFirstSliceStore, InMemoryFirstSliceStore>();
-builder.Services.AddSingleton<FirstSliceService>();
+
+var connectionString = builder.Configuration.GetConnectionString("EducationPlatform");
+if (!string.IsNullOrWhiteSpace(connectionString))
+{
+    builder.Services.AddDbContext<EducationPlatformDbContext>(options =>
+        options.UseNpgsql(connectionString));
+    builder.Services.AddScoped<IFirstSliceStore, PostgresFirstSliceStore>();
+}
+else if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddSingleton<IFirstSliceStore, InMemoryFirstSliceStore>();
+}
+else
+{
+    throw new InvalidOperationException(
+        "A PostgreSQL connection string is required outside Development/Testing.");
+}
+
+builder.Services.AddScoped<FirstSliceService>();
 
 var app = builder.Build();
+
+app.Use(async (http, next) =>
+{
+    var correlationId = http.Request.Headers["X-Correlation-ID"].FirstOrDefault();
+    if (string.IsNullOrWhiteSpace(correlationId))
+        correlationId = Guid.NewGuid().ToString("N");
+
+    http.Items["CorrelationId"] = correlationId;
+    http.Response.Headers["X-Correlation-ID"] = correlationId;
+    await next();
+});
 
 app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
     (HttpContext http, FirstSliceService service, string contextId, AssignmentRequest request) =>
@@ -21,9 +51,11 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
 
         try
         {
-            var assignment = service.CreateAssignment(
+            var mutation = service.CreateAssignment(
                 "tenant-a", auth, contextId, request.GoalId, request.LearnerId,
-                request.Work.GetRawText(), http.Request.Headers["Idempotency-Key"].FirstOrDefault());
+                request.Work.GetRawText(), http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
+                (string)http.Items["CorrelationId"]!);
+            var assignment = mutation.Value;
             return Results.Created($"/api/v1/assignments/{assignment.Id}", assignment);
         }
         catch (InvalidOperationException ex) when (ex.Message == "IDEMPOTENCY_CONFLICT")
@@ -33,20 +65,22 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
-    (HttpContext http, FirstSliceService service, string assignmentId, SubmissionRequest request) =>
+    (HttpContext http, FirstSliceService service, string assignmentId, AssignmentLookup lookup, SubmissionRequest request) =>
     {
         var auth = Authenticate(http);
         if (auth is null) return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
 
-        var assignment = serviceStore(http.RequestServices).GetAssignment(assignmentId);
+        var assignment = lookup.Get(assignmentId);
         if (assignment is null) return Results.NotFound();
         if (auth != assignment.LearnerId) return Results.NotFound();
 
         try
         {
-            var submission = service.CreateSubmission(
+            var mutation = service.CreateSubmission(
                 assignment.TenantId, auth, assignment, auth, request.Payload.GetRawText(),
-                http.Request.Headers["Idempotency-Key"].FirstOrDefault());
+                http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
+                (string)http.Items["CorrelationId"]!);
+            var submission = mutation.Value;
             return Results.Created($"/api/v1/submissions/{submission.Id}", submission);
         }
         catch (InvalidOperationException ex) when (ex.Message == "BUSINESS_RULE_VIOLATION")
@@ -71,8 +105,10 @@ static string? Authenticate(HttpContext http)
 
 static object Error(string code) => new { code };
 
-static IFirstSliceStore serviceStore(IServiceProvider services) =>
-    services.GetRequiredService<IFirstSliceStore>();
+public sealed class AssignmentLookup(IFirstSliceStore store)
+{
+    public EducationPlatform.Domain.FirstSlice.Assignment? Get(string id) => store.GetAssignment(id);
+}
 
 public sealed record AssignmentRequest(string GoalId, string LearnerId, JsonElement Work);
 public sealed record SubmissionRequest(JsonElement Payload);
