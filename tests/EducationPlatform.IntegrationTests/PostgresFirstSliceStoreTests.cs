@@ -59,7 +59,8 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.False(string.IsNullOrWhiteSpace(connection));
 
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
-            .UseNpgsql(connection)
+            .UseNpgsql(connection, npgsql =>
+                npgsql.MigrationsAssembly(typeof(EducationPlatformDbContext).Assembly.FullName))
             .Options;
 
         var db = new EducationPlatformDbContext(options);
