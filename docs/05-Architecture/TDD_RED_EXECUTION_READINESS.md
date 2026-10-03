@@ -213,3 +213,37 @@ Therefore:
 **GREEN implementation = UNBLOCKED**
 
 The next phase is GREEN, beginning with the smallest coherent vertical slice: authentication/authorization boundary → learning context/goal/assignment creation → submission, while preserving idempotency, tenant authority, audit and outbox boundaries. No fake endpoint or shortcut implementation should be introduced.
+
+
+## Durable GREEN Verification Update — 2026-10-04
+
+The first technical slice has progressed beyond the temporary in-memory GREEN adapter into verified PostgreSQL-backed persistence.
+
+Verified in GitHub Actions run **#203**:
+
+- UnitTests: PASS
+- ApplicationTests: PASS
+- IntegrationTests: PASS
+- Total: **15**
+- Failed: **0**
+- Skipped: **0**
+
+The verified durable path now covers:
+- assignment creation;
+- durable idempotency replay/conflict;
+- atomic audit persistence;
+- audit tenant/actor/context attribution;
+- outbox persistence;
+- durable API end-to-end creation;
+- correlation ID propagation.
+
+The PostgreSQL migration/snapshot pair was also corrected after CI exposed a provider-specific identifier-length mismatch. The final CI run verifies that migrations apply and the full suite passes.
+
+### Remaining implementation verification
+
+- optimistic concurrency behavior/API expected-version precondition;
+- failure-mode rollback tests for audit/outbox/authoritative mutation;
+- production migration/deployment closure;
+- replacement of hard-coded authentication tokens with the accepted provider-neutral authentication adapter.
+
+**Current status: GREEN durable persistence slice VERIFIED — next work is concurrency and failure-mode closure.**
