@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EducationPlatform.Infrastructure.Persistence.Migrations;
 
+[Migration("20261001080000_InitialFirstSlice")]
 public partial class InitialFirstSlice : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
