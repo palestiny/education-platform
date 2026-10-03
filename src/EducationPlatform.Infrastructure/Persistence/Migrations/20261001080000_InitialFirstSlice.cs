@@ -90,7 +90,7 @@ public partial class InitialFirstSlice : Migration
 
         migrationBuilder.CreateIndex("IX_assignments_TenantId_ContextId", "assignments", new[] { "TenantId", "ContextId" });
         migrationBuilder.CreateIndex("IX_submissions_TenantId_AssignmentId", "submissions", new[] { "TenantId", "AssignmentId" });
-        migrationBuilder.CreateIndex("IX_idempotency_records_TenantId_ActorId_OperationScope_IdempotencyKey", "idempotency_records", new[] { "TenantId", "ActorId", "OperationScope", "IdempotencyKey" }, unique: true);
+        migrationBuilder.CreateIndex("IX_idempotency_records_TenantId_ActorId_OperationScope_Idempot~", "idempotency_records", new[] { "TenantId", "ActorId", "OperationScope", "IdempotencyKey" }, unique: true);
         migrationBuilder.CreateIndex("IX_audit_records_TenantId_OccurredAt", "audit_records", new[] { "TenantId", "OccurredAt" });
         migrationBuilder.CreateIndex("IX_outbox_messages_Status_OccurredAt", "outbox_messages", new[] { "Status", "OccurredAt" });
     }
