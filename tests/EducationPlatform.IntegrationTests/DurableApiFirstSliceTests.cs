@@ -46,21 +46,24 @@ public sealed class DurableApiFirstSliceTests
         var firstBody = await first.Content.ReadFromJsonAsync<AssignmentResponse>();
         Assert.NotNull(firstBody);
 
-        var second = await client.PostAsJsonAsync(
-            "/api/v1/learning-contexts/context-a/assignments",
-            new
-            {
-                goalId = "goal-a",
-                learnerId = "learner-a",
-                work = new { prompt = "durable" }
-            },
-            TestContext.Current.CancellationToken);
-        second.Headers.TryAddWithoutValidation("Authorization", "Bearer authorized-teacher");
-        second.RequestMessage!.Headers.Authorization =
+        using var retry = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        retry.Headers.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
-        second.RequestMessage.Headers.Add("Idempotency-Key", "durable-api-assignment");
+        retry.Headers.Add("Idempotency-Key", "durable-api-assignment");
+        retry.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { prompt = "durable" }
+        });
+
+        var second = await client.SendAsync(retry, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+        var secondBody = await second.Content.ReadFromJsonAsync<AssignmentResponse>();
+        Assert.Equal(firstBody.Id, secondBody!.Id);
 
         db.ChangeTracker.Clear();
         Assert.Equal(1, db.Assignments.Count());
