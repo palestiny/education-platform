@@ -96,21 +96,8 @@ public sealed class PostgresFirstSliceStoreTests
     public void Audit_failure_rolls_back_authoritative_mutation_and_outbox()
     {
         using var db = CreateFreshDatabase();
-
-        db.Database.ExecuteSqlRaw("""
-            CREATE OR REPLACE FUNCTION fail_audit_insert()
-            RETURNS trigger
-            LANGUAGE plpgsql
-            AS $
-            BEGIN
-                RAISE EXCEPTION 'forced_audit_failure';
-            END;
-            $;
-
-            CREATE TRIGGER audit_failure_trigger
-            BEFORE INSERT ON audit_records
-            FOR EACH ROW EXECUTE FUNCTION fail_audit_insert();
-            """);
+        db.Database.ExecuteSqlRaw(
+            """ALTER TABLE audit_records ADD CONSTRAINT forced_audit_failure CHECK (false) NOT VALID;""");
 
         try
         {
@@ -129,10 +116,8 @@ public sealed class PostgresFirstSliceStoreTests
         }
         finally
         {
-            db.Database.ExecuteSqlRaw("""
-                DROP TRIGGER IF EXISTS audit_failure_trigger ON audit_records;
-                DROP FUNCTION IF EXISTS fail_audit_insert();
-                """);
+            db.Database.ExecuteSqlRaw(
+                """ALTER TABLE audit_records DROP CONSTRAINT IF EXISTS forced_audit_failure;""");
         }
     }
 
@@ -140,21 +125,8 @@ public sealed class PostgresFirstSliceStoreTests
     public void Outbox_failure_rolls_back_authoritative_mutation_and_audit()
     {
         using var db = CreateFreshDatabase();
-
-        db.Database.ExecuteSqlRaw("""
-            CREATE OR REPLACE FUNCTION fail_outbox_insert()
-            RETURNS trigger
-            LANGUAGE plpgsql
-            AS $
-            BEGIN
-                RAISE EXCEPTION 'forced_outbox_failure';
-            END;
-            $;
-
-            CREATE TRIGGER outbox_failure_trigger
-            BEFORE INSERT ON outbox_messages
-            FOR EACH ROW EXECUTE FUNCTION fail_outbox_insert();
-            """);
+        db.Database.ExecuteSqlRaw(
+            """ALTER TABLE outbox_messages ADD CONSTRAINT forced_outbox_failure CHECK (false) NOT VALID;""");
 
         try
         {
@@ -173,10 +145,8 @@ public sealed class PostgresFirstSliceStoreTests
         }
         finally
         {
-            db.Database.ExecuteSqlRaw("""
-                DROP TRIGGER IF EXISTS outbox_failure_trigger ON outbox_messages;
-                DROP FUNCTION IF EXISTS fail_outbox_insert();
-                """);
+            db.Database.ExecuteSqlRaw(
+                """ALTER TABLE outbox_messages DROP CONSTRAINT IF EXISTS forced_outbox_failure;""");
         }
     }
 
