@@ -38,15 +38,5 @@ jobs:
       - name: Restore
         run: dotnet restore EducationPlatform.sln
 
-      - name: Diagnose EF pending model changes
-        run: |
-          dotnet build EducationPlatform.sln --no-restore
-          dotnet tool install --global dotnet-ef --version 10.0.12
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          dotnet ef migrations add DiagnosticPendingModel --project src/EducationPlatform.Infrastructure/EducationPlatform.Infrastructure.csproj --startup-project src/EducationPlatform.Api/EducationPlatform.Api.csproj --output-dir /tmp/efdiagnostic --no-build
-          echo "--- GENERATED MIGRATION ---"
-          cat /tmp/efdiagnostic/*_DiagnosticPendingModel.cs
-          echo "--- SNAPSHOT DIFF ---"
-          git diff -- src/EducationPlatform.Infrastructure/Persistence/Migrations/EducationPlatformDbContextModelSnapshot.cs
       - name: Test
         run: dotnet test EducationPlatform.sln --no-restore
