@@ -101,9 +101,17 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
     [Fact]
     public async Task Expected_version_prevents_stale_assignment_close()
     {
+        var create = await PostAssignment("authorized-teacher");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(
+            TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(assignmentId));
+
         using var first = new HttpRequestMessage(
             HttpMethod.Post,
-            "/api/v1/assignments/assignment-a/close");
+            $"/api/v1/assignments/{assignmentId}/close");
         first.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", "authorized-teacher");
         first.Headers.Add("Idempotency-Key", "close-first");
@@ -115,7 +123,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
 
         using var second = new HttpRequestMessage(
             HttpMethod.Post,
-            "/api/v1/assignments/assignment-a/close");
+            $"/api/v1/assignments/{assignmentId}/close");
         second.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", "authorized-teacher");
         second.Headers.Add("Idempotency-Key", "close-second");
