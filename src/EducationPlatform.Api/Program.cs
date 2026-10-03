@@ -10,7 +10,9 @@ var connectionString = builder.Configuration.GetConnectionString("EducationPlatf
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<EducationPlatformDbContext>(options =>
-        options.UseNpgsql(connectionString));
+        options.UseNpgsql(
+            connectionString,
+            npgsql => npgsql.MigrationsAssembly(typeof(EducationPlatformDbContext).Assembly.FullName)));
     builder.Services.AddScoped<IFirstSliceStore, PostgresFirstSliceStore>();
 }
 else if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
