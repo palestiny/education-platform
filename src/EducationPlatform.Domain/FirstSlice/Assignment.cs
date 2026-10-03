@@ -13,5 +13,9 @@ public sealed class Assignment
 
     public bool IsClosed => Status == "CLOSED";
 
-    public void Close() => Status = "CLOSED";
+    public void Close()
+    {
+        Status = "CLOSED";
+        Version++;
+    }
 }
