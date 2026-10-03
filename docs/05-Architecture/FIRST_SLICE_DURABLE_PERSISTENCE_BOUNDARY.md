@@ -60,12 +60,15 @@ The Application layer remains provider-independent. The first-slice service comp
 
 - PostgreSQL EF model: IMPLEMENTED.
 - PostgreSQL atomic store: IMPLEMENTED.
-- Idempotency/audit/outbox persistence: IMPLEMENTED.
+- Durable idempotency/audit/outbox persistence: IMPLEMENTED.
+- Audit context attribution: IMPLEMENTED.
 - PostgreSQL CI service: IMPLEMENTED.
-- PostgreSQL integration tests: IMPLEMENTED.
-- CI verification of the latest persistence changes: PENDING (GitHub Actions queue).
-- Production migration strategy: NOT YET CLOSED.
-- Optimistic concurrency behavior test: NOT YET CLOSED.
-- Durable API end-to-end test: NOT YET CLOSED.
+- PostgreSQL migrations apply successfully in CI: VERIFIED.
+- PostgreSQL integration tests: VERIFIED.
+- Durable API end-to-end persistence test: VERIFIED.
+- Latest GitHub Actions verification: **PASS — 15 tests, 0 failed, 0 skipped** (run #203).
+- Initial EF migration metadata/index naming was corrected after CI exposed an Npgsql identifier-length mismatch; the final migration/snapshot pair now matches the provider-generated model.
+- Production migration deployment strategy: NOT YET CLOSED.
+- Optimistic concurrency behavior test/API precondition: NOT YET CLOSED.
 
-Therefore the Persistence Gate remains **OPEN / IN PROGRESS**.
+Therefore the Persistence Gate remains **OPEN / IN PROGRESS**, with durable creation/idempotency/audit/outbox and API persistence behavior now proven in CI. The remaining gate work is concurrency, failure-mode coverage, and production migration/deployment closure.
