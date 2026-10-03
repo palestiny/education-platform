@@ -57,7 +57,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
     }
 
     private FirstSliceMutation<T> ExecuteAtomic<T>(
-        string tenantId, string actorId, string operation, string? idempotencyKey,
+        string tenantId, string actorId, string operation, string contextId, string? idempotencyKey,
         string requestFingerprint, Func<(T Value, string Status)> mutation,
         string correlationId)
     {
