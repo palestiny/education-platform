@@ -34,13 +34,15 @@ public sealed class FirstSliceService
     }
 
     public Assignment CloseAssignment(
-        string tenantId, string actorId, string assignmentId, int expectedVersion, string correlationId)
+        string tenantId, string actorId, string assignmentId, int expectedVersion,
+        string? idempotencyKey, string correlationId)
     {
         if (expectedVersion < 1)
             throw new InvalidOperationException("VALIDATION_FAILED");
 
+        var fingerprint = Fingerprint($"assignment.close|{assignmentId}|{expectedVersion}");
         return _store.CloseAssignment(
-            tenantId, actorId, assignmentId, expectedVersion, correlationId);
+            tenantId, actorId, assignmentId, expectedVersion, idempotencyKey, fingerprint, correlationId);
     }
 
     private static string Fingerprint(string value) =>
