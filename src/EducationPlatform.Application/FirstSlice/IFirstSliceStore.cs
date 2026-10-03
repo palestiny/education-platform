@@ -26,4 +26,11 @@ public interface IFirstSliceStore
         string? idempotencyKey,
         string requestFingerprint,
         string correlationId);
+
+    Assignment CloseAssignment(
+        string tenantId,
+        string actorId,
+        string assignmentId,
+        int expectedVersion,
+        string correlationId);
 }
