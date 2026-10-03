@@ -63,6 +63,7 @@ public sealed class EducationPlatformDbContext(DbContextOptions<EducationPlatfor
             entity.HasKey(x => x.Id);
             entity.Property(x => x.TenantId).HasMaxLength(64).IsRequired();
             entity.Property(x => x.ActorId).HasMaxLength(128).IsRequired();
+            entity.Property(x => x.ContextId).HasMaxLength(64).IsRequired();
             entity.Property(x => x.Operation).HasMaxLength(128).IsRequired();
             entity.Property(x => x.CorrelationId).HasMaxLength(128).IsRequired();
             entity.Property(x => x.ResourceType).HasMaxLength(64).IsRequired();
