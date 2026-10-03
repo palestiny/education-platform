@@ -39,11 +39,11 @@ public sealed class DurableApiFirstSliceTests
             work = new { prompt = "durable" }
         });
 
-        var first = await client.SendAsync(request);
+        var first = await client.SendAsync(request, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
         Assert.Equal("durable-correlation", first.Headers.GetValues("X-Correlation-ID").Single());
 
-        var firstBody = await first.Content.ReadFromJsonAsync<AssignmentResponse>();
+        var firstBody = await first.Content.ReadFromJsonAsync<AssignmentResponse>(TestContext.Current.CancellationToken);
         Assert.NotNull(firstBody);
 
         using var retry = new HttpRequestMessage(
@@ -62,7 +62,7 @@ public sealed class DurableApiFirstSliceTests
         var second = await client.SendAsync(retry, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, second.StatusCode);
-        var secondBody = await second.Content.ReadFromJsonAsync<AssignmentResponse>();
+        var secondBody = await second.Content.ReadFromJsonAsync<AssignmentResponse>(TestContext.Current.CancellationToken);
         Assert.Equal(firstBody.Id, secondBody!.Id);
 
         db.ChangeTracker.Clear();
