@@ -24,6 +24,7 @@ else
 }
 
 builder.Services.AddScoped<FirstSliceService>();
+builder.Services.AddScoped<AssignmentLookup>();
 
 var app = builder.Build();
 
