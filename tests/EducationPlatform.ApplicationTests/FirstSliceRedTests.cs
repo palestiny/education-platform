@@ -98,6 +98,39 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
     }
 
 
+    [Fact]
+    public async Task Expected_version_prevents_stale_assignment_close()
+    {
+        using var first = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/assignments/assignment-a/close");
+        first.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        first.Headers.Add("Idempotency-Key", "close-first");
+        first.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        var firstResponse = await _client.SendAsync(
+            first, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+
+        using var second = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/assignments/assignment-a/close");
+        second.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        second.Headers.Add("Idempotency-Key", "close-second");
+        second.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        var secondResponse = await _client.SendAsync(
+            second, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
+        Assert.Equal(
+            "CONCURRENCY_CONFLICT",
+            await secondResponse.Content.ReadAsStringAsync(
+                TestContext.Current.CancellationToken));
+    }
+
     private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
