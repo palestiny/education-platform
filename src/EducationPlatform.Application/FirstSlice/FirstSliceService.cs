@@ -33,6 +33,16 @@ public sealed class FirstSliceService
             key, fingerprint, correlationId);
     }
 
+    public Assignment CloseAssignment(
+        string tenantId, string actorId, string assignmentId, int expectedVersion, string correlationId)
+    {
+        if (expectedVersion < 1)
+            throw new InvalidOperationException("VALIDATION_FAILED");
+
+        return _store.CloseAssignment(
+            tenantId, actorId, assignmentId, expectedVersion, correlationId);
+    }
+
     private static string Fingerprint(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 }
