@@ -92,6 +92,94 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Equal(2, verifyDb.OutboxMessages.Count(x => x.AggregateId == created.Value.Id));
     }
 
+    [Fact]
+    public void Audit_failure_rolls_back_authoritative_mutation_and_outbox()
+    {
+        using var db = CreateFreshDatabase();
+
+        db.Database.ExecuteSqlRaw("""
+            CREATE OR REPLACE FUNCTION fail_audit_insert()
+            RETURNS trigger
+            LANGUAGE plpgsql
+            AS $
+            BEGIN
+                RAISE EXCEPTION 'forced_audit_failure';
+            END;
+            $;
+
+            CREATE TRIGGER audit_failure_trigger
+            BEFORE INSERT ON audit_records
+            FOR EACH ROW EXECUTE FUNCTION fail_audit_insert();
+            """);
+
+        try
+        {
+            var service = new FirstSliceService(new PostgresFirstSliceStore(db));
+
+            Assert.ThrowsAny<Exception>(() =>
+                service.CreateAssignment(
+                    "tenant-a", "authorized-teacher", "context-a", "goal-a",
+                    "learner-a", "{}", "audit-failure-key", "correlation-audit-failure"));
+
+            db.ChangeTracker.Clear();
+            Assert.Empty(db.Assignments);
+            Assert.Empty(db.IdempotencyRecords);
+            Assert.Empty(db.AuditRecords);
+            Assert.Empty(db.OutboxMessages);
+        }
+        finally
+        {
+            db.Database.ExecuteSqlRaw("""
+                DROP TRIGGER IF EXISTS audit_failure_trigger ON audit_records;
+                DROP FUNCTION IF EXISTS fail_audit_insert();
+                """);
+        }
+    }
+
+    [Fact]
+    public void Outbox_failure_rolls_back_authoritative_mutation_and_audit()
+    {
+        using var db = CreateFreshDatabase();
+
+        db.Database.ExecuteSqlRaw("""
+            CREATE OR REPLACE FUNCTION fail_outbox_insert()
+            RETURNS trigger
+            LANGUAGE plpgsql
+            AS $
+            BEGIN
+                RAISE EXCEPTION 'forced_outbox_failure';
+            END;
+            $;
+
+            CREATE TRIGGER outbox_failure_trigger
+            BEFORE INSERT ON outbox_messages
+            FOR EACH ROW EXECUTE FUNCTION fail_outbox_insert();
+            """);
+
+        try
+        {
+            var service = new FirstSliceService(new PostgresFirstSliceStore(db));
+
+            Assert.ThrowsAny<Exception>(() =>
+                service.CreateAssignment(
+                    "tenant-a", "authorized-teacher", "context-a", "goal-a",
+                    "learner-a", "{}", "outbox-failure-key", "correlation-outbox-failure"));
+
+            db.ChangeTracker.Clear();
+            Assert.Empty(db.Assignments);
+            Assert.Empty(db.IdempotencyRecords);
+            Assert.Empty(db.AuditRecords);
+            Assert.Empty(db.OutboxMessages);
+        }
+        finally
+        {
+            db.Database.ExecuteSqlRaw("""
+                DROP TRIGGER IF EXISTS outbox_failure_trigger ON outbox_messages;
+                DROP FUNCTION IF EXISTS fail_outbox_insert();
+                """);
+        }
+    }
+
     private static EducationPlatformDbContext CreateContext(string connection)
     {
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
