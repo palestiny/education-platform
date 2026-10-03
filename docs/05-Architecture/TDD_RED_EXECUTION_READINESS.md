@@ -247,3 +247,24 @@ The PostgreSQL migration/snapshot pair was also corrected after CI exposed a pro
 - replacement of hard-coded authentication tokens with the accepted provider-neutral authentication adapter.
 
 **Current status: GREEN durable persistence slice VERIFIED — next work is concurrency and failure-mode closure.**
+
+
+## Concurrency and Failure-Mode Verification — 2026-10-04
+
+The durable first slice now has CI evidence for the remaining runtime reliability behaviors exercised in this phase.
+
+GitHub Actions run #241:
+- total: **19**
+- succeeded: **19**
+- failed: **0**
+- skipped: **0**
+
+Verified scenarios now include:
+- stale `expectedVersion` is rejected with `CONCURRENCY_CONFLICT`;
+- only the writer with the current version commits the assignment transition;
+- audit persistence failure rolls back the authoritative mutation, idempotency record, and outbox;
+- outbox persistence failure rolls back the authoritative mutation, idempotency record, and audit record.
+
+The API also exposes the first explicit expected-version command boundary for assignment closure.
+
+**Current status: durable first-slice reliability behavior VERIFIED.**
