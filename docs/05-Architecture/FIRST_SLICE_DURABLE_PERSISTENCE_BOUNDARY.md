@@ -75,3 +75,40 @@ The Application layer remains provider-independent. The first-slice service comp
 - Production migration deployment strategy: NOT YET CLOSED.
 
 Therefore the Persistence Gate remains **OPEN / IN PROGRESS**, with durable creation/idempotency/audit/outbox, optimistic concurrency, and failure-mode atomicity now proven in CI. The remaining persistence-gate work is production migration/deployment closure.
+
+
+## Production Migration / Deployment Closure — 2026-10-04
+
+The production migration strategy is explicitly deployment-controlled and externally executed.
+
+### Strategy
+
+**Expand → Compatible Deploy → Migrate/Backfill → Switch → Contract/Remove**
+
+1. **Expand:** add only backward-compatible schema changes and supporting indexes/columns.
+2. **Compatible Deploy:** deploy application code that can operate against both the previous and expanded schema where required.
+3. **Migrate/Backfill:** execute the versioned EF Core migration as a dedicated deployment step/job, outside normal application startup. Run materially large backfills separately.
+4. **Switch:** enable behavior requiring the expanded schema only after migration/backfill verification.
+5. **Contract/Remove:** remove obsolete schema/code only in a later deployment after compatibility is no longer required.
+
+### Production rules
+
+- Production must not rely on `EnsureCreated()`.
+- Production must not depend on every API instance running schema migrations during startup.
+- The deployment pipeline owns migration execution and records the migration result.
+- Application startup may validate compatibility, but must not silently mutate production schema.
+- Destructive or breaking migrations require a separately reviewed deployment step and rollback/forward-fix plan.
+- Long-running data backfills are not hidden inside ordinary EF migrations.
+- The migration artifact is generated and reviewed from the exact repository version being deployed.
+
+### CI controls
+
+The repository workflow now validates the migration boundary by installing the pinned `dotnet-ef` 10.0.12 CLI, running `dotnet ef migrations has-pending-model-changes`, generating an idempotent migration SQL script, and uploading that script as a workflow artifact before the PostgreSQL integration suite runs.
+
+This proves model/migration alignment and that a deployment-consumable idempotent script can be generated. It does **not** claim that production has been migrated; production execution remains a deployment responsibility.
+
+### Gate status
+
+Production migration/deployment strategy: **DEFINED — CI VERIFICATION PENDING**.
+
+The Persistence Gate remains open until a CI run containing these controls passes together with the durable persistence, concurrency, and failure-mode integration suite.
