@@ -69,6 +69,9 @@ The Application layer remains provider-independent. The first-slice service comp
 - Latest GitHub Actions verification: **PASS — 15 tests, 0 failed, 0 skipped** (run #203).
 - Initial EF migration metadata/index naming was corrected after CI exposed an Npgsql identifier-length mismatch; the final migration/snapshot pair now matches the provider-generated model.
 - Production migration deployment strategy: NOT YET CLOSED.
-- Optimistic concurrency behavior test/API precondition: NOT YET CLOSED.
+- Optimistic concurrency behavior/API expected-version precondition: VERIFIED in CI.
+- Atomic rollback on audit persistence failure: VERIFIED in CI.
+- Atomic rollback on outbox persistence failure: VERIFIED in CI.
+- Production migration deployment strategy: NOT YET CLOSED.
 
-Therefore the Persistence Gate remains **OPEN / IN PROGRESS**, with durable creation/idempotency/audit/outbox and API persistence behavior now proven in CI. The remaining gate work is concurrency, failure-mode coverage, and production migration/deployment closure.
+Therefore the Persistence Gate remains **OPEN / IN PROGRESS**, with durable creation/idempotency/audit/outbox, optimistic concurrency, and failure-mode atomicity now proven in CI. The remaining persistence-gate work is production migration/deployment closure.
