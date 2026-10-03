@@ -22,7 +22,7 @@ partial class EducationPlatformDbContextModelSnapshot : ModelSnapshot
             b.Property<string>("LearnerId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
             b.Property<string>("Status").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
             b.Property<string>("TenantId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
-            b.Property<int>("Version").HasColumnType("integer");
+            b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
             b.Property<string>("Work").IsRequired().HasColumnType("text");
             b.HasKey("Id");
             b.HasIndex("TenantId", "ContextId");
