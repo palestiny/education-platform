@@ -68,13 +68,13 @@ The Application layer remains provider-independent. The first-slice service comp
 - Durable API end-to-end persistence test: VERIFIED.
 - Latest GitHub Actions verification: **PASS — 15 tests, 0 failed, 0 skipped** (run #203).
 - Initial EF migration metadata/index naming was corrected after CI exposed an Npgsql identifier-length mismatch; the final migration/snapshot pair now matches the provider-generated model.
-- Production migration deployment strategy: NOT YET CLOSED.
+- Production migration deployment strategy: VERIFIED in CI; production execution remains deployment-controlled and is not claimed as executed.
 - Optimistic concurrency behavior/API expected-version precondition: VERIFIED in CI.
 - Atomic rollback on audit persistence failure: VERIFIED in CI.
 - Atomic rollback on outbox persistence failure: VERIFIED in CI.
 - Production migration deployment strategy: NOT YET CLOSED.
 
-Therefore the Persistence Gate remains **OPEN / IN PROGRESS**, with durable creation/idempotency/audit/outbox, optimistic concurrency, and failure-mode atomicity now proven in CI. The remaining persistence-gate work is production migration/deployment closure.
+Therefore the Persistence Gate is now **PASS — VERIFIED in CI** for the first-slice persistence boundary. Production database execution itself remains an operational deployment responsibility, not a repository-test claim.
 
 
 ## Production Migration / Deployment Closure — 2026-10-04
@@ -109,6 +109,6 @@ This proves model/migration alignment and that a deployment-consumable idempoten
 
 ### Gate status
 
-Production migration/deployment strategy: **DEFINED — CI VERIFICATION PENDING**.
+Production migration/deployment strategy: **DEFINED + CI-VERIFIED**.
 
-The Persistence Gate remains open until a CI run containing these controls passes together with the durable persistence, concurrency, and failure-mode integration suite.
+The Persistence Gate is **PASS** based on GitHub Actions run #251, which successfully executed migration validation, generated the idempotent deployment script, uploaded the artifact, and completed the PostgreSQL-backed test suite.
