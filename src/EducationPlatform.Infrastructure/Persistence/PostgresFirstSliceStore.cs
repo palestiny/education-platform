@@ -107,6 +107,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 ActorId = actorId,
+                ContextId = contextId,
                 Operation = operation,
                 CorrelationId = correlationId,
                 ResourceType = typeof(T).Name,
