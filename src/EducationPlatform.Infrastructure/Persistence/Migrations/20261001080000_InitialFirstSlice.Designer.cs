@@ -65,6 +65,7 @@ partial class InitialFirstSlice
             b.Property<Guid>("Id").HasColumnType("uuid");
             b.Property<string>("ActorId").IsRequired().HasMaxLength(128).HasColumnType("character varying(128)");
             b.Property<string>("CorrelationId").IsRequired().HasMaxLength(128).HasColumnType("character varying(128)");
+            b.Property<string>("ContextId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
             b.Property<DateTimeOffset>("OccurredAt").HasColumnType("timestamp with time zone");
             b.Property<string>("Operation").IsRequired().HasMaxLength(128).HasColumnType("character varying(128)");
             b.Property<string>("ResourceId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
