@@ -39,7 +39,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         string payload, string? idempotencyKey, string requestFingerprint, string correlationId)
     {
         return ExecuteAtomic(
-            tenantId, actorId, "submission.create", idempotencyKey, requestFingerprint,
+            tenantId, actorId, "submission.create", assignment.ContextId, idempotencyKey, requestFingerprint,
             () =>
             {
                 var submission = new Submission
