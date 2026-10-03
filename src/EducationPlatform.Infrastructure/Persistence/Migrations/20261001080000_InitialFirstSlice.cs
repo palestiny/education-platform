@@ -62,6 +62,7 @@ public partial class InitialFirstSlice : Migration
                 Id = table.Column<Guid>(type: "uuid", nullable: false),
                 TenantId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                 ActorId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                ContextId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                 Operation = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                 CorrelationId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                 ResourceType = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
