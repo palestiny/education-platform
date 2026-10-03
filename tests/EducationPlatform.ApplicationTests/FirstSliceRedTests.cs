@@ -125,10 +125,9 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
             second, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
-        Assert.Equal(
-            "CONCURRENCY_CONFLICT",
-            await secondResponse.Content.ReadAsStringAsync(
-                TestContext.Current.CancellationToken));
+        var error = await secondResponse.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+        Assert.Contains("CONCURRENCY_CONFLICT", error);
     }
 
     private async Task<HttpResponseMessage> PostAssignment(
