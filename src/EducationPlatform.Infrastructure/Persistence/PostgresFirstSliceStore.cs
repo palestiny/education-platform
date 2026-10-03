@@ -149,6 +149,108 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         }
     }
 
+    public Assignment CloseAssignment(
+        string tenantId, string actorId, string assignmentId, int expectedVersion,
+        string? idempotencyKey, string requestFingerprint, string correlationId)
+    {
+        if (!string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            var existing = db.IdempotencyRecords.SingleOrDefault(x =>
+                x.TenantId == tenantId &&
+                x.ActorId == actorId &&
+                x.OperationScope == "assignment.close" &&
+                x.IdempotencyKey == idempotencyKey);
+
+            if (existing is not null)
+            {
+                if (existing.RequestFingerprint != requestFingerprint)
+                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
+            }
+        }
+
+        using var transaction = db.Database.BeginTransaction();
+        try
+        {
+            var assignment = db.Assignments.SingleOrDefault(x =>
+                x.Id == assignmentId && x.TenantId == tenantId);
+
+            if (assignment is null)
+                throw new InvalidOperationException("RESOURCE_NOT_FOUND");
+
+            if (assignment.Version != expectedVersion)
+                throw new InvalidOperationException("CONCURRENCY_CONFLICT");
+
+            assignment.Close();
+
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                db.IdempotencyRecords.Add(new IdempotencyRecord
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    ActorId = actorId,
+                    OperationScope = "assignment.close",
+                    IdempotencyKey = idempotencyKey,
+                    RequestFingerprint = requestFingerprint,
+                    ResourceType = nameof(Assignment),
+                    ResourceId = assignment.Id,
+                    ResponseJson = JsonSerializer.Serialize(assignment),
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+            }
+
+            db.AuditRecords.Add(new AuditRecord
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                ActorId = actorId,
+                ContextId = assignment.ContextId,
+                Operation = "assignment.close",
+                CorrelationId = correlationId,
+                ResourceType = nameof(Assignment),
+                ResourceId = assignment.Id,
+                ResultingStatus = "AssignmentClosed",
+                OccurredAt = DateTimeOffset.UtcNow
+            });
+
+            db.OutboxMessages.Add(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                MessageType = "Assignment.AssignmentClosed",
+                AggregateType = nameof(Assignment),
+                AggregateId = assignment.Id,
+                Payload = JsonSerializer.Serialize(assignment),
+                OccurredAt = DateTimeOffset.UtcNow,
+                Status = "PENDING"
+            });
+
+            db.SaveChanges();
+            transaction.Commit();
+            return assignment;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            transaction.Rollback();
+            throw new InvalidOperationException("CONCURRENCY_CONFLICT");
+        }
+        catch (DbUpdateException ex) when (IsIdempotencyUniqueViolation(ex) && !string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            transaction.Rollback();
+            var existing = db.IdempotencyRecords.Single(x =>
+                x.TenantId == tenantId &&
+                x.ActorId == actorId &&
+                x.OperationScope == "assignment.close" &&
+                x.IdempotencyKey == idempotencyKey);
+
+            if (existing.RequestFingerprint != requestFingerprint)
+                throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+            return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
+        }
+    }
+
     private static string GetId<T>(T value) =>
         value switch
         {
