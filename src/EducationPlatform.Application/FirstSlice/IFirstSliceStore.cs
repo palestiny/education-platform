@@ -32,5 +32,7 @@ public interface IFirstSliceStore
         string actorId,
         string assignmentId,
         int expectedVersion,
+        string? idempotencyKey,
+        string requestFingerprint,
         string correlationId);
 }
