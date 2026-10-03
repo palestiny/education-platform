@@ -56,7 +56,7 @@ partial class InitialFirstSlice
             b.Property<string>("ResponseJson").IsRequired().HasColumnType("text");
             b.Property<string>("TenantId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
             b.HasKey("Id");
-            b.HasIndex("TenantId", "ActorId", "OperationScope", "IdempotencyKey").IsUnique();
+            b.HasIndex("TenantId", "ActorId", "OperationScope", "IdempotencyKey").HasDatabaseName("IX_idempotency_records_TenantId_ActorId_OperationScope_Idempot~").IsUnique();
             b.ToTable("idempotency_records");
         });
 
