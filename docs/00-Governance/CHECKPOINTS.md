@@ -1700,3 +1700,33 @@ GitHub Actions run #36 was observed executing against the test changes; at the l
 2. Close or correct any test-harness failures.
 3. Add RED-010 at the persistence boundary.
 4. Only then declare RED exit and begin GREEN.
+
+
+## Checkpoint 058 — Production Migration / Deployment Closure — 2026-10-04
+
+**Stage:** Durable Persistence / Deployment Readiness  
+**Status:** STRATEGY DEFINED — CI VERIFICATION PENDING
+
+### Decision
+
+Production schema evolution is deployment-controlled and externally executed:
+
+**Expand → Compatible Deploy → Migrate/Backfill → Switch → Contract/Remove**
+
+The API must not mutate production schema automatically at startup. `EnsureCreated()` is not a production migration strategy.
+
+### CI controls added
+
+- pinned `dotnet-ef` 10.0.12;
+- EF pending-model-change validation;
+- idempotent migration SQL generation;
+- migration SQL artifact upload;
+- existing PostgreSQL integration suite remains the runtime persistence proof.
+
+### Important boundary
+
+Generating and validating the migration artifact is not the same as executing it against production. Production execution remains an explicit deployment responsibility.
+
+### Next
+
+Run the workflow and require the migration-validation steps plus the full PostgreSQL suite to pass before closing the Persistence Gate.
