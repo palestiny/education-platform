@@ -82,6 +82,23 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
         }
     }
 
+    public Assignment CloseAssignment(
+        string tenantId, string actorId, string assignmentId, int expectedVersion, string correlationId)
+    {
+        lock (_gate)
+        {
+            if (!_assignments.TryGetValue(assignmentId, out var assignment))
+                throw new InvalidOperationException("RESOURCE_NOT_FOUND");
+            if (assignment.TenantId != tenantId)
+                throw new InvalidOperationException("RESOURCE_NOT_FOUND");
+            if (assignment.Version != expectedVersion)
+                throw new InvalidOperationException("CONCURRENCY_CONFLICT");
+
+            assignment.Close();
+            return assignment;
+        }
+    }
+
     private (string Fingerprint, object Response)? TryGetIdempotency(
         string tenantId, string actorId, string operation, string? key)
     {
