@@ -97,6 +97,46 @@ app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
         }
     });
 
+app.MapPost("/api/v1/assignments/{assignmentId}/close",
+    (HttpContext http, FirstSliceService service, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
+    {
+        var auth = Authenticate(http);
+        if (auth is null)
+            return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
+
+        if (auth != "authorized-teacher")
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
+
+        try
+        {
+            var mutation = service.CloseAssignment(
+                "tenant-a",
+                auth,
+                assignmentId,
+                request.ExpectedVersion,
+                http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
+                (string)http.Items["CorrelationId"]!);
+
+            return Results.Ok(mutation);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "RESOURCE_NOT_FOUND")
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "CONCURRENCY_CONFLICT")
+        {
+            return Results.Json(Error("CONCURRENCY_CONFLICT"), statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "IDEMPOTENCY_CONFLICT")
+        {
+            return Results.Json(Error("IDEMPOTENCY_CONFLICT"), statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "VALIDATION_FAILED")
+        {
+            return Results.Json(Error("VALIDATION_FAILED"), statusCode: StatusCodes.Status422UnprocessableEntity);
+        }
+    });
+
 app.Run();
 
 static string? Authenticate(HttpContext http)
@@ -116,4 +156,5 @@ public sealed class AssignmentLookup(IFirstSliceStore store)
 
 public sealed record AssignmentRequest(string GoalId, string LearnerId, JsonElement Work);
 public sealed record SubmissionRequest(JsonElement Payload);
+public sealed record CloseAssignmentRequest(int ExpectedVersion);
 public partial class Program { }
