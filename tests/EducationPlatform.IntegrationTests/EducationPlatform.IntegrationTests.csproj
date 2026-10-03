@@ -18,5 +18,6 @@
     </PackageReference>
     <ProjectReference Include="../../src/EducationPlatform.Application/EducationPlatform.Application.csproj" />
     <ProjectReference Include="../../src/EducationPlatform.Infrastructure/EducationPlatform.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/EducationPlatform.Api/EducationPlatform.Api.csproj" />
   </ItemGroup>
 </Project>
