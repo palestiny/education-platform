@@ -53,6 +53,54 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Equal("IDEMPOTENCY_CONFLICT", ex.Message);
     }
 
+    [Fact]
+    public void Stale_expected_version_is_rejected_and_only_one_close_commits()
+    {
+        using var seedDb = CreateFreshDatabase();
+        var seedService = new FirstSliceService(new PostgresFirstSliceStore(seedDb));
+
+        var created = seedService.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{}", "concurrency-create", "correlation-create");
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        using var firstDb = CreateContext(connection!);
+        using var secondDb = CreateContext(connection!);
+
+        var firstService = new FirstSliceService(new PostgresFirstSliceStore(firstDb));
+        var secondService = new FirstSliceService(new PostgresFirstSliceStore(secondDb));
+
+        _ = firstService.CloseAssignment(
+            "tenant-a", "authorized-teacher", created.Value.Id, 1,
+            "close-first", "correlation-close-first");
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            secondService.CloseAssignment(
+                "tenant-a", "authorized-teacher", created.Value.Id, 1,
+                "close-second", "correlation-close-second"));
+
+        Assert.Equal("CONCURRENCY_CONFLICT", ex.Message);
+
+        using var verifyDb = CreateContext(connection!);
+        var assignment = verifyDb.Assignments.Single(x => x.Id == created.Value.Id);
+
+        Assert.Equal("CLOSED", assignment.Status);
+        Assert.Equal(2, assignment.Version);
+        Assert.Equal(2, verifyDb.AuditRecords.Count(x => x.ResourceId == created.Value.Id));
+        Assert.Equal(2, verifyDb.OutboxMessages.Count(x => x.AggregateId == created.Value.Id));
+    }
+
+    private static EducationPlatformDbContext CreateContext(string connection)
+    {
+        var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
+            .UseNpgsql(connection, npgsql =>
+                npgsql.MigrationsAssembly(typeof(EducationPlatformDbContext).Assembly.FullName))
+            .Options;
+        return new EducationPlatformDbContext(options);
+    }
+
     private static EducationPlatformDbContext CreateFreshDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
