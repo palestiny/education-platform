@@ -1,0 +1,57 @@
+name: dotnet-tests
+
+on:
+  push:
+    branches:
+      - main
+      - chore/architecture-gate-preparation
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: education_platform_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d education_platform_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      EDUCATION_PLATFORM_TEST_CONNECTION: Host=localhost;Port=5432;Database=education_platform_test;Username=postgres;Password=postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore EducationPlatform.sln
+
+      - name: Install EF Core CLI
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
+
+      - name: Validate EF migrations
+        run: dotnet ef migrations has-pending-model-changes --project src/EducationPlatform.Infrastructure/EducationPlatform.Infrastructure.csproj --startup-project src/EducationPlatform.Api/EducationPlatform.Api.csproj
+
+      - name: Generate idempotent migration script
+        run: dotnet ef migrations script --idempotent --project src/EducationPlatform.Infrastructure/EducationPlatform.Infrastructure.csproj --startup-project src/EducationPlatform.Api/EducationPlatform.Api.csproj --output artifacts/education-platform-migrations.sql
+
+      - name: Upload migration script artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: education-platform-migrations
+          path: artifacts/education-platform-migrations.sql
+
+      - name: Test
+        run: dotnet test EducationPlatform.sln --no-restore

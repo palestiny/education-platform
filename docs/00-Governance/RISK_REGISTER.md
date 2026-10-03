@@ -12,3 +12,10 @@
 | RISK-0008 | Video/live infrastructure creates unnecessary operational burden. | High | Medium | OPEN | External-provider-first investigation |
 | RISK-0009 | Requirements are invented during coding. | High | Medium | OPEN | Working Rules and traceability |
 | RISK-0010 | Defects are patched without identifying root cause. | High | Medium | OPEN | Root-cause workflow and regression verification |
+
+
+## RISK-0011 — Production Migration Execution
+
+**Status:** CONTROLLED / ACCEPTED
+
+Production schema changes are not performed by application startup. Deployment owns migration execution using the reviewed idempotent migration artifact. CI run #251 verified artifact generation and migration/model alignment; production execution remains a deployment operational control.

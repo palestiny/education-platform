@@ -10,11 +10,11 @@ The conversation is used for collaboration and reasoning; approved project knowl
 
 ## Current Stage
 
-Pre-Discovery / Foundation
+Implementation / TDD RED Entry
 
 ## Current Gate
 
-Product Foundation / Competitive Intelligence Gate
+Implementation Gate — PASS / TDD RED
 
 ## Documentation
 
@@ -24,11 +24,10 @@ Product Foundation / Competitive Intelligence Gate
 - docs/03-Domain/ — domain model and business concepts
 - docs/04-UX/ — user journeys and experience
 - docs/05-Architecture/ — architecture and technical decisions
-- docs/06-Security/ — security, privacy, trust and safety
-- docs/07-API/ — API contracts
-- docs/08-Engineering/ — implementation standards
-- docs/09-Testing/ — testing strategy and evidence
-- docs/10-Operations/ — deployment, observability and operations
+- docs/06-API/ — API contracts
+- docs/07-Engineering/ — implementation standards
+- docs/08-Testing/ — testing strategy and evidence
+- docs/09-Operations/ — deployment, observability and operations
 - adr/ — Architecture Decision Records
 
 ## Engineering Doctrine
