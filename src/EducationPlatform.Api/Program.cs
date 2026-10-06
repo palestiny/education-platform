@@ -31,8 +31,6 @@ builder.Services.AddScoped<FirstSliceService>();
 builder.Services.AddScoped<AssignmentLookup>();
 builder.Services.AddScoped<RequestExecutionContextAccessor>();
 builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
-builder.Services.AddScoped<RequestExecutionContextAccessor>();
-builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
 
 var app = builder.Build();
 
