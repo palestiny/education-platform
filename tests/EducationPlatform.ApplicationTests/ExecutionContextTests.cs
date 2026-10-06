@@ -11,11 +11,11 @@ public sealed class ExecutionContextTests
         var context = new ExecutionContext(
             PrincipalId: "authorized-teacher",
             TenantId: "tenant-a",
-            Roles: ["teacher"]);
+            Authorities: new HashSet<string>(["assignment:create"]));
 
         Assert.Equal("authorized-teacher", context.PrincipalId);
         Assert.Equal("tenant-a", context.TenantId);
-        Assert.Contains("teacher", context.Roles);
+        Assert.Contains("teacher", context.Authorities);
     }
 
     [Fact]
