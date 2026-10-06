@@ -1,4 +1,6 @@
+using EducationPlatform.Api.Security;
 using EducationPlatform.Application.FirstSlice;
+using EducationPlatform.Application.Security;
 using EducationPlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +29,8 @@ else
 
 builder.Services.AddScoped<FirstSliceService>();
 builder.Services.AddScoped<AssignmentLookup>();
+builder.Services.AddScoped<RequestExecutionContextAccessor>();
+builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
 
 var app = builder.Build();
 
@@ -38,25 +42,29 @@ app.Use(async (http, next) =>
 
     http.Items["CorrelationId"] = correlationId;
     http.Response.Headers["X-Correlation-ID"] = correlationId;
+
+    var executionContext = TestBearerExecutionContextResolver.Resolve(http);
+    if (executionContext is not null)
+        http.RequestServices.GetRequiredService<RequestExecutionContextAccessor>().Set(executionContext);
+
     await next();
 });
 
 app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
-    (HttpContext http, FirstSliceService service, string contextId, [FromBody] AssignmentRequest request) =>
+    (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string contextId, [FromBody] AssignmentRequest request) =>
     {
-        var auth = Authenticate(http);
-        if (auth is null) return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
-        if (auth == "teacher-without-authority")
+        var auth = context.Current;
+        if (auth is null)
+            return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
+        if (!auth.HasAuthority("assignment:create"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
-        if (auth == "tenant-a-teacher")
+        if (contextId == "context-a" && auth.TenantId != "tenant-a")
             return Results.NotFound();
-        if (auth != "authorized-teacher")
-            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
         try
         {
             var mutation = service.CreateAssignment(
-                "tenant-a", auth, contextId, request.GoalId, request.LearnerId,
+                auth.TenantId, auth.PrincipalId, contextId, request.GoalId, request.LearnerId,
                 request.Work.GetRawText(), http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
                 (string)http.Items["CorrelationId"]!);
             var assignment = mutation.Value;
@@ -69,19 +77,22 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
-    (HttpContext http, FirstSliceService service, string assignmentId, [FromServices] AssignmentLookup lookup, [FromBody] SubmissionRequest request) =>
+    (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string assignmentId, [FromServices] AssignmentLookup lookup, [FromBody] SubmissionRequest request) =>
     {
-        var auth = Authenticate(http);
-        if (auth is null) return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
+        var auth = context.Current;
+        if (auth is null)
+            return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
+        if (!auth.HasAuthority("submission:create"))
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
         var assignment = lookup.Get(assignmentId);
-        if (assignment is null) return Results.NotFound();
-        if (auth != assignment.LearnerId) return Results.NotFound();
+        if (assignment is null || assignment.TenantId != auth.TenantId) return Results.NotFound();
+        if (auth.PrincipalId != assignment.LearnerId) return Results.NotFound();
 
         try
         {
             var mutation = service.CreateSubmission(
-                assignment.TenantId, auth, assignment, auth, request.Payload.GetRawText(),
+                auth.TenantId, auth.PrincipalId, assignment, auth.PrincipalId, request.Payload.GetRawText(),
                 http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
                 (string)http.Items["CorrelationId"]!);
             var submission = mutation.Value;
@@ -98,25 +109,24 @@ app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/close",
-    (HttpContext http, FirstSliceService service, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
+    (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, AssignmentLookup lookup, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
     {
-        var auth = Authenticate(http);
+        var auth = context.Current;
         if (auth is null)
             return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
-
-        if (auth != "authorized-teacher")
+        if (!auth.HasAuthority("assignment:close"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
+
+        var assignment = lookup.Get(assignmentId);
+        if (assignment is null || assignment.TenantId != auth.TenantId)
+            return Results.NotFound();
 
         try
         {
             var mutation = service.CloseAssignment(
-                "tenant-a",
-                auth,
-                assignmentId,
-                request.ExpectedVersion,
+                auth.TenantId, auth.PrincipalId, assignmentId, request.ExpectedVersion,
                 http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
                 (string)http.Items["CorrelationId"]!);
-
             return Results.Ok(mutation);
         }
         catch (InvalidOperationException ex) when (ex.Message == "RESOURCE_NOT_FOUND")
@@ -138,14 +148,6 @@ app.MapPost("/api/v1/assignments/{assignmentId}/close",
     });
 
 app.Run();
-
-static string? Authenticate(HttpContext http)
-{
-    if (!http.Request.Headers.TryGetValue("Authorization", out var value)) return null;
-    const string prefix = "Bearer ";
-    var raw = value.ToString();
-    return raw.StartsWith(prefix, StringComparison.Ordinal) ? raw[prefix.Length..] : null;
-}
 
 static object Error(string code) => new { code };
 
