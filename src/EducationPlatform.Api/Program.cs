@@ -43,9 +43,12 @@ app.Use(async (http, next) =>
     http.Items["CorrelationId"] = correlationId;
     http.Response.Headers["X-Correlation-ID"] = correlationId;
 
-    var executionContext = TestBearerExecutionContextResolver.Resolve(http);
-    if (executionContext is not null)
-        http.RequestServices.GetRequiredService<RequestExecutionContextAccessor>().Set(executionContext);
+    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+    {
+        var executionContext = TestBearerExecutionContextResolver.Resolve(http);
+        if (executionContext is not null)
+            http.RequestServices.GetRequiredService<RequestExecutionContextAccessor>().Set(executionContext);
+    }
 
     await next();
 });
