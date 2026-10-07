@@ -1,12 +1,13 @@
+using ApplicationExecutionContext = EducationPlatform.Application.Security.ExecutionContext;
 using EducationPlatform.Application.Security;
 
 namespace EducationPlatform.Api.Security;
 
 public sealed class RequestExecutionContextAccessor : IExecutionContextAccessor
 {
-    private ExecutionContext? _current;
+    private ApplicationExecutionContext? _current;
 
-    public ExecutionContext? Current => _current;
+    public ApplicationExecutionContext? Current => _current;
 
-    public void Set(ExecutionContext context) => _current = context;
+    public void Set(ApplicationExecutionContext context) => _current = context;
 }
