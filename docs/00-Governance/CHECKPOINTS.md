@@ -1730,3 +1730,36 @@ Generating and validating the migration artifact is not the same as executing it
 ### Next
 
 Run the workflow and require the migration-validation steps plus the full PostgreSQL suite to pass before closing the Persistence Gate.
+
+
+## Checkpoint 059 — Authentication / Tenant Context Verification — 2026-10-07
+
+**Stage:** Authentication / Tenant Boundary  
+**Status:** CI VERIFIED
+
+### Verification
+- GitHub Actions run #282 completed successfully for commit `fab44865c4181734859095df234d2fa0d7d80e8f`.
+- Explicit solution build passed.
+- EF migration/model alignment validation passed.
+- Idempotent migration SQL generation and artifact upload passed.
+- Full test suite passed.
+
+### Verified boundary
+**HTTP Authentication → Application Execution Context → Tenant Context → Authorization Authority → Use Case**
+
+### Verified properties
+- Principal identity reaches mutations through the provider-neutral execution context.
+- Tenant authority is server-derived rather than client-selected.
+- Unauthorized operations are rejected.
+- Cross-tenant resource access is rejected.
+- Test bearer authentication is unavailable outside Development/Testing.
+- Existing idempotency, audit, outbox and optimistic-concurrency behavior remains green.
+
+### Deferred
+Production identity-provider selection and adapter implementation remain intentionally deferred. The test bearer resolver is not production authentication.
+
+### Gate result
+**Authentication / Tenant Context Boundary: PASS — VERIFIED**
+
+### Next
+Update remaining stale implementation-readiness documentation, then proceed to the next explicit production-readiness boundary without silently selecting an identity provider.
