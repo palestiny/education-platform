@@ -49,6 +49,10 @@ The boundary is considered implemented only when CI verifies:
 
 ## Status
 
-**Implemented; CI verification pending for the current change set.**
+**Implemented and CI verified by GitHub Actions run #282.**
+
+The verified run passed the explicit solution build, EF migration/model alignment validation, idempotent migration SQL generation, migration artifact upload, and full test suite. Authentication/tenant boundary behavior and existing idempotency, audit, outbox, and concurrency behavior remain green.
+
+This does not authorize a production identity provider. A real production IdP adapter remains a separate design/implementation boundary.
 
 This document does not authorize a production identity provider or claim production authentication readiness.
