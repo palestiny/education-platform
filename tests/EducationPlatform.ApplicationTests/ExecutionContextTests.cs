@@ -1,4 +1,4 @@
-using EducationPlatform.Application.Security;
+using ApplicationExecutionContext = EducationPlatform.Application.Security.ExecutionContext;
 using Xunit;
 
 namespace EducationPlatform.ApplicationTests;
@@ -8,7 +8,7 @@ public sealed class ExecutionContextTests
     [Fact]
     public void Execution_context_requires_server_derived_tenant_and_authenticated_principal()
     {
-        var context = new ExecutionContext(
+        var context = new ApplicationExecutionContext(
             PrincipalId: "authorized-teacher",
             TenantId: "tenant-a",
             Authorities: new HashSet<string>(["assignment:create"]));
@@ -21,7 +21,7 @@ public sealed class ExecutionContextTests
     [Fact]
     public void Execution_context_does_not_accept_client_supplied_tenant()
     {
-        var context = new ExecutionContext(
+        var context = new ApplicationExecutionContext(
             PrincipalId: "authorized-teacher",
             TenantId: "tenant-a",
             Authorities: new HashSet<string>(["assignment:create"]));
