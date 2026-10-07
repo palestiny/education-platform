@@ -19,3 +19,12 @@
 **Status:** CONTROLLED / ACCEPTED
 
 Production schema changes are not performed by application startup. Deployment owns migration execution using the reviewed idempotent migration artifact. CI run #251 verified artifact generation and migration/model alignment; production execution remains a deployment operational control.
+
+
+## RISK-0012 — Production Identity Provider
+
+**Status:** CONTROLLED / DEFERRED
+
+The application authentication boundary is provider-neutral and CI verified. Production identity-provider selection and adapter implementation remain deferred. The Development/Testing bearer resolver is explicitly disabled outside those environments, so the current posture fails closed rather than treating test credentials as production authentication.
+
+**Mitigation:** preserve the `ExecutionContext` contract; require a separate reviewed IdP adapter boundary before production authorization is enabled; do not select a provider implicitly during feature implementation.
