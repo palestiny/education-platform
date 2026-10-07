@@ -15,7 +15,7 @@ public sealed class ExecutionContextTests
 
         Assert.Equal("authorized-teacher", context.PrincipalId);
         Assert.Equal("tenant-a", context.TenantId);
-        Assert.Contains("teacher", context.Authorities);
+        Assert.Contains("assignment:create", context.Authorities);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public sealed class ExecutionContextTests
         var context = new ExecutionContext(
             PrincipalId: "authorized-teacher",
             TenantId: "tenant-a",
-            Roles: ["teacher"]);
+            Authorities: new HashSet<string>(["assignment:create"]));
 
         Assert.Equal("tenant-a", context.TenantId);
     }
