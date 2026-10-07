@@ -1763,3 +1763,27 @@ Production identity-provider selection and adapter implementation remain intenti
 
 ### Next
 Update remaining stale implementation-readiness documentation, then proceed to the next explicit production-readiness boundary without silently selecting an identity provider.
+
+
+## Checkpoint 060 — Production Identity & Authorization Design Boundary — 2026-10-07
+
+**Stage:** Production Identity / Authorization Design  
+**Status:** DESIGN GATE CLOSED — IMPLEMENTATION NOT YET AUTHORIZED
+
+### Completed
+- Provider-neutral production authentication adapter boundary defined.
+- Authentication separated from authorization.
+- Person-centric identity with contextual organization membership accepted.
+- Tenant context remains server-derived.
+- Relationship does not imply permission.
+- Policy-based authorization and fail-closed behavior accepted.
+- Credential lifecycle and security-audit boundaries defined.
+- Minimum CI security verification scenarios defined.
+
+### Gate result
+**Production Identity & Authorization Design Gate: PASS**
+
+This closes the design boundary only. It does not select an identity provider and does not authorize production authentication implementation.
+
+### Next
+Select the concrete provider strategy through an explicit decision, then write executable RED tests for the production authentication/authorization adapter before GREEN implementation.
