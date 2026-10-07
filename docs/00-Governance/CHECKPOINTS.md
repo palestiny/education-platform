@@ -1787,3 +1787,24 @@ This closes the design boundary only. It does not select an identity provider an
 
 ### Next
 Select the concrete provider strategy through an explicit decision, then write executable RED tests for the production authentication/authorization adapter before GREEN implementation.
+
+
+## Checkpoint 061 — Production Identity Provider Strategy — 2026-10-07
+
+**Stage:** Production Identity / Provider Strategy  
+**Status:** CONDITIONAL PASS — FINAL PROVIDER VALIDATION PENDING
+
+### Decision
+- Managed CIAM + provider-neutral adapter accepted as the durable architecture.
+- Microsoft Entra External ID selected as the preferred provider candidate.
+- Provider SDK/provider-specific objects remain outside Application/Domain.
+- Final production provider commitment remains pending commercial, operational, privacy/minor-safety, mobile, migration and scale validation.
+
+### Gate result
+**Production Identity Provider Strategy: CONDITIONAL PASS**
+
+### Implementation boundary
+Production authentication implementation is still **NOT AUTHORIZED** until the validation items in `PRODUCTION_IDENTITY_PROVIDER_STRATEGY_GATE.md` are closed and executable RED tests are written for the provider-neutral adapter contract.
+
+### Next
+Close the provider validation checklist, then enter TDD RED for the production authentication/authorization adapter.
