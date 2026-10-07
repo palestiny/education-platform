@@ -1,8 +1,8 @@
 # Implementation Readiness Matrix — First Vertical Slice
 
-**Date:** 2026-09-29  
-**Status:** PROPOSED — IMPLEMENTATION GATE NOT PROVEN  
-**Implementation authorization:** NOT AUTHORIZED
+**Date:** 2026-10-07  
+**Status:** IMPLEMENTED / VERIFIED  
+**Implementation authorization:** AUTHORIZED BY IMPLEMENTATION GATE
 
 ## 1. Purpose
 
@@ -45,22 +45,28 @@ The slice must be complete enough to demonstrate the canonical journey, but it m
 - AI Assistance — bounded assistance only; no authoritative learner state.
 - Integrations — isolated external provider boundaries.
 
-## 5. Implementation Gate Blocking Conditions
+## 5. Current implementation status
 
-The following must remain blocking until explicitly resolved:
+The original implementation blockers have been closed to the extent required for the first technical slice:
 
-1. DB schema is not yet designed.
-2. Exact persistence mappings are not yet approved.
-3. Exact authentication/session mechanism is open.
-4. Physical tenant-isolation mechanism is open.
-5. Jurisdiction-specific consent/age/privacy rules are open.
-6. Exact retention periods are open.
-7. Cloud/provider selection is open.
-8. Exact progress/mastery algorithm is open.
-9. Exact evidence taxonomy/storage mechanics are open.
-10. Exact outcome authority implementation is open.
+1. Durable PostgreSQL schema and mappings: IMPLEMENTED and CI VERIFIED.
+2. Migration/model alignment: CI VERIFIED; idempotent migration artifact generated in CI.
+3. Authentication/application context boundary: IMPLEMENTED and CI VERIFIED.
+4. Server-derived tenant enforcement: IMPLEMENTED and CI VERIFIED.
+5. Logical tenant isolation with defense-in-depth: accepted for the current phase.
 
-These are downstream implementation decisions, not reasons to redesign the accepted semantics.
+The following remain intentionally deferred and are not blockers for the completed first slice:
+
+- Production identity-provider selection/adapter.
+- Physical tenant isolation.
+- Jurisdiction-specific consent/age/privacy rules.
+- Final retention periods.
+- Cloud/provider selection.
+- Universal progress/mastery algorithm.
+- Expanded evidence taxonomy/storage mechanics.
+- Broader outcome-authority implementation.
+
+These remain downstream decisions and must not be invented implicitly.
 
 ## 6. First Implementation Design Tasks
 
@@ -100,15 +106,13 @@ The first tests should express accepted business semantics, not framework mechan
 | Security | PASS |
 | Data | PASS |
 | API Contract | PASS |
-| Implementation | **NOT PROVEN** |
-| Testing | NOT OPEN |
-| Release | NOT OPEN |
-| Verification | NOT OPEN |
+| Implementation | **PASS — VERIFIED** |
+| Testing | **PASS — VERIFIED** |
+| Release | Deployment readiness in progress |
+| Verification | **PASS — CI VERIFIED** |
 
 ## 9. Recommendation
 
-Open Implementation Gate preparation with **Persistence + Module Contract Design** first.
+The first technical slice is implemented and verified. Do not reopen closed persistence/authentication boundaries without new evidence.
 
-Do not start with controllers, EF migrations, UI pages, or infrastructure provisioning. Those artifacts would prematurely freeze unresolved implementation details.
-
-**Next artifact:** docs/05-Architecture/FIRST_SLICE_IMPLEMENTATION_DESIGN.md
+Next work should address the next explicit product/production-readiness boundary, with production identity-provider selection remaining a separate reviewed decision.
