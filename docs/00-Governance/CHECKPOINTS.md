@@ -1981,3 +1981,28 @@ Before writing executable tests that require new source contracts, close the own
 
 ### Next
 Wait for exact-head CI result. Then seek closure of the recommended defaults for the first protected learning journey before creating runtime identity/membership contracts or executable RED tests. Production authentication, provider selection, schema, legal/privacy/minor policy and GREEN implementation remain open. PR #2 remains open/unmerged.
+
+
+## Checkpoint 068 — Durable Submission Replay Verified; Assignment-Close Policy Gap Recorded
+
+**Date:** 2026-10-09  
+**Stage:** First-Slice Reliability / Authorization Boundary  
+**Status:** POSTGRES REPLAY TEST CI PASS — ASSIGNMENT-CLOSE RESOURCE POLICY OPEN  
+**Implementation authorization:** No new identity or ownership policy authorized
+
+### Exact-head verification
+- Code commit: `9f55d7078b4704e1a630f5bcdb88912eaa61d05c`.
+- CI run `37858938864` (#358): success — https://github.com/palestiny/education-platform/actions/runs/37858938864.
+- Build, EF migration validation, idempotent migration script generation/artifact upload, full test step and cleanup completed successfully.
+- The PostgreSQL integration test `Submission_retry_after_assignment_close_replays_without_duplicate_reliability_records` verifies that retrying the same submission operation after assignment closure replays the original submission and does not add duplicate submission, `submission.create` idempotency, audit, or outbox records.
+- The previous CI run #356 also passed after isolating `RED_010_Retry_replays_submission_after_assignment_is_closed` from shared seeded assignment state.
+
+### Explicit limits of the evidence
+- This verifies the tested same-key replay path and durable PostgreSQL behavior. It does not prove concurrent-race behavior, all retry failure windows, or distributed delivery semantics.
+- Current API close-assignment authorization checks authentication, the `assignment:close` authority, and tenant equality for the looked-up assignment. The inspected route does not establish an assignment-owner, learning-context membership, or resource-specific policy check.
+- This is recorded as **OPEN / NOT VERIFIED**, not automatically classified as a confirmed vulnerability: the intended policy and ownership model have not yet been accepted, and current domain contracts do not establish them.
+
+### Next controlled step
+- Define the first-slice close-assignment policy: which principals may close which assignments, how ownership/context membership is represented, and whether tenant-wide `assignment:close` authority is intentionally sufficient for this slice.
+- Compare options and trade-offs before changing runtime behavior; then add authorization contract tests before implementation.
+- Production identity provider, membership persistence, ownership model and production authentication remain open. PR #2 remains open and unmerged.
