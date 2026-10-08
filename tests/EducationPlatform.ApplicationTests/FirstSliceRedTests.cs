@@ -195,7 +195,30 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
     }
 
     [Fact]
-    public async Task AUTH_BOUNDARY_004_Client_supplied_tenant_does_not_override_resolved_context()
+    public async Task AUTH_BOUNDARY_004_Malformed_bearer_without_token_fails_closed()
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        request.Headers.TryAddWithoutValidation("Authorization", "Bearer");
+        request.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { }
+        });
+
+        var response = await _client.SendAsync(
+            request, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+        Assert.Contains("AUTHENTICATION_REQUIRED", body);
+    }
+
+    [Fact]
+    public async Task AUTH_BOUNDARY_005_Client_supplied_tenant_does_not_override_resolved_context()
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
