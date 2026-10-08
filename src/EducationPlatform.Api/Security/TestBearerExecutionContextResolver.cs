@@ -11,7 +11,7 @@ public static class TestBearerExecutionContextResolver
 
         const string prefix = "Bearer ";
         var raw = value.ToString();
-        if (!raw.StartsWith(prefix, StringComparison.Ordinal))
+        if (!raw.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             return null;
 
         return raw[prefix.Length..] switch
