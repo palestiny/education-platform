@@ -61,7 +61,9 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
             return Results.Json(Error("AUTHENTICATION_REQUIRED"), statusCode: StatusCodes.Status401Unauthorized);
         if (!auth.HasAuthority("assignment:create"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
-        if (contextId == "context-a" && auth.TenantId != "tenant-a")
+        // This first slice only supports context-a. Reject unknown contexts until
+        // server-side context/membership resolution is implemented.
+        if (contextId != "context-a" || auth.TenantId != "tenant-a")
             return Results.NotFound();
 
         try
