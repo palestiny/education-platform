@@ -144,14 +144,27 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
     [Fact]
     public async Task RED_010_Retry_replays_submission_after_assignment_is_closed()
     {
+        // Use an assignment created by this test; never mutate the shared seed
+        // assignment because the class fixture is shared by other tests.
+        var create = await PostAssignment(
+            "authorized-teacher",
+            "red-010-create-assignment",
+            learnerId: "authorized-learner");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(
+            TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(assignmentId));
+
         const string key = "red-010-submission-replay-after-close";
-        var first = await PostSubmission("authorized-learner", key);
+        var first = await PostSubmission(
+            "authorized-learner", key, assignmentId!);
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
         var originalBody = await first.Content.ReadAsStringAsync(
             TestContext.Current.CancellationToken);
 
         using var close = new HttpRequestMessage(
-            HttpMethod.Post, "/api/v1/assignments/assignment-a/close");
+            HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
         close.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", "authorized-teacher");
         close.Headers.Add("Idempotency-Key", "red-010-close-assignment");
@@ -160,7 +173,8 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
             close, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, closeResponse.StatusCode);
 
-        var retry = await PostSubmission("authorized-learner", key);
+        var retry = await PostSubmission(
+            "authorized-learner", key, assignmentId!);
 
         Assert.Equal(HttpStatusCode.Created, retry.StatusCode);
         Assert.Equal(originalBody, await retry.Content.ReadAsStringAsync(
