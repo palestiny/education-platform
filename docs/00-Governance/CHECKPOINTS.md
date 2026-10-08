@@ -1844,3 +1844,31 @@ Close the provider validation checklist, then enter TDD RED for the production a
 
 ### Next
 Inspect current application contracts and test harness; map AUTH-RED-001 through AUTH-RED-015 to executable tests, then run targeted CI. Keep provider SDK integration and GREEN implementation unauthorized until validation and implementation gates close.
+
+## Checkpoint 063 — API Authentication Boundary Regression — 2026-10-09
+
+**Stage:** Production Identity / Stage A API Boundary  
+**Status:** LATEST HEAD CI VERIFIED — PRODUCTION AUTHENTICATION NOT IMPLEMENTED
+
+### Exact-head evidence
+- Head commit: `f9cc708827af63e5dd6fdf5b93f4efd4d40b00ae`
+- GitHub Actions run `37850841637`: success — https://github.com/palestiny/education-platform/actions/runs/37850841637
+- GitHub Actions run `37850848018`: success — https://github.com/palestiny/education-platform/actions/runs/37850848018
+- Both runs passed build, EF migration validation, idempotent migration SQL generation/artifact upload, and the test suite.
+
+### Newly verified API boundary behavior
+- Bearer scheme matching is case-insensitive.
+- A bare `Authorization: Bearer` header with no credential fails closed with 401 and `AUTHENTICATION_REQUIRED`.
+- Client-supplied `tenantId` does not override the tenant in the server-resolved execution context.
+- Existing unknown-credential, unsupported-scheme, authorization, tenant/resource, idempotency, submission, and concurrency tests remain green.
+
+### Environment isolation review
+The API invokes `TestBearerExecutionContextResolver` only when the host environment is Development or Testing. This is confirmed by code inspection of `src/EducationPlatform.Api/Program.cs`; a dedicated Production-host integration test has **not** been added, so this property is code-reviewed rather than independently test-proven. Production requests still require a real authentication adapter before protected use cases can be used legitimately.
+
+### Gate result
+**Stage A API credential/tenant boundary: PASS for the tested development/testing path.**
+
+**Production authentication, external identity-to-Person mapping, membership resolution, relationship policy, disabled/revoked identity handling, and provider integration: NOT IMPLEMENTED / NOT VERIFIED.**
+
+### Next
+Review whether a production-environment host test can be added without weakening the production startup requirements; then define provider-neutral Person/membership contracts and executable tests only after reviewing the existing domain/application model. Do not add provider SDKs or production login flow before the provider and privacy/commercial gates are explicitly closed.
