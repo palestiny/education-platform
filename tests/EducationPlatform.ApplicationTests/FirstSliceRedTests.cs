@@ -3,6 +3,8 @@ using Xunit;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace EducationPlatform.ApplicationTests;
 
@@ -240,6 +242,42 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(
             TestContext.Current.CancellationToken);
         Assert.Equal("tenant-a", body.GetProperty("tenantId").GetString());
+    }
+
+    [Fact]
+    public async Task AUTH_BOUNDARY_006_Test_bearer_credential_does_not_authenticate_in_production_environment()
+    {
+        using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["ConnectionStrings:EducationPlatform"] =
+                            "Host=127.0.0.1;Port=5432;Database=education_platform_test;Username=test;Password=test"
+                    }));
+            });
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        request.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { }
+        });
+
+        var response = await client.SendAsync(
+            request, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+        Assert.Contains("AUTHENTICATION_REQUIRED", body);
     }
 
     private async Task<HttpResponseMessage> PostAssignment(
