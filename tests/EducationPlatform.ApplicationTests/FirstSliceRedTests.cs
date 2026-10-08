@@ -337,6 +337,54 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AUTHZ_CLOSE_001_Authenticated_teacher_without_close_authority_is_rejected()
+    {
+        var create = await PostAssignment(
+            "authorized-teacher", "authz-close-001-create-assignment");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(
+            TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(assignmentId));
+
+        using var close = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
+        close.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "teacher-without-authority");
+        close.Headers.Add("Idempotency-Key", "authz-close-001-close");
+        close.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        var response = await _client.SendAsync(
+            close, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AUTHZ_CLOSE_002_Principal_from_another_tenant_cannot_close_assignment()
+    {
+        var create = await PostAssignment(
+            "authorized-teacher", "authz-close-002-create-assignment");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(
+            TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(assignmentId));
+
+        using var close = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
+        close.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "tenant-a-teacher");
+        close.Headers.Add("Idempotency-Key", "authz-close-002-close");
+        close.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        var response = await _client.SendAsync(
+            close, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
