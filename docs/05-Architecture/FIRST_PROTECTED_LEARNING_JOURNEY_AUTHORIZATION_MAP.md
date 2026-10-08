@@ -1,7 +1,7 @@
 # First Protected Learning Journey — Authorization Map
 
 **Project:** Education Platform  
-**Status:** DESIGN REVIEW ARTIFACT — NO POLICY OR IMPLEMENTATION AUTHORIZED  
+**Status:** DESIGN REVIEW ARTIFACT — CLOSE POLICY B ACCEPTED; IMPLEMENTATION NOT AUTHORIZED  
 **Date:** 2026-10-09  
 **Branch:** `chore/architecture-gate-preparation`  
 **Related:** `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`, `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`
@@ -48,7 +48,7 @@ Any authenticated principal with the trusted `assignment:close` authority may cl
 - **Cost/risk:** no assignment-owner or context-specific boundary; authority configuration becomes security-critical.
 - **Required guardrail:** authority must be issued by trusted server-side policy, never accepted from client input or unvalidated external claims.
 
-### Option B — Require membership in the assignment's learning context
+### Option B — Require membership in the assignment's learning context (ACCEPTED)
 The actor must have an eligible membership in the assignment's context and a policy grant for closing.
 
 - **Benefit:** aligns access with the context where the assignment exists; supports multiple contexts and least privilege.
@@ -60,18 +60,20 @@ The creator/owner may close the assignment; separately authorized context/tenant
 - **Benefit:** narrow default authority and an explicit administrative path.
 - **Cost/risk:** requires ownership semantics, creator transfer/deletion rules, and override auditing. The current domain/store contracts do not establish these rules.
 
-**Design recommendation, not an owner decision:** Option B is the stronger long-term default for a multi-tenant education platform, with any tenant-wide override explicitly modeled as a separate policy. Do not implement it until the owner confirms the first-slice rule and the model can represent it. Option C may be preferable if assignment ownership is a product requirement; that cannot be inferred from the current code.
+**Owner decision — accepted 2026-10-09:** Option B governs the first protected learning journey. Closing an assignment requires eligible membership in that assignment's learning context and an explicit resource/action policy grant. Membership alone is not a close grant. Any future tenant-wide override must be modeled as a separate, explicit policy and audited; it is not implied by this decision.
+
+This decision does not establish the concrete membership persistence model, policy engine, or runtime implementation.
 
 ## 5. Minimum acceptance decisions for Stage B
 
-Before creating source contracts or executable contract RED tests, the owner/security review must decide:
+Remaining decisions before source contracts / executable contract RED tests:
 
-1. Whether unknown identities are rejected and onboarded only through a separate invitation/provisioning flow.
-2. Which of Options A/B/C governs assignment close in the first slice.
-3. Whether the first slice requires teacher membership in the learning context at creation and close, and learner membership at submission.
-4. How zero and multiple eligible memberships behave (recommended: deny / explicit ambiguity, respectively).
-5. Which system is authoritative for Person disable/revocation and the maximum acceptable stale-access interval.
-6. Whether the first slice has any guardian/student relationship behavior. If not, explicitly defer it rather than implying it is covered.
+1. Exact onboarding/invitation/account-linking flow for unknown identities; no implicit account or membership provisioning is permitted.
+2. Whether teacher membership is required at assignment creation and learner membership at submission, with precise eligibility predicates for each operation.
+3. Exact behavior for zero and multiple eligible memberships (baseline: deny / explicit ambiguity; context-selection UX and server binding remain open).
+4. Authoritative source for Person disable/revocation and maximum acceptable stale-access interval.
+5. Whether guardian/student relationship behavior is in this first slice. If not, explicitly defer it.
+6. Minimal provider-neutral resolution port/result semantics and safe external error mapping.
 
 Provider choice, account linking, consent/legal policy, membership schema, physical tenant isolation, and production authentication remain separate decisions.
 
