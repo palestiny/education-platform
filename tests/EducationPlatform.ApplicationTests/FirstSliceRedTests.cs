@@ -276,6 +276,27 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
         Assert.Contains("AUTHENTICATION_REQUIRED", body);
     }
 
+    [Fact]
+    public async Task AUTH_BOUNDARY_007_Unsupported_learning_context_is_rejected()
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-unknown/assignments");
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        request.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { }
+        });
+
+        var response = await _client.SendAsync(
+            request, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
