@@ -2084,3 +2084,34 @@ Wait for exact-head CI result. Then seek closure of the recommended defaults for
 - Verify CI for the updated plan/checkpoint commit.
 - Prepare the smallest provider-neutral contract/result model and test cases against accepted decisions; keep provider, schema, onboarding workflow, revocation freshness, and context-selection UX open.
 - PR #2 remains open and unmerged.
+
+
+## Checkpoint 072 — Assignment-Close Policy B Accepted
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Authorization  
+**Status:** POLICY DECISION RECORDED — EXACT-HEAD CI PENDING  
+**Implementation authorization:** No runtime implementation authorized by this checkpoint
+
+### Owner decision
+The Project Owner accepted Option B for assignment close:
+- require eligible membership in the assignment's learning context; and
+- require an explicit resource/action policy grant for closing that assignment.
+- membership or a generic `assignment:close` authority alone is insufficient.
+- any future tenant-wide override must be a separate explicit and auditable policy.
+
+### Updated records
+- `docs/00-Governance/DECISION_REGISTER.md`: DEC-0029 accepted.
+- `docs/05-Architecture/FIRST_PROTECTED_LEARNING_JOURNEY_AUTHORIZATION_MAP.md`: Option B marked accepted and remaining decisions narrowed.
+- `docs/05-Architecture/STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`: accepted close policy reflected in the test-design boundary.
+
+### Still unresolved
+- exact membership eligibility predicate and resolution-port semantics;
+- membership requirements for assignment creation and learner submission;
+- onboarding/account linking, context selection, revocation freshness, and guardian/consent policy.
+These are not inferred from DEC-0029.
+
+### Verification and next step
+- CI must be checked for the latest commit before claiming verification.
+- Next useful work is to define deterministic contract cases for: no context membership → deny; context membership without close grant → deny; membership plus explicit close grant → allow; wrong-context membership → deny; and resolver unavailable → fail closed.
+- PR #2 remains open and unmerged.
