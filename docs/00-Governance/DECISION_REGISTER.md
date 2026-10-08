@@ -214,3 +214,34 @@ The project charter requires .NET LTS as the backend direction. At the current p
 
 ### Boundary
 This establishes the target framework for the initial test harness. It does not finalize the complete production runtime/infrastructure strategy or any cloud/provider decision.
+
+
+## DEC-0029 — Assignment Close Requires Context Membership and Explicit Policy
+
+**Date:** 2026-10-09  
+**Status:** ACCEPTED  
+**Decision owner:** Project Owner
+
+### Decision
+For the first protected learning journey, closing an assignment requires both:
+1. An eligible membership in the learning context that owns the assignment.
+2. An explicit authorization policy grant for the close action on that assignment/resource.
+
+Membership or a generic `assignment:close` authority alone is not sufficient proof of authorization.
+
+Any future tenant-wide administrative override must be represented as a separate explicit policy and must remain attributable through the accepted security-audit baseline. No override is implied by this decision.
+
+### Rationale
+This follows the accepted contextual, resource/action authorization model and reduces cross-context privilege. It avoids assuming assignment ownership semantics that are not established by the current domain contract.
+
+### Boundaries
+This decision does not define:
+- the identity provider or provider protocol;
+- membership persistence/schema or the exact membership-eligibility predicate;
+- assignment creation or learner-submission membership requirements;
+- onboarding, account linking, or context-selection UX;
+- revocation freshness budget or jurisdiction-specific guardian/consent policy;
+- a policy-engine implementation or runtime changes.
+
+### Consequence
+Update the first-journey authorization map and Stage B test plan to reflect this accepted rule. Add deterministic tests that distinguish context membership from explicit close permission. Production implementation still requires the appropriate implementation gate and exact-head CI evidence.
