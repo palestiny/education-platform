@@ -142,6 +142,32 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
 
 
     [Fact]
+    public async Task RED_010_Retry_replays_submission_after_assignment_is_closed()
+    {
+        const string key = "red-010-submission-replay-after-close";
+        var first = await PostSubmission("authorized-learner", key);
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+        var originalBody = await first.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+
+        using var close = new HttpRequestMessage(
+            HttpMethod.Post, "/api/v1/assignments/assignment-a/close");
+        close.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        close.Headers.Add("Idempotency-Key", "red-010-close-assignment");
+        close.Content = JsonContent.Create(new { expectedVersion = 1 });
+        var closeResponse = await _client.SendAsync(
+            close, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, closeResponse.StatusCode);
+
+        var retry = await PostSubmission("authorized-learner", key);
+
+        Assert.Equal(HttpStatusCode.Created, retry.StatusCode);
+        Assert.Equal(originalBody, await retry.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task AUTH_BOUNDARY_001_Unrecognized_bearer_credential_fails_closed()
     {
         var response = await PostAssignment("not-a-known-test-credential");
