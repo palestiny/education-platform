@@ -1808,3 +1808,28 @@ Production authentication implementation is still **NOT AUTHORIZED** until the v
 
 ### Next
 Close the provider validation checklist, then enter TDD RED for the production authentication/authorization adapter.
+
+
+## Checkpoint 062 — Identity Provider Validation & Authentication RED Specification — 2026-10-09
+
+**Stage:** Production Identity / Provider Validation  
+**Status:** VALIDATION EVIDENCE RECORDED — RED SPECIFICATION READY, EXECUTION PENDING
+
+### Findings recorded
+- Entra External ID core offer: first 50,000 MAU free; above-tier pricing and premium add-ons require explicit commercial modeling.
+- Current Go-Local documentation lists Australia and Japan; Egypt-specific local residency is not demonstrated. Egypt availability is not the same as Egypt-only data residency.
+- Browser-delegated authentication is the canonical initial web/mobile path because current social/federated provider support is constrained under native authentication.
+- Passkeys are supported with enrollment/authentication-method limitations.
+- Guardian/child identity, consent and jurisdiction policy remain platform/legal decisions, not assumptions delegated to CIAM.
+
+### Artifacts
+- `docs/05-Architecture/PRODUCTION_IDENTITY_PROVIDER_STRATEGY_GATE.md` — validation findings and remaining open items.
+- `docs/05-Architecture/PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md` — 15 provider-neutral behavioral scenarios and RED execution protocol.
+
+### Gate result
+**Production Identity Provider Strategy: CONDITIONAL PASS — FINAL PROVIDER COMMITMENT OPEN**
+
+**TDD RED:** Specification ready; no RED execution or behavioral failure evidence is claimed yet.
+
+### Next
+Inspect current application contracts and test harness; map AUTH-RED-001 through AUTH-RED-015 to executable tests, then run targeted CI. Keep provider SDK integration and GREEN implementation unauthorized until validation and implementation gates close.
