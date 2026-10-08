@@ -1813,7 +1813,7 @@ Close the provider validation checklist, then enter TDD RED for the production a
 ## Checkpoint 062 — Identity Provider Validation & Authentication RED Specification — 2026-10-09
 
 **Stage:** Production Identity / Provider Validation  
-**Status:** VALIDATION EVIDENCE RECORDED — RED SPECIFICATION READY, EXECUTION PENDING
+**Status:** VALIDATION EVIDENCE RECORDED — RED SPECIFICATION READY, EXECUTION PENDING; DOCS CI VERIFIED
 
 ### Findings recorded
 - Entra External ID core offer: first 50,000 MAU free; above-tier pricing and premium add-ons require explicit commercial modeling.
@@ -1825,6 +1825,17 @@ Close the provider validation checklist, then enter TDD RED for the production a
 ### Artifacts
 - `docs/05-Architecture/PRODUCTION_IDENTITY_PROVIDER_STRATEGY_GATE.md` — validation findings and remaining open items.
 - `docs/05-Architecture/PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md` — 15 provider-neutral behavioral scenarios and RED execution protocol.
+
+
+### CI evidence update
+- GitHub Actions `dotnet-tests` passed for the documentation-only auth-boundary mapping commit `a5a17fdc488e98c817e13bd6f11776a501594dfc`: https://github.com/palestiny/education-platform/actions/runs/37849342642
+- Build, EF migration alignment, idempotent migration SQL generation/artifact upload, and the test suite all completed successfully.
+- The subsequent test-coverage-map documentation change is a newer commit and requires its own workflow result before it can be called CI-verified.
+
+### Coverage mapping
+- Existing tests cover selected API behavior using the Development/Testing-only bearer resolver, plus PostgreSQL idempotency, audit, outbox and concurrency invariants.
+- Production token validation, external identity-to-Person mapping, disabled/revoked account behavior, credential redaction, and provider outage behavior remain unimplemented and unverified.
+- No production authentication implementation was added.
 
 ### Gate result
 **Production Identity Provider Strategy: CONDITIONAL PASS — FINAL PROVIDER COMMITMENT OPEN**
