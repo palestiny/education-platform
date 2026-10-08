@@ -174,7 +174,28 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
 
 
     [Fact]
-    public async Task AUTH_BOUNDARY_003_Client_supplied_tenant_does_not_override_resolved_context()
+    public async Task AUTH_BOUNDARY_003_Bearer_scheme_is_case_insensitive()
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("bearer", "authorized-teacher");
+        request.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { }
+        });
+
+        var response = await _client.SendAsync(
+            request, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AUTH_BOUNDARY_004_Client_supplied_tenant_does_not_override_resolved_context()
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
