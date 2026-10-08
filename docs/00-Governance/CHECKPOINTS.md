@@ -1872,3 +1872,29 @@ The API invokes `TestBearerExecutionContextResolver` only when the host environm
 
 ### Next
 Review whether a production-environment host test can be added without weakening the production startup requirements; then define provider-neutral Person/membership contracts and executable tests only after reviewing the existing domain/application model. Do not add provider SDKs or production login flow before the provider and privacy/commercial gates are explicitly closed.
+
+
+## Checkpoint 064 — Production Host Authentication Boundary Test
+
+**Date:** 2026-10-09  
+**Stage:** Production Identity / Stage A API Boundary  
+**Status:** LATEST-HEAD CI VERIFIED — PRODUCTION AUTHENTICATION NOT IMPLEMENTED
+
+### Exact-head evidence
+- Tested commit: `9d9778114a562c8093ce0652075aecd2f03491a2`
+- GitHub Actions run `37852804227`: success — https://github.com/palestiny/education-platform/actions/runs/37852804227
+- GitHub Actions run `37852813185`: success — https://github.com/palestiny/education-platform/actions/runs/37852813185
+- Both runs passed restore, build, EF migration validation, idempotent migration SQL generation/artifact upload, and the complete test step.
+
+### Newly verified boundary
+- The dedicated Production-environment host test for the Development/Testing-only fake bearer credential passes.
+- The test host supplies the required PostgreSQL connection-string configuration while preserving the production startup requirement.
+- The earlier failing attempt was a test-host configuration failure before the assertion; the corrected commit is green in two CI runs.
+
+### Gate result
+**Stage A API credential/environment boundary: PASS for the committed test coverage.**
+
+This does not implement or prove real production token validation, provider identity mapping, Person/membership resolution, disabled/revoked identity handling, or production login/session flows.
+
+### Next
+Review the existing Domain/Application contracts and test harness before specifying the next provider-neutral identity/membership RED tests. Keep provider SDK integration and production authentication implementation unauthorized until provider, privacy/minor-safety, account lifecycle and implementation gates are explicitly closed. PR #2 remains open and unmerged.
