@@ -78,6 +78,26 @@ Inspected the current branch's `ExecutionContext`, `IExecutionContextAccessor`, 
 
 This is a code-inspection finding, not a new production implementation or a gate PASS.
 
+
+## 4A. Existing test coverage map — branch inspection
+
+This map prevents duplicating already-covered first-slice tests and identifies where new production-authentication tests require a real boundary.
+
+| Scenario group | Existing evidence | Gap / next test work |
+|---|---|---|
+| Missing credential / unauthorized authority | `FirstSliceRedTests` covers missing test bearer and insufficient authority for assignment creation | Extend to each protected mutation only if route-specific behavior differs; production credential validation remains uncovered |
+| Cross-tenant access | Existing first-slice tests exercise a test context mapped to another tenant | Add resource/read-path cases as those endpoints become protected; do not mistake fixed test-token mapping for external membership resolution |
+| Idempotency / concurrency / audit / outbox | Existing first-slice and PostgreSQL integration suites cover core mutation invariants | Re-run unchanged as regression suite when auth adapter is implemented |
+| Signature, issuer, audience, expiry | No production verifier exists in the inspected path | New adapter contract tests and provider configuration integration tests required |
+| External issuer/subject → internal Person mapping | No platform identity mapping contract found in the inspected files | Design stable internal Person mapping and unknown-identity outcome before provisioning code |
+| Disabled/revoked identity | No verified production lifecycle path found in the inspected files | Define authoritative disable/revocation source and cache/propagation budget; then test it |
+| Membership selection and relationship policy | Current context contains a flat authority set | Specify contextual policy evaluation; avoid making a relationship or role a universal permission |
+| Credential redaction | No production credential flow exists to inspect | Add tests around adapter logs, persistence, audit and outbox once an executable boundary exists |
+| Provider outage / ambiguity | No production adapter exists | Add fail-closed contract tests and deterministic fake-provider failure cases |
+| Browser-delegated web/mobile flow | Documentation/design requirement only | Provider trial-tenant smoke tests are required; unit tests cannot prove real social/enterprise federation configuration |
+
+**Important:** Existing `ExecutionContextTests` only verify stored values. They do not prove that the tenant value was server-derived. The API-level cross-tenant tests are the relevant evidence for current request enforcement.
+
 ## 5. Execution protocol
 
 1. Inspect the current branch implementation and test conventions.
