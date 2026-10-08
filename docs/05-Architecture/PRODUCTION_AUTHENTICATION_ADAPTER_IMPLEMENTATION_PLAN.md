@@ -1,7 +1,7 @@
 # Production Authentication Adapter — Executable Implementation Plan
 
 **Project:** Education Platform  
-**Status:** PLAN READY — implementation authorization still required  
+**Status:** STAGE A VERIFIED — STAGE B CONTRACT DESIGN OPEN — implementation authorization still required  
 **Related gate:** `docs/05-Architecture/PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`  
 **RED specification:** `docs/05-Architecture/PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md`
 
@@ -27,7 +27,7 @@ Turn AUTH-RED-001 through AUTH-RED-015 into a controlled test-first sequence wit
 4. Run the full test suite and PostgreSQL integration suite.
 5. Confirm the test bearer resolver is registered only in Development/Testing and cannot be enabled by a production configuration accident.
 
-**Exit evidence:** CI succeeds on the exact head SHA; each test asserts status and, where feasible, persisted state/side effects. Label current-path checks clearly so they cannot be mistaken for production verifier evidence.
+**Exit evidence (achieved for current boundary scope):** CI runs `37852804227` and `37852813185` passed on tested commit `9d9778114a562c8093ce0652075aecd2f03491a2`. The Production-host test proves the fixed Development/Testing bearer credential is not accepted in Production; the host test receives the required connection string without relaxing production startup validation. These checks are not production signed-token verification.
 
 ### Stage B — Provider-neutral identity contracts (design and tests before implementation)
 
@@ -103,4 +103,4 @@ Production authentication is not complete until all are true:
 
 ## 6. Current status
 
-The existing API boundary checks for missing/unsupported/unknown credentials and tenant override are testable now. The latest committed credential and tenant-boundary test changes have CI success recorded separately. This plan itself does not claim production authentication, membership authorization, or the production identity-provider decision is complete.
+Stage A current API boundary checks are CI-verified, including the dedicated Production-host test for the Development/Testing-only fake bearer credential. The next work is a proposal-only review of provider-neutral Person, membership and policy contracts against the current domain/application model. No identity/membership implementation, provider SDK integration, or production login flow is authorized by this plan. Production authentication, membership authorization, and the final identity-provider decision remain incomplete.
