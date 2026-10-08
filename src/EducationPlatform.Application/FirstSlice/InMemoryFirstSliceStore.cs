@@ -70,6 +70,9 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
                 return new FirstSliceMutation<Submission>(ReadSubmission(existing.Value.Response), true);
             }
 
+            if (assignment.IsClosed)
+                throw new InvalidOperationException("BUSINESS_RULE_VIOLATION");
+
             var submission = new Submission
             {
                 Id = Guid.NewGuid().ToString("N"),
