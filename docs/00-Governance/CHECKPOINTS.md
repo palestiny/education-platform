@@ -2058,3 +2058,29 @@ Wait for exact-head CI result. Then seek closure of the recommended defaults for
 - Verify CI on the new head.
 - Keep PR #2 open/unmerged.
 - Do not implement source contracts, provider integration, membership persistence, ownership fields, or GREEN behavior until the required product/security decisions and separate implementation authorization are explicit.
+
+
+## Checkpoint 071 — Stage B Plan Aligned With Accepted Security Decisions
+
+**Date:** 2026-10-09  
+**Stage:** Production Identity / Membership Contract Design  
+**Status:** DESIGN PLAN UPDATED — EXACT-HEAD CI PENDING  
+**Implementation authorization:** Production provider/runtime implementation remains unauthorized
+
+### Why this update was needed
+- Reviewed the accepted decisions already recorded in `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`: provider-neutral application boundary, authentication distinct from authorization, Person-centric identity, server-derived tenant, relationship-not-permission, policy-based authorization, fail-closed behavior, credential lifecycle and secret-free security audit.
+- The Stage B test plan still presented several of those baseline principles as if they required owner confirmation. This update removes that contradiction while preserving genuinely unresolved details.
+
+### Changed
+- Updated `docs/05-Architecture/STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md` to separate accepted baseline decisions from unresolved onboarding/account-linking, lifecycle source/revocation freshness, exact membership eligibility, ambiguous-context selection UX, and guardian/consent/legal policy.
+- Clarified that the accepted baseline permits provider-neutral contract design, but does not silently authorize a provider, database schema, or production runtime implementation.
+- Preserved the fail-closed requirements for unknown identity, disabled/revoked Person, zero/ambiguous membership, policy denial, and resolver outage.
+
+### Verification
+- Prior exact-head CI #368 succeeded for `4cbeb1a0ff59255e96774f9ddfe9e1c227307cf7`: https://github.com/palestiny/education-platform/actions/runs/37860464172.
+- This plan/checkpoint update has a new commit and requires its own exact-head CI. No success is claimed yet.
+
+### Next
+- Verify CI for the updated plan/checkpoint commit.
+- Prepare the smallest provider-neutral contract/result model and test cases against accepted decisions; keep provider, schema, onboarding workflow, revocation freshness, and context-selection UX open.
+- PR #2 remains open and unmerged.
