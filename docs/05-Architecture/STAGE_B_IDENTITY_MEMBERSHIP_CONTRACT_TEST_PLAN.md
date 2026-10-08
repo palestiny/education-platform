@@ -1,7 +1,7 @@
 # Stage B — Identity & Membership Contract Test Plan
 
 **Project:** Education Platform  
-**Status:** READY FOR OWNER REVIEW — NO SOURCE CONTRACTS OR IMPLEMENTATION AUTHORIZED  
+**Status:** BASELINE DECISIONS ACCEPTED — CONTRACT SEMANTICS AND IMPLEMENTATION GATE STILL OPEN  
 **Date:** 2026-10-09  
 **Inputs:** `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`, `PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md`
 
@@ -55,17 +55,20 @@ Only the final `AuthorizedContext` outcome may establish a trusted execution con
 - PostgreSQL integration tests are required when durable identity/membership persistence is separately approved.
 - Legal/guardian-consent behavior cannot be proven by a mock policy test alone; the policy itself must first be approved.
 
-## 4. Owner decision worksheet — recommended defaults
+## 4. Decision status — accepted baseline versus unresolved details
 
-| Decision | Recommended default | Why | Still needs owner confirmation |
-|---|---|---|---|
-| Unknown external identity | Reject with a safe non-privileged outcome; onboarding/invitation is a separate flow | Prevents silent account/tenant creation | Yes |
-| Disabled/revoked Person | Deny before context establishment; no stale privileged fallback | Makes lifecycle enforcement fail closed | Yes: source of truth and revocation freshness budget |
-| Zero eligible membership | Deny | Identity alone does not imply tenant access | Yes |
-| Multiple eligible memberships | Deny as ambiguous until an explicit server-bound context selection is defined | Avoids arbitrary tenant selection | Yes: UX and selection semantics |
-| Relationship versus permission | Evaluate action/resource policy; relationship is evidence/input, not a universal grant | Protects student/minor data and prevents role overreach | Yes: exact first-slice policies and legal/consent constraints |
-| Resolver outage | Deny protected action and return safe operational error | Avoids fail-open behavior | Yes: public status/error semantics |
-| Stable external account key | Trusted `(issuer, subject)` mapped to internal Person ID | Avoids mutable email/display-name identity | Yes: account linking and migration policy |
+The repository's `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md` records accepted owner decisions DEC-0020 through DEC-0028. This test plan must honor those decisions rather than reopening them as if undecided.
+
+| Decision | Accepted baseline | Still open / must not be inferred |
+|---|---|---|
+| Unknown external identity | No implicit platform access; fail closed. Do not create Person/membership or grant roles merely because an external identity authenticated. | Exact invitation/onboarding/account-linking workflow. |
+| Disabled/revoked Person | Deny before establishing a trusted execution context; no fail-open fallback. | Authoritative lifecycle source and maximum revocation-staleness budget. |
+| Zero eligible membership | Deny; identity alone does not establish tenant/context access. | Exact membership eligibility predicates for each resource/action. |
+| Multiple eligible memberships | Never arbitrarily choose first/default membership; fail closed absent an approved selection. | User experience and server-bound context-selection protocol. |
+| Relationship versus permission | Relationship is policy input, not an automatic grant. Evaluate actor, tenant, membership/role, relationship, resource, action and context. | Exact guardian/consent policies and jurisdiction-specific rules. |
+| Resolver outage/indeterminate state | Fail closed for protected actions. | Safe external error mapping and operational alerting details. |
+| External account key | Provider-neutral identity maps to internal Person; provider claims do not become application authority. | Account-linking, migration, and selected provider protocol/configuration. |
+| Assignment create/submit/close | Contextual, resource/action authorization is the accepted security direction; client tenant is never authoritative. | Concrete membership model and first-slice close policy implementation details; do not treat current coarse `assignment:close` check as sufficient production proof. |
 
 ## 5. Explicitly deferred
 
@@ -78,13 +81,15 @@ Do not decide through these tests:
 - audit retention, deletion and cross-border data-residency policy;
 - production implementation authorization.
 
-## 6. TDD entry criteria
+## 6. TDD entry criteria and next authorized design step
 
-Before converting this plan into executable RED tests:
-1. Owner confirms or revises the recommended defaults above for the first protected learning journey.
-2. Product/security decisions define the precise relationship and resource/action policy under test.
-3. The minimal provider-neutral port and result semantics are reviewed for fit with existing `ExecutionContext`.
-4. Tests are written to fail for the intended missing behavior—not because the test harness cannot start or compile.
-5. RED evidence is linked to exact-head CI before any GREEN implementation begins.
+The accepted security baseline is sufficient to prepare a provider-neutral contract and executable test design without selecting an identity provider or database schema. It is not sufficient to silently choose onboarding, account-linking, consent, revocation freshness, or membership-selection UX.
 
-**Current result:** Stage B test plan is prepared. No new runtime behavior is claimed. Production authentication implementation remains unauthorized.
+Next:
+1. Define the smallest provider-neutral resolution result categories and port responsibilities; keep names explicitly provisional until reviewed.
+2. Specify deterministic tests for unknown identity, disabled/revoked Person, zero/one/multiple memberships, policy denial, resolver outage, server-derived tenant, and no trusted context on denial.
+3. Separate unit contract tests from API integration tests and real-provider cryptographic verification.
+4. If executable RED tests are added, ensure the test harness compiles and classify the intended behavioral failures clearly. Do not merge a knowingly red default branch without an agreed test-branch/CI strategy.
+5. Only after the contract is reviewed and implementation is explicitly authorized, add GREEN behavior and production adapter integration.
+
+**Current result:** Accepted authorization principles are the baseline; the exact provider-neutral port, membership eligibility rules, onboarding/account-linking, lifecycle freshness and context-selection details remain open. No provider, schema, or production runtime behavior is authorized by this plan.
