@@ -68,7 +68,8 @@ The repository's `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md` records acce
 | Relationship versus permission | Relationship is policy input, not an automatic grant. Evaluate actor, tenant, membership/role, relationship, resource, action and context. | Exact guardian/consent policies and jurisdiction-specific rules. |
 | Resolver outage/indeterminate state | Fail closed for protected actions. | Safe external error mapping and operational alerting details. |
 | External account key | Provider-neutral identity maps to internal Person; provider claims do not become application authority. | Account-linking, migration, and selected provider protocol/configuration. |
-| Assignment create/submit/close | Contextual, resource/action authorization is the accepted security direction; client tenant is never authoritative. | Concrete membership model and first-slice close policy implementation details; do not treat current coarse `assignment:close` check as sufficient production proof. |
+| Assignment close | Owner accepted Option B: require eligible membership in the assignment's learning context plus an explicit resource/action policy grant. | Exact membership eligibility, resolver contract and implementation remain open; current coarse `assignment:close` check is not sufficient production proof. |
+| Assignment create/learner submit | Apply contextual policy and server-derived tenant rules; never trust client-supplied tenant as authority. | Whether membership is required for each operation and the exact eligibility predicates remain to be specified.
 
 ## 5. Explicitly deferred
 
@@ -83,7 +84,7 @@ Do not decide through these tests:
 
 ## 6. TDD entry criteria and next authorized design step
 
-The accepted security baseline is sufficient to prepare a provider-neutral contract and executable test design without selecting an identity provider or database schema. It is not sufficient to silently choose onboarding, account-linking, consent, revocation freshness, or membership-selection UX.
+The accepted security baseline plus the owner's 2026-10-09 approval of assignment-close Option B are sufficient to specify that policy's contract tests. They are not sufficient to silently choose onboarding, account-linking, consent, revocation freshness, membership-selection UX, or exact membership eligibility predicates.
 
 Next:
 1. Define the smallest provider-neutral resolution result categories and port responsibilities; keep names explicitly provisional until reviewed.
