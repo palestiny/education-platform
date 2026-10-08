@@ -1932,3 +1932,31 @@ Review the existing Domain/Application contracts and test harness before specify
 
 ### Next
 Review the Stage B contract proposal against the first protected learning journey. Close the minimum identity, membership ambiguity, lifecycle and relationship-policy decisions needed for that journey, then write executable contract RED tests. Do not add provider SDKs, schema, identity entities or GREEN implementation before explicit authorization. PR #2 remains open and unmerged.
+
+
+## Checkpoint 066 — Stage B Proposal Documentation CI Verified
+
+**Date:** 2026-10-09  
+**Stage:** Production Identity / Stage B Contract Design  
+**Status:** DOCUMENTATION HEAD CI PASS — CONTRACT DECISIONS STILL OPEN  
+**Implementation authorization:** NOT GRANTED
+
+### Exact-head verification
+- Head commit: `61d7179c7c6144abf313d0d976a016b051bafaf4`
+- CI run `37853360128`: success — https://github.com/palestiny/education-platform/actions/runs/37853360128
+- CI run `37853357262`: success — https://github.com/palestiny/education-platform/actions/runs/37853357262
+- Both jobs passed PostgreSQL container initialization, checkout, .NET setup, restore, EF CLI installation, build, EF migration validation, idempotent migration script generation and artifact upload, full test step, and cleanup.
+
+### Current verified position
+- Stage A credential/environment boundary remains verified on its tested commit.
+- The Stage B proposal and corresponding plan/specification updates are present on the current branch head and CI is green.
+- These commits changed documentation only; their green CI does not prove new identity/membership behavior because no such implementation or contract tests have been added.
+
+### Next controlled step
+Prepare a small contract-test design around four explicit outcomes before any GREEN implementation:
+1. unknown external identity → explicit non-privileged outcome;
+2. disabled/revoked Person → deny;
+3. zero or ambiguous active membership → deny;
+4. relationship without action permission → deny.
+
+Before writing executable tests that require new source contracts, close the owner decisions on unknown-identity onboarding, membership selection and the first protected journey's relationship policy. Provider selection, privacy/minor policy, lifecycle/revocation freshness, schema and production implementation remain open. PR #2 remains open/unmerged.
