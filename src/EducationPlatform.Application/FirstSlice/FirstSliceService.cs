@@ -24,9 +24,6 @@ public sealed class FirstSliceService
         string tenantId, string actorId, Assignment assignment,
         string learnerId, string payload, string? key, string correlationId)
     {
-        if (assignment.IsClosed)
-            throw new InvalidOperationException("BUSINESS_RULE_VIOLATION");
-
         var fingerprint = Fingerprint($"submission.create|{assignment.Id}|{learnerId}|{payload}");
         return _store.CreateSubmission(
             tenantId, actorId, assignment, learnerId, payload,
