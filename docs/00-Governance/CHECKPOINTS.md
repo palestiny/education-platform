@@ -2006,3 +2006,30 @@ Wait for exact-head CI result. Then seek closure of the recommended defaults for
 - Define the first-slice close-assignment policy: which principals may close which assignments, how ownership/context membership is represented, and whether tenant-wide `assignment:close` authority is intentionally sufficient for this slice.
 - Compare options and trade-offs before changing runtime behavior; then add authorization contract tests before implementation.
 - Production identity provider, membership persistence, ownership model and production authentication remain open. PR #2 remains open and unmerged.
+
+
+## Checkpoint 069 — Assignment Close Authorization Boundary Tests
+
+**Date:** 2026-10-09  
+**Stage:** First-Slice Authorization Regression Tests  
+**Status:** TESTS PASS — CONTEXTUAL MEMBERSHIP POLICY STILL OPEN  
+**Branch:** `chore/architecture-gate-preparation`
+
+### Changes and exact-head evidence
+- Added `AUTHZ_CLOSE_001_Authenticated_teacher_without_close_authority_is_rejected`: an authenticated principal lacking `assignment:close` receives HTTP 403.
+- Added `AUTHZ_CLOSE_002_Principal_from_another_tenant_cannot_close_assignment`: a principal resolved to a different tenant receives HTTP 404 for a target tenant's assignment.
+- Test commit: `161885fd262aedf7f7574c5a57e92b34cd9a27f9`.
+- CI run #361: success — https://github.com/palestiny/education-platform/actions/runs/37859582847.
+- CI run #362: success — https://github.com/palestiny/education-platform/actions/runs/37859586757.
+- Both runs completed the build, EF migration validation/script generation and test pipeline successfully.
+- The PR head remains `161885fd262aedf7f7574c5a57e92b34cd9a27f9`; PR #2 remains open and unmerged.
+
+### What these tests establish — and do not establish
+- They establish enforcement of the current explicit close authority and tenant boundary in the test API.
+- They do **not** establish assignment ownership, learning-context membership, organization role policy, or guardian/learner relationships. The current slice has no accepted persisted membership/ownership model for those decisions.
+- Do not infer that a same-tenant principal with `assignment:close` should be denied based on ownership until the product owner chooses and the model represents that policy. Conversely, do not treat the current coarse authority as a production-ready contextual policy.
+
+### Next gate
+- Keep production identity and membership GREEN implementation blocked until the Stage B contract direction and first protected learning journey policy are accepted.
+- Next design review: map the existing hard-coded `context-a` assignment-creation boundary to the future server-derived context/membership resolver; define expected behavior for no membership, one eligible membership, ambiguous membership and resolver outage.
+- Add executable contract tests only after the corresponding outcome semantics are accepted. No provider, schema, ownership field, or role hierarchy is selected by this checkpoint.
