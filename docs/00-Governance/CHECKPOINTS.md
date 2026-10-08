@@ -2033,3 +2033,28 @@ Wait for exact-head CI result. Then seek closure of the recommended defaults for
 - Keep production identity and membership GREEN implementation blocked until the Stage B contract direction and first protected learning journey policy are accepted.
 - Next design review: map the existing hard-coded `context-a` assignment-creation boundary to the future server-derived context/membership resolver; define expected behavior for no membership, one eligible membership, ambiguous membership and resolver outage.
 - Add executable contract tests only after the corresponding outcome semantics are accepted. No provider, schema, ownership field, or role hierarchy is selected by this checkpoint.
+
+
+## Checkpoint 070 — First Protected Learning Journey Authorization Map
+
+**Date:** 2026-10-09  
+**Stage:** Stage B Identity/Membership Design Review  
+**Status:** DESIGN MAP COMMITTED — EXACT-HEAD CI PENDING  
+**Implementation authorization:** NOT GRANTED
+
+### Added
+- `docs/05-Architecture/FIRST_PROTECTED_LEARNING_JOURNEY_AUTHORIZATION_MAP.md` maps the existing teacher-create → learner-submit → teacher-close journey against the current API checks.
+- The map separates observed source behavior from future policy requirements and lists the minimum outcomes needed for unknown identity, disabled/revoked Person, zero/one/multiple memberships, policy denial, and resolver outage.
+- It compares three assignment-close policy options: tenant-wide authority, learning-context membership plus policy, and assignment ownership plus explicit override.
+- The design recommendation is Option B for long-term least-privilege context-aware authorization, with a separate explicit override if needed. This is a recommendation only; no owner decision is inferred.
+
+### Evidence and limits
+- Exact source review: `Program.cs`, `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`, and `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md` on this branch.
+- The review confirms the current close route checks trusted execution context, `assignment:close`, assignment existence, and tenant equality. It does not establish assignment ownership or persisted context membership.
+- CI run #363 passed for the preceding checkpoint commit `48d03ae668e793f8379ada05803002f2f5f97f66`: https://github.com/palestiny/education-platform/actions/runs/37859734832.
+- The new design-map commit and this checkpoint require exact-head CI; no CI success is claimed yet.
+
+### Next
+- Verify CI on the new head.
+- Keep PR #2 open/unmerged.
+- Do not implement source contracts, provider integration, membership persistence, ownership fields, or GREEN behavior until the required product/security decisions and separate implementation authorization are explicit.
