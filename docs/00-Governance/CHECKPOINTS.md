@@ -1898,3 +1898,37 @@ This does not implement or prove real production token validation, provider iden
 
 ### Next
 Review the existing Domain/Application contracts and test harness before specifying the next provider-neutral identity/membership RED tests. Keep provider SDK integration and production authentication implementation unauthorized until provider, privacy/minor-safety, account lifecycle and implementation gates are explicitly closed. PR #2 remains open and unmerged.
+
+
+## Checkpoint 065 — Provider-Neutral Identity & Membership Contract Proposal
+
+**Date:** 2026-10-09  
+**Stage:** Production Identity / Stage B Contract Design  
+**Status:** PROPOSAL READY — OWNER/GATE REVIEW REQUIRED  
+**Implementation authorization:** NOT GRANTED
+
+### Stage A evidence carried forward
+- Tested commit `9d9778114a562c8093ce0652075aecd2f03491a2` passed CI runs `37852804227` and `37852813185`.
+- Both runs passed build, EF migration validation, migration-script generation/artifact upload, and tests.
+- The dedicated Production-host test verifies that the Development/Testing-only fixed bearer credential is not accepted in Production.
+- Stage A is limited to the existing API boundary; it is not production token validation.
+
+### Completed
+- Updated `PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md` to reflect Stage A evidence and preserve the distinction from provider-neutral adapter RED.
+- Updated `PRODUCTION_AUTHENTICATION_ADAPTER_IMPLEMENTATION_PLAN.md` to mark Stage A verified.
+- Added `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md` after inspecting the existing Application/Domain contracts and tests.
+
+### Findings
+- Current `ExecutionContext` is a trusted downstream context containing `PrincipalId`, `TenantId` and bounded authorities.
+- Inspected Domain models currently include the first-slice `Assignment` and `Submission`; no Person, external identity mapping, membership lifecycle or relationship-policy contract was found in the inspected model.
+- The proposal recommends separating credential verification, external-to-platform identity mapping, Person lifecycle, membership resolution and resource/action policy.
+- Unknown identity, disabled/revoked state, no membership, ambiguous membership, resolver failure and relationship-without-permission all remain fail-closed outcomes.
+- These are proposals, not accepted source-code symbols or implementation authorization.
+
+### Gate result
+- Stage A API credential/environment boundary: **PASS for committed test coverage**.
+- Stage B provider-neutral identity/membership contract: **PROPOSAL — OWNER/GATE REVIEW REQUIRED**.
+- Production provider selection, legal/privacy/minor-safety policy, membership persistence and production authentication: **OPEN / NOT AUTHORIZED**.
+
+### Next
+Review the Stage B contract proposal against the first protected learning journey. Close the minimum identity, membership ambiguity, lifecycle and relationship-policy decisions needed for that journey, then write executable contract RED tests. Do not add provider SDKs, schema, identity entities or GREEN implementation before explicit authorization. PR #2 remains open and unmerged.
