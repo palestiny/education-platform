@@ -1960,3 +1960,24 @@ Prepare a small contract-test design around four explicit outcomes before any GR
 4. relationship without action permission → deny.
 
 Before writing executable tests that require new source contracts, close the owner decisions on unknown-identity onboarding, membership selection and the first protected journey's relationship policy. Provider selection, privacy/minor policy, lifecycle/revocation freshness, schema and production implementation remain open. PR #2 remains open/unmerged.
+
+
+## Checkpoint 067 — Stage B Contract Test Plan Prepared
+
+**Date:** 2026-10-09  
+**Stage:** Production Identity / Stage B Contract Test Design  
+**Status:** PLAN PREPARED — LATEST-HEAD CI PENDING  
+**Implementation authorization:** NOT GRANTED
+
+### Added
+- `docs/05-Architecture/STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md` narrows the next contract-test slice to unknown identity, disabled/revoked Person, zero/ambiguous membership, relationship-versus-permission, resolver failure, and trusted context establishment.
+- The plan separates deterministic provider-neutral contract tests from API integration tests, real-provider verification, durable persistence tests, and legal/guardian-consent decisions.
+- Recommended defaults are explicit proposals; none is accepted on the owner's behalf.
+
+### Verification state
+- Previous documentation head `61d7179c7c6144abf313d0d976a016b051bafaf4` passed CI runs `37853360128` and `37853357262`.
+- New test-plan commit: `b811ee9c36328b5646a83cb2de6e5bf4006f94db`.
+- CI runs `37853987918` and `37853994065` are queued/in progress at checkpoint creation; no success is claimed for this new head yet.
+
+### Next
+Wait for exact-head CI result. Then seek closure of the recommended defaults for the first protected learning journey before creating runtime identity/membership contracts or executable RED tests. Production authentication, provider selection, schema, legal/privacy/minor policy and GREEN implementation remain open. PR #2 remains open/unmerged.
