@@ -36,6 +36,40 @@ public sealed class PostgresFirstSliceStoreTests
     }
 
     [Fact]
+    public void Submission_retry_after_assignment_close_replays_without_duplicate_reliability_records()
+    {
+        using var db = CreateFreshDatabase();
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db));
+
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "authorized-learner", "{}", "submission-replay-create", "correlation-create");
+
+        var assignment = db.Assignments.Single(x => x.Id == created.Value.Id);
+        var first = service.CreateSubmission(
+            "tenant-a", "authorized-learner", assignment, "authorized-learner",
+            "{\"answer\":\"test\"}", "submission-replay-key", "correlation-submit");
+
+        Assert.False(first.Replayed);
+
+        _ = service.CloseAssignment(
+            "tenant-a", "authorized-teacher", assignment.Id, 1,
+            "submission-replay-close", "correlation-close");
+
+        var retry = service.CreateSubmission(
+            "tenant-a", "authorized-learner", assignment, "authorized-learner",
+            "{\"answer\":\"test\"}", "submission-replay-key", "correlation-retry");
+
+        Assert.True(retry.Replayed);
+        Assert.Equal(first.Value.Id, retry.Value.Id);
+        Assert.Equal(1, db.Submissions.Count());
+        Assert.Equal(1, db.IdempotencyRecords.Count(x => x.OperationScope == "submission.create"));
+        Assert.Equal(1, db.AuditRecords.Count(x => x.Operation == "submission.create"));
+        Assert.Equal(1, db.OutboxMessages.Count(x =>
+            x.AggregateType == nameof(EducationPlatform.Domain.FirstSlice.Submission)));
+    }
+
+    [Fact]
     public void Reusing_idempotency_key_with_different_request_is_rejected()
     {
         using var db = CreateFreshDatabase();
