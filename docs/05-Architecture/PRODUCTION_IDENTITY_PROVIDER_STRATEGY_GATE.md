@@ -162,6 +162,36 @@ Before production provider implementation is authorized, verify:
 
 No production provider contract should be considered closed until these checks are documented.
 
+
+
+## 8A. Validation findings — 2026-10-09
+
+This section records the checks that can be established from current public Microsoft documentation. It does not replace legal review, a live tenant configuration test, or a commercial quote.
+
+### Confirmed findings
+
+1. **Core pricing:** Microsoft documents the first 50,000 monthly active users (MAU) as free for the External ID core offer. Above that threshold, the displayed price is quote/calculator-dependent. Premium add-ons do not inherit the free tier. SMS authentication is separately priced. Do not put a fixed 100k/1M MAU forecast into the business case until the Azure pricing calculator/contract and expected authentication mix are validated.
+2. **Data residency:** External tenant creation requires choosing a geographic location, and that choice cannot be changed after creation. Microsoft's current Go-Local list names Australia and Japan; Egypt is not listed as a Go-Local location. This does not mean the service is unavailable in Egypt, but it means an Egypt-specific local-residency requirement is not demonstrated by the current Go-Local offer. EMEA is a geo-location option, not a promise that all identity-related processing or logs stay in Egypt.
+3. **Authentication UX:** Use browser-delegated authentication as the canonical initial path for web and mobile. Microsoft's current guidance limits social/federated providers to browser-delegated authentication; native authentication has a narrower supported set. Native authentication must not be the sole path if social sign-in and enterprise federation are product requirements.
+4. **Passkeys:** Passkeys are supported with current enrollment limitations depending on account/authentication method. Treat passkeys as a supported capability with a UX/scope constraint, not a universal guarantee for every identity provider.
+5. **Minors/guardians:** The platform must own its guardian relationship, consent evidence, age/jurisdiction policy, and access policy. Provider age-group/consent fields or generic consent screens do not by themselves establish legal compliance for a global education product.
+
+### Still open — no assumptions promoted to decisions
+
+- **Legal/privacy:** obtain a documented legal/privacy review for Egypt-first operation and intended international expansion, including children, guardian consent, data subject rights, retention/deletion, data transfer, subprocessors, and which identity/log data may be processed outside Egypt.
+- **Commercial:** price at MVP, 100k and 1M MAU using a documented assumption set: monthly unique authenticating users, sign-in frequency, MFA/SMS volume, premium add-ons, support tier, and currency/tax terms. No exact paid estimate is asserted here.
+- **Operational:** test account disable/revocation propagation, identity-provider outage behavior, recovery/support procedures, export/deletion, audit event availability, API limits, and migration/export against a trial tenant.
+- **Product policy:** define platform-owned person identity and the student/guardian account model before provisioning rules are implemented.
+
+### Source links reviewed
+
+- Microsoft Entra data residency: https://learn.microsoft.com/en-us/entra/fundamentals/data-residency
+- External ID pricing: https://azure.microsoft.com/en-us/pricing/details/microsoft-entra-external-id/
+- External ID pricing FAQ: https://learn.microsoft.com/en-gb/entra/external-id/customers/faq-customers
+- External tenant planning: https://learn.microsoft.com/en-us/entra/external-id/customers/concept-planning-your-solution
+- External ID native authentication: https://learn.microsoft.com/en-us/entra/identity-platform/concept-native-authentication
+- External ID passkeys: https://learn.microsoft.com/en-us/entra/external-id/customers/how-to-use-passkeys
+
 ## 9. Provider adapter contract
 
 The future adapter should expose only provider-neutral operations such as:
@@ -191,11 +221,11 @@ This gate does not decide:
 
 ## 11. Gate result
 
-**Production Identity Provider Strategy: CONDITIONAL PASS**
+**Production Identity Provider Strategy: CONDITIONAL PASS — VALIDATION EVIDENCE RECORDED, FINAL COMMITMENT OPEN**
 
 - Architecture strategy: **ACCEPTED — managed CIAM + provider-neutral adapter**
 - Preferred provider candidate: **Microsoft Entra External ID**
-- Final provider commitment: **PENDING validation items in Section 8**
+- Final provider commitment: **PENDING legal/privacy, commercial, operational and student/guardian policy closure in Sections 8 and 8A**
 - Production implementation authorization: **NOT YET GRANTED**
 - Next engineering step: write executable RED tests against the provider-neutral adapter contract; provider SDK integration remains outside Application/Domain boundaries.
 
