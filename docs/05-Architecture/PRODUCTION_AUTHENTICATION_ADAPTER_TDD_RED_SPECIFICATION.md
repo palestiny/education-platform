@@ -1,7 +1,7 @@
 # Production Authentication Adapter — TDD RED Specification
 
 **Project:** Education Platform  
-**Status:** SPECIFICATION READY — RED EXECUTION NOT YET VERIFIED  
+**Status:** STAGE A API BOUNDARY VERIFIED — PROVIDER-NEUTRAL ADAPTER RED EXECUTION NOT YET VERIFIED  
 **Prerequisite:** Production Identity & Authorization Design Gate PASS; provider strategy remains CONDITIONAL PASS.  
 **Scope:** Provider-neutral contract and executable security behavior only. This document does not authorize adding an Entra SDK, production credentials, or a production login flow.
 
@@ -85,7 +85,7 @@ This map prevents duplicating already-covered first-slice tests and identifies w
 
 | Scenario group | Existing evidence | Gap / next test work |
 |---|---|---|
-| Missing credential / unauthorized authority | `FirstSliceRedTests` covers missing test bearer and insufficient authority for assignment creation | Extend to each protected mutation only if route-specific behavior differs; production credential validation remains uncovered |
+| Missing credential / unauthorized authority | `FirstSliceRedTests` covers missing test bearer and insufficient authority for assignment creation; `AUTH_BOUNDARY_006` independently starts a Production host and verifies the test bearer is not accepted | Stage A current API boundary is CI-verified; production credential validation remains uncovered |
 | Cross-tenant access | Existing first-slice tests exercise a test context mapped to another tenant | Add resource/read-path cases as those endpoints become protected; do not mistake fixed test-token mapping for external membership resolution |
 | Idempotency / concurrency / audit / outbox | Existing first-slice and PostgreSQL integration suites cover core mutation invariants | Re-run unchanged as regression suite when auth adapter is implemented |
 | Signature, issuer, audience, expiry | No production verifier exists in the inspected path | New adapter contract tests and provider configuration integration tests required |
@@ -123,4 +123,4 @@ This map prevents duplicating already-covered first-slice tests and identifies w
 
 **RED is verified only when** the required tests compile and run in CI, each expected behavioral failure is distinguished from harness/build failure, and the evidence is linked to the exact commit/run. This document alone does not mean RED has run or passed.
 
-**Current result:** Specification authored; RED execution pending. Production authentication implementation remains unauthorized until provider validation and the implementation gate are explicitly closed.
+**Current result (2026-10-09):** Stage A API credential/environment boundary tests are green on commit `9d9778114a562c8093ce0652075aecd2f03491a2` in CI runs `37852804227` and `37852813185`. The provider-neutral adapter scenarios AUTH-RED-003 through AUTH-RED-015 have not been executed as behavioral RED tests. Production authentication implementation remains unauthorized until provider validation and the implementation gate are explicitly closed.
