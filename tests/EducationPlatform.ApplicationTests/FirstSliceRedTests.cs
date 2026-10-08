@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 
 namespace EducationPlatform.ApplicationTests;
 
@@ -251,12 +250,9 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
             .WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Production");
-                builder.ConfigureAppConfiguration((_, configuration) =>
-                    configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                    {
-                        ["ConnectionStrings:EducationPlatform"] =
-                            "Host=127.0.0.1;Port=5432;Database=education_platform_test;Username=test;Password=test"
-                    }));
+                builder.UseSetting(
+                    "ConnectionStrings:EducationPlatform",
+                    "Host=127.0.0.1;Port=5432;Database=education_platform_test;Username=test;Password=test");
             });
         using var client = factory.CreateClient();
         using var request = new HttpRequestMessage(
