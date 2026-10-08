@@ -42,6 +42,9 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             tenantId, actorId, "submission.create", assignment.ContextId, idempotencyKey, requestFingerprint,
             () =>
             {
+                if (assignment.IsClosed)
+                    throw new InvalidOperationException("BUSINESS_RULE_VIOLATION");
+
                 var submission = new Submission
                 {
                     Id = Guid.NewGuid().ToString("N"),
