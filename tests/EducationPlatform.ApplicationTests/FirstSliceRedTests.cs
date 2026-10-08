@@ -139,6 +139,39 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
         Assert.Contains("CONCURRENCY_CONFLICT", error);
     }
 
+
+    [Fact]
+    public async Task AUTH_BOUNDARY_001_Unrecognized_bearer_credential_fails_closed()
+    {
+        var response = await PostAssignment("not-a-known-test-credential");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+        Assert.Contains("AUTHENTICATION_REQUIRED", body);
+    }
+
+    [Fact]
+    public async Task AUTH_BOUNDARY_002_Non_bearer_authorization_scheme_fails_closed()
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Basic", "not-a-valid-credential");
+        request.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { }
+        });
+
+        var response = await _client.SendAsync(
+            request, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
