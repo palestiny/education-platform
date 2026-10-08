@@ -61,6 +61,23 @@ Names are proposals for the RED design, not approved source-code symbols:
 
 Before writing tests, confirm whether existing `IExecutionContextAccessor` and `ExecutionContext` can support the scenarios without turning a flat authority set into the entire authorization model. Do not add speculative interfaces or provider-specific packages merely to satisfy this document.
 
+
+### Current-code inspection — 2026-10-09
+
+Inspected the current branch's `ExecutionContext`, `IExecutionContextAccessor`, `TestBearerExecutionContextResolver`, `ExecutionContextTests`, `FirstSliceRedTests`, and API composition.
+
+**Existing boundary can carry a resolved execution context, but it is not itself a production authentication adapter.**
+
+- `ExecutionContext` currently contains `PrincipalId`, `TenantId`, and a set of `Authorities`.
+- `IExecutionContextAccessor` only exposes the current context.
+- `TestBearerExecutionContextResolver` maps fixed test tokens directly to contexts and is wired only in Development/Testing.
+- Existing first-slice tests verify important mutation outcomes against that test-only path; they do not validate signed-token verification, issuer/audience, external-to-platform identity mapping, disabled-account lifecycle, or provider outage behavior.
+- The current `ExecutionContextTests` validate stored values, not server derivation by themselves. The API cross-tenant behavior tests are the relevant enforcement evidence for that boundary.
+
+**Required design implication before writing provider tests:** keep `ExecutionContext` as a trusted, already-resolved application context. Place credential validation and external issuer/subject handling at the API/Infrastructure edge; resolve a trusted external identity to the platform's internal Person and active membership before establishing the execution context. Do not expand `ExecutionContext` with provider-specific claims or tokens. A flat authority set is not the full authorization policy model.
+
+This is a code-inspection finding, not a new production implementation or a gate PASS.
+
 ## 5. Execution protocol
 
 1. Inspect the current branch implementation and test conventions.
