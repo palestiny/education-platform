@@ -1,7 +1,7 @@
 # First Protected Learning Journey — Authorization Map
 
 **Project:** Education Platform  
-**Status:** DESIGN REVIEW ARTIFACT — CLOSE POLICY B ACCEPTED; IMPLEMENTATION NOT AUTHORIZED  
+**Status:** DESIGN REVIEW ARTIFACT — CLOSE POLICY B ACCEPTED; CLOSE-ONLY APPLICATION ENFORCEMENT IMPLEMENTED; PRODUCTION IDENTITY/MEMBERSHIP IMPLEMENTATION NOT AUTHORIZED  
 **Date:** 2026-10-09  
 **Branch:** `chore/architecture-gate-preparation`  
 **Related:** `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`, `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`
@@ -22,7 +22,7 @@ This is a useful first journey because it crosses context selection, tenant isol
 |---|---|---|
 | Create assignment: `POST /api/v1/learning-contexts/{contextId}/assignments` | A trusted execution context exists; `assignment:create` authority; context ID is exactly `context-a`; tenant is exactly `tenant-a`. | A persisted membership grants this teacher access to this context; the learner belongs to that context; a server-side resolver selected the context. |
 | Submit: `POST /api/v1/assignments/{assignmentId}/submissions` | A trusted execution context exists; `submission:create` authority; assignment exists in the same tenant; actor principal ID equals the assignment learner ID. | The learner has an active membership in the assignment's learning context; learner lifecycle/revocation is checked by a membership service. |
-| Close: `POST /api/v1/assignments/{assignmentId}/close` | A trusted execution context exists; `assignment:close` authority; assignment exists in the same tenant. | Assignment ownership, context membership, organization-level policy, or resource-specific permission is established. |
+| Close: `POST /api/v1/assignments/{assignmentId}/close` | A trusted execution context exists; `assignment:close` preliminary authority; Application service performs tenant-scoped lookup and calls `IAssignmentCloseAuthorizer` with the stored assignment context, actor, tenant, resource ID and `assignment.close` action before mutation/replay. Development/Testing fixture models membership plus resource/action grant; production authorizer fails closed. | Production identity validation, durable contextual membership, and durable resource/action policy are not implemented. Revocation and mutation are not atomic. |
 
 The development/testing bearer resolver supplies trusted context fixtures; this is not production identity or persisted membership resolution. The hard-coded context/tenant boundary is a deliberate first-slice restriction, not a substitute for the future membership resolver.
 
@@ -37,7 +37,7 @@ The development/testing bearer resolver supplies trusted context fixtures; this 
 | More than one eligible membership | Return an explicit ambiguous outcome; no first/default membership | Contract test; selection UX and binding semantics remain product decisions |
 | Membership exists but action/resource policy denies | Deny; membership/relationship is not a universal grant | Policy contract test for the approved first-slice rules |
 | Resolver unavailable or state is indeterminate | Fail closed; no test-credential or anonymous fallback | Failure contract test and API-level enforcement test |
-| Teacher closes an assignment in the same tenant | Outcome depends on the still-unapproved close policy below | Regression tests only after owner accepts the policy |
+| Teacher closes an assignment in the same tenant | DEC-0029 accepted: eligible membership in the assignment context AND an explicit resource/action grant; both are enforced through the Application authorization port, with deterministic Development/Testing fixture and production fail-closed default | CI regression tests verify the application boundary; durable production membership/policy resolution remains unimplemented |
 
 ## 4. Assignment-close policy options
 
