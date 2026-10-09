@@ -1,7 +1,7 @@
 # Stage B — Identity & Membership Contract Test Plan
 
 **Project:** Education Platform  
-**Status:** BASELINE DECISIONS ACCEPTED — CONTRACT SEMANTICS AND IMPLEMENTATION GATE STILL OPEN  
+**Status:** BASELINE DECISIONS ACCEPTED — ASSIGNMENT-CLOSE APPLICATION CONTRACT IMPLEMENTED; BROADER IDENTITY/MEMBERSHIP CONTRACTS STILL OPEN  
 **Date:** 2026-10-09  
 **Inputs:** `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`, `PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md`
 
@@ -98,7 +98,7 @@ Next:
 
 ## 7. Accepted assignment-close contract cases
 
-The Project Owner accepted close-policy Option B on 2026-10-09. These cases are now required test outcomes, not recommendations. They remain test specifications; no runtime implementation is claimed.
+The Project Owner accepted close-policy Option B on 2026-10-09. These cases are required outcomes. The application-level assignment-close port and enforcement path are implemented, with deterministic fixture coverage and PostgreSQL regression tests for denied mutation/replay behavior. The tests do not prove production membership/policy integration.
 
 | Test ID | Given | When | Expected result | Required side-effect assertion |
 |---|---|---|---|---|
@@ -119,15 +119,17 @@ The Project Owner accepted close-policy Option B on 2026-10-09. These cases are 
 - **PostgreSQL integration tests:** required once durable membership/policy inputs are designed and approved; do not pretend in-memory fakes prove persistence isolation.
 - **Security/provider tests:** separate; these cases do not prove external credential cryptographic validation.
 
-### Explicit implementation blocker
+### Current implementation evidence and remaining blocker
 
-The current close endpoint checks only trusted execution context, the coarse `assignment:close` authority, and tenant equality before calling the close use case. It does not currently resolve target-context membership or evaluate a resource-specific close grant. These cases therefore describe a known behavioral gap; they must not be marked passing until executable tests and the implementation exist. Do not silently invent membership tables or production identity-provider behavior to make the tests pass.
+The close endpoint performs the coarse `assignment:close` check, then calls `FirstSliceService.CloseAssignmentAsync`. The Application service performs a tenant-scoped lookup, constructs the authorization request from the trusted actor/tenant and the persisted assignment's ID/context, evaluates `IAssignmentCloseAuthorizer`, and requires `Allowed` before invoking the mutation store. `Denied` and `Indeterminate` stop before mutation or protected idempotency replay. Development/Testing uses a deterministic fixture; production uses `FailClosedAssignmentCloseAuthorizer`.
+
+The application boundary and regression behavior are implemented and CI-verified. The production membership source, eligibility predicates, durable resource/action policy source, provider integration, and revocation freshness/atomicity are not implemented. Do not treat fixture behavior as proof of production authorization, and do not invent membership tables or identity-provider behavior to make the remaining tests pass.
 
 
 
-## 8. Recommended application seam for the accepted close policy
+## 8. Implemented application seam for the accepted close policy
 
-**Recommendation:** introduce a narrow Application-layer authorization port for assignment close rather than placing membership rules only in the HTTP endpoint or adding them directly to the persistence store.
+The recommended Application-layer authorization port is implemented as `IAssignmentCloseAuthorizer` with explicit `Allowed`, `Denied`, and `Indeterminate` outcomes. The protected mutation path is `FirstSliceService.CloseAssignmentAsync`; authorization is not enforced only by the HTTP endpoint.
 
 Conceptual flow:
 
@@ -150,4 +152,4 @@ The close authorization decision must happen **before** the close mutation and b
 - **Persistence-store check:** mixes access policy with data mutation/persistence and is harder to test independently.
 - **Application port:** centralizes the use-case authorization boundary and supports deterministic fake implementations in contract tests while keeping the policy implementation provider-neutral.
 
-This is a design recommendation, not an implemented source contract. Before GREEN, define the port/result type and register an implementation for each environment; do not silently substitute an allow-all production implementation.
+Implementation evidence: `src/EducationPlatform.Application/Security/AssignmentCloseAuthorization.cs`, `src/EducationPlatform.Application/FirstSlice/FirstSliceService.cs`, and `src/EducationPlatform.Api/Security/FailClosedAssignmentCloseAuthorizer.cs`. The Development/Testing fixture is deterministic; production remains fail-closed until approved real membership/policy adapters are implemented. The implementation does not authorize assignment-create or learner-submit policy changes.
