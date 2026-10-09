@@ -2,7 +2,7 @@
 
 **Project:** Education Platform  
 **Date:** 2026-10-09  
-**Status:** CONTRACT FOR IMPLEMENTATION UNDER DEC-0029; runtime implementation remains incomplete  
+**Status:** APPLICATION USE-CASE ENFORCEMENT IMPLEMENTED; production membership/policy integration remains incomplete  
 **Branch:** `chore/architecture-gate-preparation`  
 **Related:** `FIRST_PROTECTED_LEARNING_JOURNEY_AUTHORIZATION_MAP.md`, `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`, DEC-0029
 
@@ -22,11 +22,11 @@ A close operation may proceed only when all of the following are true:
 4. An explicit policy grant allows this actor to perform the close action on this assignment resource.
 5. The request passes existing expected-version and domain-state rules.
 
-The current coarse `assignment:close` authority may remain a preliminary capability check, but it is not sufficient evidence for conditions 3 or 4. Membership is not itself a permission grant. Tenant-wide override behavior is not implied.
+The current coarse `assignment:close` authority remains a preliminary API capability check, but it is not sufficient evidence for conditions 3 or 4. The application service independently enforces the resource-level authorization port, so direct callers of the service cannot bypass this check. Membership is not itself a permission grant. Tenant-wide override behavior is not implied.
 
 ## 3. Application authorization port
 
-The application boundary should accept explicit, provider-neutral inputs: trusted principal ID, trusted tenant ID, assignment ID, owning context ID, and action `assignment.close`. It must not accept raw bearer tokens, HTTP request objects, provider SDK types, or client-supplied tenant/context claims as proof of authorization.
+The application use-case boundary accepts explicit, provider-neutral inputs: trusted principal ID, trusted tenant ID, assignment ID, owning context ID, and action `assignment.close`. It must not accept raw bearer tokens, HTTP request objects, provider SDK types, or client-supplied tenant/context claims as proof of authorization.
 
 The authorization outcome must distinguish:
 
@@ -41,8 +41,8 @@ No concrete provider, persistence schema, policy engine, membership eligibility 
 ## 4. Required enforcement order
 
 1. Resolve trusted execution context; otherwise return 401.
-2. Perform a tenant-scoped assignment lookup; do not load by globally supplied assignment ID and rely only on a later tenant comparison.
-3. Evaluate the application authorization port for the assignment's owning context and `assignment.close`.
+2. The application service performs a tenant-scoped assignment lookup; do not load by globally supplied assignment ID and rely only on a later tenant comparison.
+3. The application service evaluates the authorization port for the assignment's owning context and `assignment.close`.
 4. If the result is not **Allowed**, stop before mutation and before returning a protected idempotency replay.
 5. Execute the existing close mutation using expected-version concurrency.
 6. Preserve the existing transaction boundary for assignment state, idempotency record, audit record, and outbox message.
@@ -79,12 +79,12 @@ Tests for missing membership, missing grant, and indeterminate evaluation must u
 
 ## 7. Implementation sequence
 
-1. Introduce the provider-neutral application authorization contract and deterministic unit/contract tests.
-2. Introduce tenant-scoped assignment lookup and update all call sites/tests.
-3. Enforce authorization before mutation and before any idempotency replay can be returned; preserve the transaction's audit/outbox/idempotency behavior.
-4. Add API integration tests for the denial and allow cases above, including replay after authorization revocation.
-5. Run the full CI workflow and verify the exact resulting commit SHA.
-6. Update the readiness matrix to separate verified contract behavior from still-unimplemented production membership/policy integration.
+1. Provider-neutral authorization contract and deterministic fixture are implemented.
+2. Tenant-scoped assignment lookup is implemented.
+3. The application service now enforces authorization before mutation and before an idempotency replay can be returned.
+4. Integration tests now exercise direct application-service denial/no mutation and authorization re-evaluation before replay.
+5. Exact-head CI is required to verify these latest application-boundary changes.
+6. Production membership/policy integration remains open and must not be conflated with fixture-based enforcement.
 
 ## 8. Explicit non-goals and open decisions
 
