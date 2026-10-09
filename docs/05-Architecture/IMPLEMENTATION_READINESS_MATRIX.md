@@ -1,18 +1,20 @@
-# Implementation Readiness Matrix — First Vertical Slice
+# Implementation Readiness Matrix — First Technical Slice
 
-**Date:** 2026-10-07  
-**Status:** IMPLEMENTED / VERIFIED  
-**Implementation authorization:** AUTHORIZED BY IMPLEMENTATION GATE
+**Date:** 2026-10-09  
+**Status:** FIRST TECHNICAL SLICE VERIFIED; BROADER LEARNING JOURNEY INCOMPLETE  
+**Implementation authorization:** Applies only to the existing first technical slice. It does not authorize production identity-provider integration or the still-unimplemented contextual membership/policy checks.
 
 ## 1. Purpose
 
-Translate the accepted Product, Domain, UX, Architecture, Security, Data and API contracts into implementation obligations before production code begins.
+Track which accepted Product, Domain, UX, Architecture, Security, Data and API obligations have evidence in the existing first technical slice, while keeping broader journey and production-readiness gaps visible. This matrix is not a blanket authorization for all future implementation.
 
-## 2. First Vertical Slice
+## 2. First Technical Slice and broader target
 
-**Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome**
+**Verified technical slice:** authenticated request context → assignment creation/closure → learner submission, backed by PostgreSQL persistence and the currently implemented API contract.
 
-The slice must be complete enough to demonstrate the canonical journey, but it must not invent unresolved mastery, consent, retention, tenant-isolation mechanics, or provider decisions.
+**Broader product journey (not yet complete):** Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome.
+
+The broader journey must not invent unresolved mastery, consent, retention, tenant-isolation mechanics, or provider decisions.
 
 ## 3. Traceability Matrix
 
@@ -47,51 +49,49 @@ The slice must be complete enough to demonstrate the canonical journey, but it m
 
 ## 5. Current implementation status
 
-The original implementation blockers have been closed to the extent required for the first technical slice:
+Evidence supports the following within the **existing first technical slice**:
 
-1. Durable PostgreSQL schema and mappings: IMPLEMENTED and CI VERIFIED.
-2. Migration/model alignment: CI VERIFIED; idempotent migration artifact generated in CI.
-3. Authentication/application context boundary: IMPLEMENTED and CI VERIFIED.
-4. Server-derived tenant enforcement: IMPLEMENTED and CI VERIFIED.
+1. Durable PostgreSQL schema and mappings: implemented and CI verified.
+2. Migration/model alignment: CI verified for the current test environment.
+3. Authentication/application context boundary: implemented and CI verified for the current host/test resolver boundary; this is not production credential verification.
+4. Server-derived tenant enforcement: implemented and CI verified for current API scenarios.
 5. Logical tenant isolation with defense-in-depth: accepted for the current phase.
+6. Idempotency, expected-version concurrency, and transactional audit/outbox behavior: covered by the existing regression suite; preserve these guarantees in future authorization work.
 
-The following remain intentionally deferred and are not blockers for the completed first slice:
+The following remain open or incomplete:
 
-- Production identity-provider selection/adapter.
+- Production identity-provider selection and real credential-validation adapter.
+- Durable Person and contextual membership resolution.
+- Resource/action authorization based on target learning-context membership and explicit policy grants. In particular, accepted decision DEC-0029 for assignment close is not implemented by the current coarse `assignment:close` check alone.
+- Membership eligibility rules for assignment creation and learner submission.
 - Physical tenant isolation.
-- Jurisdiction-specific consent/age/privacy rules.
-- Final retention periods.
-- Cloud/provider selection.
+- Jurisdiction-specific consent, age and privacy rules.
+- Final retention periods and deployment configuration.
 - Universal progress/mastery algorithm.
-- Expanded evidence taxonomy/storage mechanics.
-- Broader outcome-authority implementation.
+- Expanded evidence taxonomy/storage mechanics and broader outcome-authority implementation.
 
-These remain downstream decisions and must not be invented implicitly.
+These must remain explicit gaps; passing the current first-slice suite does not prove them implemented.
 
-## 6. First Implementation Design Tasks
+## 6. First-Slice Design and Verification Obligations
 
-Before coding the vertical slice:
+The initial first-slice design and implementation have already been carried out. Do not treat this historical list as permission to restart or silently broaden that work. For new behavior, first define the accepted contract and verification obligations:
 
-1. Define persistence model for authoritative records.
-2. Define aggregate/transaction boundaries.
-3. Define module contracts and command/query ownership.
-4. Define authorization policy inputs and enforcement points.
-5. Define exact API request/response/error schemas.
-6. Define idempotency and concurrency persistence mechanics.
-7. Define audit/outbox obligations.
-8. Define test strategy and contract-test cases.
-9. Define observability signals.
-10. Review the resulting design against the accepted gates.
+1. Define persistence ownership and aggregate/transaction boundaries.
+2. Define module contracts and command/query ownership.
+3. Define authorization policy inputs and enforcement points.
+4. Define exact API request/response/error schemas.
+5. Preserve idempotency and concurrency semantics.
+6. Preserve audit/outbox obligations.
+7. Separate unit/contract tests from API and persistence integration tests.
+8. Review new behavior against accepted gates before GREEN implementation.
 
 ## 7. TDD Entry Rule
 
-No production implementation begins until the implementation design for the first slice is accepted.
-
-Then:
+For each new behavior, implement only after its contract and required authorization are explicit:
 
 **RED → GREEN → REFACTOR → VERIFY**
 
-The first tests should express accepted business semantics, not framework mechanics.
+RED must represent an intentional behavioral failure, not a broken test harness. Do not leave the default PR/branch knowingly red without an agreed test-branch/CI strategy.
 
 ## 8. Gate Status
 
@@ -100,19 +100,19 @@ The first tests should express accepted business semantics, not framework mechan
 | Product | Foundation accepted for downstream design |
 | Research | Market-led baseline established; targeted validation remains optional |
 | Requirements | Ready for implementation mapping |
-| Domain | PASS |
-| UX | PASS |
-| Architecture | PASS |
-| Security | PASS |
-| Data | PASS |
-| API Contract | PASS |
-| Implementation | **PASS — VERIFIED** |
-| Testing | **PASS — VERIFIED** |
-| Release | Deployment readiness in progress |
-| Verification | **PASS — CI VERIFIED** |
+| Domain | PASS for current first-slice scope |
+| UX | Foundation accepted; broader journey not verified end-to-end |
+| Architecture | PASS for current modular-monolith boundary |
+| Security baseline | PASS for accepted baseline decisions |
+| Current API contract | PASS for currently tested endpoints/scenarios |
+| First technical slice | **PASS — CI VERIFIED for the tested commit** |
+| Production identity/authentication | **OPEN — provider and real credential validation not closed** |
+| Contextual membership/resource policy | **GAP — assignment-close DEC-0029 not implemented** |
+| Broader learning journey | **INCOMPLETE — not proven end-to-end** |
+| Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
 
 ## 9. Recommendation
 
-The first technical slice is implemented and verified. Do not reopen closed persistence/authentication boundaries without new evidence.
+Keep the verified first technical slice stable and preserve its regression guarantees. Next, close the provider-neutral contextual authorization contract and its enforcement/test strategy without claiming production identity is solved. Provider integration, membership persistence, and GREEN implementation must remain behind their respective owner decisions and implementation gate.
 
-Next work should address the next explicit product/production-readiness boundary, with production identity-provider selection remaining a separate reviewed decision.
+PR #2 remains a reviewable, unmerged change set; a successful CI run verifies only the tested code and scenarios, not the open gaps listed above.
