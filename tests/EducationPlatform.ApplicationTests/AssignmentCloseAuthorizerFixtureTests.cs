@@ -39,6 +39,26 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     }
 
     [Fact]
+    public async Task Explicit_resource_grant_does_not_apply_to_a_different_assignment()
+    {
+        var authorizer = new TestFixtureAssignmentCloseAuthorizer(
+        [
+            new AssignmentCloseGrant(
+                "authorized-teacher", "tenant-a", "context-a", "assignment-a", "assignment.close")
+        ]);
+
+        var allowed = await authorizer.AuthorizeAsync(
+            Request(principalId: "authorized-teacher", assignmentId: "assignment-a"),
+            TestContext.Current.CancellationToken);
+        var differentResource = await authorizer.AuthorizeAsync(
+            Request(principalId: "authorized-teacher", assignmentId: "assignment-b"),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(AuthorizationDecision.Allowed, allowed);
+        Assert.Equal(AuthorizationDecision.Denied, differentResource);
+    }
+
+    [Fact]
     public async Task Membership_without_grant_is_denied_by_the_fixture()
     {
         var result = await _authorizer.AuthorizeAsync(
@@ -72,6 +92,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
         string principalId,
         string tenantId = "tenant-a",
         string learningContextId = "context-a",
-        string action = "assignment.close") =>
-        new(principalId, tenantId, "assignment-a", learningContextId, action);
+        string action = "assignment.close",
+        string assignmentId = "assignment-a") =>
+        new(principalId, tenantId, assignmentId, learningContextId, action);
 }
