@@ -32,11 +32,62 @@ public sealed class FirstSliceServiceIntegrationTests
         Assert.Null(store.GetAssignment("tenant-b", "assignment-a"));
         Assert.Null(store.GetAssignment("tenant-a", "missing-assignment"));
     }
-    private sealed class AllowCloseAuthorizer : IAssignmentCloseAuthorizer
+    [Fact]
+    public async Task Close_denial_is_enforced_inside_application_service_without_mutation()
     {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Denied);
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+            "{}", "close-denied-create", "correlation-a").Value;
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "authorized-teacher", created.Id, 1, "close-denied",
+                "correlation-close-denied"));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
+        Assert.Equal(1, authorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Close_idempotency_replay_rechecks_authorization_in_application_service()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Allowed);
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+            "{}", "close-replay-create", "correlation-a").Value;
+
+        await service.CloseAssignmentAsync(
+            "tenant-a", "authorized-teacher", created.Id, 1, "close-replay-key",
+            "correlation-close");
+
+        authorizer.Decision = AuthorizationDecision.Denied;
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "authorized-teacher", created.Id, 1, "close-replay-key",
+                "correlation-retry"));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Equal(2, authorizer.CallCount);
+    }
+
+    private sealed class MutableCloseAuthorizer(AuthorizationDecision initialDecision)
+        : IAssignmentCloseAuthorizer
+    {
+        public AuthorizationDecision Decision { get; set; } = initialDecision;
+        public int CallCount { get; private set; }
+
         public ValueTask<AuthorizationDecision> AuthorizeAsync(
             AssignmentCloseAuthorizationRequest request,
-            CancellationToken cancellationToken = default) =>
-            ValueTask.FromResult(AuthorizationDecision.Allowed);
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return ValueTask.FromResult(Decision);
+        }
     }
 }
