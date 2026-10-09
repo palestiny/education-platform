@@ -2139,3 +2139,31 @@ These are not inferred from DEC-0029.
 - Review the existing application service/store seams to determine the smallest provider-neutral authorization port and how it can be tested without coupling Domain/Application to provider-specific types.
 - Keep assignment-create and learner-submit membership rules separate; DEC-0029 does not decide those rules.
 - PR #2 remains open and unmerged.
+
+
+## Checkpoint 074 — Assignment-Close Authorization Port and Tenant-Scoped Reads
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** IMPLEMENTATION COMMITTED — EXACT-HEAD CI PENDING  
+**PR:** #2 remains open and unmerged.
+
+### Work completed
+- Added `ASSIGNMENT_CLOSE_AUTHORIZATION_CONTRACT.md` describing the DEC-0029 allow conditions, enforcement order, fail-closed outcomes, and required reliability tests.
+- Added provider-neutral `IAssignmentCloseAuthorizer` and the `Allowed / Denied / Indeterminate` decision model in Application.
+- Added a fail-closed default for production and an explicit deterministic Development/Testing fixture with independent membership and grant sets.
+- The close endpoint now evaluates contextual membership plus explicit `assignment.close` grant after tenant-scoped assignment lookup and before calling the mutation store. Denied requests return 403; indeterminate decisions return 503; neither reaches mutation or idempotency replay.
+- Scoped `IFirstSliceStore.GetAssignment` by tenant in both in-memory and PostgreSQL implementations, updated API callers, and added a tenant-scope regression test.
+- Added API tests for membership without grant, grant without membership, and indeterminate authorization failing closed.
+- Updated the readiness matrix to distinguish deterministic fixture enforcement from production authorization.
+
+### Explicit limitations
+- The test fixture is not a real identity, membership, or policy provider.
+- Production authorizer deliberately returns Indeterminate until a real approved adapter is configured, so protected close cannot silently succeed in production.
+- Membership schema/eligibility, policy engine, revocation freshness, and membership rules for creation/submission remain open.
+- The current API is the enforcement path; do not claim that arbitrary internal callers of the mutation store are independently protected by this API-layer authorization port.
+- Existing idempotency, concurrency, audit, and outbox behavior must be verified by exact-head CI.
+
+### Verification
+- Previous exact-head run #404 succeeded for commit `6ae8fd806893f60de68a6318c88b36157ccac53c`, including tenant-scoped lookup changes.
+- Authorization-port and API tests are newer changes and require exact-head CI. No pass is claimed until that run completes.
