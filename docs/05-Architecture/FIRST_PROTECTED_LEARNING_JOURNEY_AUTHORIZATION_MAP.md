@@ -1,0 +1,93 @@
+# First Protected Learning Journey — Authorization Map
+
+**Project:** Education Platform  
+**Status:** DESIGN REVIEW ARTIFACT — CLOSE POLICY B ACCEPTED; CLOSE-ONLY APPLICATION ENFORCEMENT IMPLEMENTED; PRODUCTION IDENTITY/MEMBERSHIP IMPLEMENTATION NOT AUTHORIZED  
+**Date:** 2026-10-09  
+**Branch:** `chore/architecture-gate-preparation`  
+**Related:** `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`, `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`
+
+## 1. Journey under review
+
+The smallest current protected journey is:
+
+1. A teacher creates an assignment inside a learning context.
+2. The assigned learner submits work.
+3. An authorized teacher closes the assignment.
+
+This is a useful first journey because it crosses context selection, tenant isolation, actor-to-resource authorization, and a state-changing operation. It is not a complete school/guardian policy model.
+
+## 2. Current API behavior observed in source
+
+| Operation | Current checks | Explicitly not established |
+|---|---|---|
+| Create assignment: `POST /api/v1/learning-contexts/{contextId}/assignments` | A trusted execution context exists; `assignment:create` authority; context ID is exactly `context-a`; tenant is exactly `tenant-a`. | A persisted membership grants this teacher access to this context; the learner belongs to that context; a server-side resolver selected the context. |
+| Submit: `POST /api/v1/assignments/{assignmentId}/submissions` | A trusted execution context exists; `submission:create` authority; assignment exists in the same tenant; actor principal ID equals the assignment learner ID. | The learner has an active membership in the assignment's learning context; learner lifecycle/revocation is checked by a membership service. |
+| Close: `POST /api/v1/assignments/{assignmentId}/close` | A trusted execution context exists; `assignment:close` preliminary authority; Application service performs tenant-scoped lookup and calls `IAssignmentCloseAuthorizer` with the stored assignment context, actor, tenant, resource ID and `assignment.close` action before mutation/replay. Development/Testing fixture models membership plus resource/action grant; production authorizer fails closed. | Production identity validation, durable contextual membership, and durable resource/action policy are not implemented. Revocation and mutation are not atomic. |
+
+The development/testing bearer resolver supplies trusted context fixtures; this is not production identity or persisted membership resolution. The hard-coded context/tenant boundary is a deliberate first-slice restriction, not a substitute for the future membership resolver.
+
+## 3. Contract outcomes needed before runtime implementation
+
+| Decision point | Safe outcome to specify | Evidence required later |
+|---|---|---|
+| External identity cannot be mapped to a platform Person | No trusted execution context; no implicit account or membership creation | Provider-neutral contract test; later real-provider integration test |
+| Person is disabled or revoked | Deny before protected operation | Lifecycle contract test and an approved revocation freshness budget |
+| No eligible membership for the requested context/action | Deny; do not infer membership from a client-supplied context ID | Resolver contract test plus API integration test |
+| Exactly one eligible membership | Server selects it and establishes a bounded trusted context | Contract test proving client tenant/context input cannot override resolution |
+| More than one eligible membership | Return an explicit ambiguous outcome; no first/default membership | Contract test; selection UX and binding semantics remain product decisions |
+| Membership exists but action/resource policy denies | Deny; membership/relationship is not a universal grant | Policy contract test for the approved first-slice rules |
+| Resolver unavailable or state is indeterminate | Fail closed; no test-credential or anonymous fallback | Failure contract test and API-level enforcement test |
+| Teacher closes an assignment in the same tenant | DEC-0029 accepted: eligible membership in the assignment context AND an explicit resource/action grant; both are enforced through the Application authorization port, with deterministic Development/Testing fixture and production fail-closed default | CI regression tests verify the application boundary; durable production membership/policy resolution remains unimplemented |
+
+## 4. Assignment-close policy options
+
+### Option A — Tenant-wide authority is sufficient for this first slice
+Any authenticated principal with the trusted `assignment:close` authority may close any assignment within the resolved tenant.
+
+- **Benefit:** simple operational model; appropriate if closing is intentionally an organization-wide capability.
+- **Cost/risk:** no assignment-owner or context-specific boundary; authority configuration becomes security-critical.
+- **Required guardrail:** authority must be issued by trusted server-side policy, never accepted from client input or unvalidated external claims.
+
+### Option B — Require membership in the assignment's learning context (ACCEPTED)
+The actor must have an eligible membership in the assignment's context and a policy grant for closing.
+
+- **Benefit:** aligns access with the context where the assignment exists; supports multiple contexts and least privilege.
+- **Cost/risk:** requires a defined membership model and resource/action policy; membership alone must not automatically imply close permission.
+
+### Option C — Require assignment creator/owner plus policy override
+The creator/owner may close the assignment; separately authorized context/tenant roles may override.
+
+- **Benefit:** narrow default authority and an explicit administrative path.
+- **Cost/risk:** requires ownership semantics, creator transfer/deletion rules, and override auditing. The current domain/store contracts do not establish these rules.
+
+**Owner decision — accepted 2026-10-09:** Option B governs the first protected learning journey. Closing an assignment requires eligible membership in that assignment's learning context and an explicit resource/action policy grant. Membership alone is not a close grant. Any future tenant-wide override must be modeled as a separate, explicit policy and audited; it is not implied by this decision.
+
+This decision does not establish the concrete membership persistence model, policy engine, or runtime implementation.
+
+## 5. Minimum acceptance decisions for Stage B
+
+Remaining decisions before source contracts / executable contract RED tests:
+
+1. Exact onboarding/invitation/account-linking flow for unknown identities; no implicit account or membership provisioning is permitted.
+2. Whether teacher membership is required at assignment creation and learner membership at submission, with precise eligibility predicates for each operation.
+3. Exact behavior for zero and multiple eligible memberships (baseline: deny / explicit ambiguity; context-selection UX and server binding remain open).
+4. Authoritative source for Person disable/revocation and maximum acceptable stale-access interval.
+5. Whether guardian/student relationship behavior is in this first slice. If not, explicitly defer it.
+6. Minimal provider-neutral resolution port/result semantics and safe external error mapping.
+
+Provider choice, account linking, consent/legal policy, membership schema, physical tenant isolation, and production authentication remain separate decisions.
+
+## 6. TDD sequence after decisions are accepted
+
+1. Define provider-neutral outcome and policy contracts without provider SDK types or raw claims in Domain/Application.
+2. Add deterministic contract tests for unknown/disabled identity, no/one/multiple memberships, policy denial, resolver outage, and trusted context establishment.
+3. Run those tests and classify RED failures as behavior gaps rather than harness/build failures.
+4. Add API integration tests proving the selected decisions are enforced on create, submit, and close endpoints.
+5. Only after separate implementation authorization, implement the minimum GREEN behavior and verify at the exact PR head.
+
+## 7. Current conclusion
+
+- Current source enforces a test-context credential boundary, coarse authority checks, tenant equality, and learner-ID matching on submission.
+- Current source does not establish persisted identity, membership resolution, or a resource-specific close policy.
+- This document maps those gaps and compares close-policy options. It adds no source contracts, runtime behavior, provider, schema, ownership field, or accepted product policy.
+- PR #2 must remain open and unmerged pending the normal owner decision and review.

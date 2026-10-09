@@ -128,3 +128,120 @@ It does not finalize:
 - technology/provider choices.
 
 Status remains **PROPOSED** until the Domain Confirmation gate is explicitly passed.
+
+
+| DEC-0012 | Architecture | Initial architecture: Modular Monolith with explicit logical module contracts, command-time authorization, authoritative-vs-derived state policy, evidence lineage, idempotency/concurrency/reconciliation policies and isolated external integrations. | ACCEPTED | ADR-0001 + Architecture Closure Review, 2026-09-28 |
+
+## DEC-0012 Boundary
+
+This decision is represented by ADR-0001 and was explicitly **ACCEPTED** by the Project Owner on 2026-09-29. Architecture Gate is PASSED.
+
+It does not finalize:
+- database schema;
+- API contracts;
+- physical tenant isolation;
+- consent/age/country policy;
+- retention/deletion policy;
+- cloud/vendor selection;
+- implementation.
+
+If accepted, later decisions may refine or supersede this architecture without silently changing its meaning.
+
+
+| DEC-0013 | Security | Security baseline: enforced tenant context + defense-in-depth; RBAC plus relationship/context-aware authorization; scoped/revocable relationships; policy/consent-controlled parent projections; configurable age/country policy boundary; scoped time-bounded privileged access with audit; sensitive access auditing/minimized telemetry; policy-driven retention/deletion; baseline abuse/security controls. | ACCEPTED | Security/Data Closure Review, 2026-09-29 |
+| DEC-0014 | Data | Data baseline: durable authoritative domain records; first-class extensible evidence with provenance; explicit correction/supersession and conflict semantics; rebuildable learner-state projections; optimistic concurrency with domain conflict handling; small local transactions plus outbox where required; domain-level classification; defense-in-depth tenant boundary; policy-driven retention/deletion. | ACCEPTED | Security/Data Closure Review, 2026-09-29 |
+
+## DEC-0013 / DEC-0014 Boundary
+
+These decisions establish baseline invariants required before API/persistence design. They do not choose final physical tenant isolation, country-specific legal rules, exact retention periods, database schema, API shapes, cloud/vendor, or implementation details.
+
+
+| DEC-0015 | Domain | First-slice domain contract accepted: Authorized Context → Goal/Assignment → Learner Action/Submission → Assessment Result/Evidence → Teacher Decision → Next Action → Follow-up → New Evidence → Outcome, with the defined semantic boundaries and durable-vs-derived rules. | ACCEPTED | Domain Confirmation, 2026-09-29 |
+| DEC-0016 | UX | First-slice UX contract accepted: role-specific views over shared context/evidence/state, evidence-backed next actions, explicit uncertainty/conflict/recovery, controlled parent projection, responsive/mobile and RTL/LTR baseline. | ACCEPTED | UX Confirmation, 2026-09-29 |
+
+| DEC-0017 | API | First-slice API contract baseline accepted: versioned /api/v1, stable IDs, explicit auth context, stable errors, critical-mutation idempotency, explicit concurrency conflicts, cursor pagination, OpenAPI contract source, contract tests, safe diagnostics and controlled projections. | ACCEPTED | API Gate, 2026-09-29 |
+
+
+## DEC-0018 — Implementation Boundary Closure Accepted
+
+**Date:** 2026-09-30  
+**Status:** ACCEPTED
+
+### Decision
+The Project Owner accepted the proposed implementation boundary for the first technical slice:
+
+1. Provider-neutral application authentication context behind the ASP.NET Core host authentication boundary. Production identity-provider selection remains deferred.
+2. Server-derived tenant context from authenticated membership and protected resource/learning-context resolution. Client-supplied tenant identifiers are not authority.
+3. Logical tenant isolation with defense-in-depth for the first slice; physical isolation remains phaseable.
+4. Narrow relational persistence mapping for Learning Context → Goal → Assignment → Submission, plus idempotency, audit and outbox records as required.
+5. Version-controlled, forward-compatible migration strategy using Expand → Compatible Deploy → Backfill/Migrate → Switch → Contract/Remove.
+6. Domain/application/API tests plus real PostgreSQL-compatible persistence integration tests.
+7. First RED suite covering authentication/authorization, tenant isolation, assignment lifecycle, idempotency, submission lifecycle and audit.
+
+### Boundaries
+This decision does not select a production identity provider, physical tenant-isolation mechanism, cloud provider, ORM, final SQL types/indexes, evidence taxonomy, mastery algorithm, advanced scheduling, final retention periods, or jurisdiction-specific legal policy.
+
+### Consequence
+The Implementation Gate must now be reassessed. Acceptance of this boundary does not by itself authorize production implementation or migrations.
+
+
+
+## DEC-0019 — TDD Test Framework Accepted
+
+**Date:** 2026-09-30  
+**Status:** ACCEPTED
+
+### Decision
+Use **xUnit.net v3** as the test framework for the first .NET test harness. The repository will use the current stable v3 line rather than legacy xUnit v2.
+
+### Scope
+This is an implementation-level decision for the test harness. It does not change product/domain semantics, API contracts, architecture, security baseline, data baseline, or deferred provider decisions.
+
+### Consequence
+Test-project creation and executable RED test translation are authorized. Package versions must be pinned in project files and reviewed during dependency maintenance.
+
+
+## DEC-0020 — First Test Harness Target: .NET 10 LTS
+
+**Date:** 2026-09-30  
+**Status:** ACCEPTED FOR IMPLEMENTATION BASELINE
+
+### Decision
+The first test projects target **.NET 10 (net10.0)**.
+
+### Rationale
+The project charter requires .NET LTS as the backend direction. At the current project date, .NET 10 is the active LTS release.
+
+### Boundary
+This establishes the target framework for the initial test harness. It does not finalize the complete production runtime/infrastructure strategy or any cloud/provider decision.
+
+
+## DEC-0029 — Assignment Close Requires Context Membership and Explicit Policy
+
+**Date:** 2026-10-09  
+**Status:** ACCEPTED  
+**Decision owner:** Project Owner
+
+### Decision
+For the first protected learning journey, closing an assignment requires both:
+1. An eligible membership in the learning context that owns the assignment.
+2. An explicit authorization policy grant for the close action on that assignment/resource.
+
+Membership or a generic `assignment:close` authority alone is not sufficient proof of authorization.
+
+Any future tenant-wide administrative override must be represented as a separate explicit policy and must remain attributable through the accepted security-audit baseline. No override is implied by this decision.
+
+### Rationale
+This follows the accepted contextual, resource/action authorization model and reduces cross-context privilege. It avoids assuming assignment ownership semantics that are not established by the current domain contract.
+
+### Boundaries
+This decision does not define:
+- the identity provider or provider protocol;
+- membership persistence/schema or the exact membership-eligibility predicate;
+- assignment creation or learner-submission membership requirements;
+- onboarding, account linking, or context-selection UX;
+- revocation freshness budget or jurisdiction-specific guardian/consent policy;
+- a policy-engine implementation or runtime changes.
+
+### Consequence
+Update the first-journey authorization map and Stage B test plan to reflect this accepted rule. Add deterministic tests that distinguish context membership from explicit close permission. Production implementation still requires the appropriate implementation gate and exact-head CI evidence.

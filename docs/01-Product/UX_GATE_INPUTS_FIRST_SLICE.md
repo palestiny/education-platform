@@ -374,3 +374,60 @@ The UX model is now sufficiently detailed for structured UX confirmation and sub
 
 Next:
 **Domain Confirmation → UX Confirmation → Architecture Gate → Security Gate → Data Gate → API Contract Gate → Implementation Gate**
+
+
+## UX Confirmation Review Candidate — 2026-09-28
+
+This review checks whether the first-slice UX model is sufficiently bounded for explicit confirmation without silently resolving open product/security decisions.
+
+### Confirmation disposition
+
+| UX area | Review result | Gate impact |
+|---|---|---|
+| Student flow | Complete enough to review | Confirmation required |
+| Teacher flow | Complete enough to review | Confirmation required |
+| Parent projection | Boundary is explicit | Security/privacy confirmation required |
+| Information hierarchy | Clear around current state → evidence → next action | Confirmation required |
+| Failure/recovery states | Core states covered | Confirmation required |
+| Evidence/provenance presentation | Trust-oriented direction defined | Exact density remains open |
+| Progress language | Bounded without mastery-score commitment | Product/domain confirmation required |
+| Mobile/responsive/RTL/LTR | Baseline captured | Formal accessibility target remains open |
+| Accessibility | Baseline captured | Requirement target remains open |
+
+### UX confirmation checklist
+
+- [ ] Student can identify the current useful action without reading internal workflow state.
+- [ ] Teacher can distinguish evidence, interpretation, decision, and next action.
+- [ ] Parent sees only policy-authorized projection.
+- [ ] Completion is not presented as learning achievement.
+- [ ] Unknown/insufficient/conflicting evidence has explicit UX treatment.
+- [ ] Retry/reconciliation preserves authoritative state and does not create duplicate actions.
+- [ ] No open UX question is silently converted into implementation behavior.
+
+### UX review conclusion
+
+**UX Gate: READY FOR EXPLICIT CONFIRMATION — NOT PROVEN**
+
+Open questions remain bounded and can be carried into Product, Domain, Security, or Accessibility decisions without authorizing implementation.
+
+
+## UX Confirmation Closure Packet — 2026-09-29
+
+**Status:** ACCEPTED — UX GATE PASS
+
+### Recommendation
+Accept the first-slice UX contract as currently defined:
+
+- Student sees current context, useful next action, evidence-backed state and safe recovery.
+- Teacher sees context → evidence → interpretation/recommendation → decision → next action → follow-up.
+- Parent receives only the policy-authorized projection.
+- Completion is never presented as achievement without supporting semantics.
+- Unknown, insufficient, conflicting and corrected evidence remain explicit.
+- Retry/reconciliation never creates duplicate authoritative actions.
+- Responsive/mobile and RTL/LTR are baseline requirements.
+- Accessibility is a product baseline; formal conformance target remains a later explicit requirement decision.
+
+### Intentionally deferred
+Exact learning-mode presentation, exact progress wording, attention-signal design, evidence-density/detail level, parent fields pending final policy, follow-up reminder details and formal accessibility conformance target.
+
+**Decision:** ACCEPTED by Project Owner on 2026-09-29. UX Gate is PASS. Deferred UX details remain explicitly OPEN and are not authorized for invention during implementation.
