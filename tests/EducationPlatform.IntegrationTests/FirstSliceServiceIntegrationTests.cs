@@ -10,7 +10,7 @@ public sealed class FirstSliceServiceIntegrationTests
     public void Idempotent_assignment_creation_reuses_the_authoritative_result()
     {
         var store = new InMemoryFirstSliceStore();
-        var service = new FirstSliceService(store, new AllowCloseAuthorizer());
+        var service = new FirstSliceService(store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed));
 
         var first = service.CreateAssignment(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a");
