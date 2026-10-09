@@ -385,6 +385,63 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AUTHZ_CLOSE_003_Context_membership_without_explicit_close_grant_is_denied()
+    {
+        var create = await PostAssignment("authorized-teacher", "authz-close-003-create");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+
+        using var close = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
+        close.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "close-member-without-grant");
+        close.Headers.Add("Idempotency-Key", "authz-close-003-close");
+        close.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        var response = await _client.SendAsync(close, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AUTHZ_CLOSE_004_Explicit_close_grant_without_context_membership_is_denied()
+    {
+        var create = await PostAssignment("authorized-teacher", "authz-close-004-create");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+
+        using var close = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
+        close.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "close-grant-without-membership");
+        close.Headers.Add("Idempotency-Key", "authz-close-004-close");
+        close.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        var response = await _client.SendAsync(close, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AUTHZ_CLOSE_005_Indeterminate_authorization_fails_closed_without_mutation()
+    {
+        var create = await PostAssignment("authorized-teacher", "authz-close-005-create");
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        var assignmentId = created.GetProperty("id").GetString();
+
+        using var deniedAttempt = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
+        deniedAttempt.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "close-authorization-indeterminate");
+        deniedAttempt.Headers.Add("Idempotency-Key", "authz-close-005-denied");
+        deniedAttempt.Content = JsonContent.Create(new { expectedVersion = 1 });
+        var deniedResponse = await _client.SendAsync(deniedAttempt, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, deniedResponse.StatusCode);
+
+        using var allowedRetry = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/assignments/{assignmentId}/close");
+        allowedRetry.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        allowedRetry.Headers.Add("Idempotency-Key", "authz-close-005-allowed");
+        allowedRetry.Content = JsonContent.Create(new { expectedVersion = 1 });
+        var allowedResponse = await _client.SendAsync(allowedRetry, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, allowedResponse.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
