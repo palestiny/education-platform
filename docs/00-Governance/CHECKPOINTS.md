@@ -2347,3 +2347,25 @@ These are not inferred from DEC-0029.
 - Revocation freshness/atomicity is not guaranteed across authorization evaluation and persistence mutation.
 - Authorization for assignment creation and learner submission remains outside this accepted close-only scope.
 - PR #2 remains unmerged. CI success does not authorize merge.
+
+
+## Checkpoint 085 — Cancellation-Safe Assignment Close and Exact-Head CI
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** EXACT-HEAD CI PASS  
+**Verified code head:** `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39`  
+**CI:** [Run #551](https://github.com/palestiny/education-platform/actions/runs/37926998814)  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+### Verified
+- Exact-head workflow succeeded, including restore, build, EF migration validation, idempotent migration-script generation, and the test suite.
+- Application-level assignment-close authorization remains before mutation and idempotency replay.
+- The service checks request cancellation again after authorization and immediately before the mutation store call; a cooperative authorizer returning Allowed after cancellation cannot proceed to mutation.
+- Regression coverage includes denial/indeterminate without mutation, cross-tenant rejection, authorization re-evaluation before replay, trusted resource/context/action construction, and cancellation propagation/cancellation-at-mutation-boundary.
+
+### Remaining gaps
+- Production identity credential validation and durable membership/policy integration remain unimplemented.
+- Authorization decision and persistence mutation are not atomic with revocation; no immediate revocation guarantee is claimed.
+- Assignment creation and learner submission authorization remain outside the accepted close-only scope.
+- PR #2 remains unmerged; CI success does not authorize merge.
