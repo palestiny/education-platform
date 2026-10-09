@@ -9,6 +9,9 @@ public sealed class FailClosedAssignmentCloseAuthorizer : IAssignmentCloseAuthor
 {
     public ValueTask<AuthorizationDecision> AuthorizeAsync(
         AssignmentCloseAuthorizationRequest request,
-        CancellationToken cancellationToken = default) =>
-        ValueTask.FromResult(AuthorizationDecision.Indeterminate);
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return ValueTask.FromResult(AuthorizationDecision.Indeterminate);
+    }
 }
