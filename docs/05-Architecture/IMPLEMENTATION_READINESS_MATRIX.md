@@ -107,13 +107,13 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
 | Production identity/authentication | **OPEN — provider and real credential validation not closed** |
-| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; exact-head CI PASS on `0b7476d4c1da73d0978b25a38ecc2b1448ebe2b2`** |
+| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; exact-head CI PASS on `a9180ae9a47cec7ace36614bb0956634c572eae3`** |
 | Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
 
 ## 9. Recommendation
 
-Keep the verified first technical slice stable and preserve its regression guarantees. Exact-head CI passed on `0b7476d4c1da73d0978b25a38ecc2b1448ebe2b2` (run #452). Application-use-case enforcement, denial/no-mutation, replay authorization re-checks, indeterminate fail-closed behavior, and cross-tenant rejection are covered by the current suite. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
+Keep the verified first technical slice stable and preserve its regression guarantees. Exact-head CI passed on `a9180ae9a47cec7ace36614bb0956634c572eae3` (run #458). Application-use-case enforcement, denial/no-mutation, replay authorization re-checks, indeterminate fail-closed behavior, and cross-tenant rejection are covered by the current suite. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
 
 PR #2 remains a reviewable, unmerged change set; a successful CI run verifies only the tested code and scenarios, not the open gaps listed above.
