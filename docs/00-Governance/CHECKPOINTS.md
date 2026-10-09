@@ -2325,3 +2325,25 @@ These are not inferred from DEC-0029.
 - Production credential validation, durable membership/policy integration, and revocation freshness/atomicity remain unimplemented.
 - Authorization for assignment creation and learner submission remains outside this accepted close-only implementation scope.
 - PR #2 remains unmerged; this checkpoint does not authorize merge.
+
+
+## Checkpoint 084 — Application Authorization Exact-Head Verification
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** EXACT-HEAD CI PASS  
+**Verified head:** `28deb9006974245364cbea83faac0fb8793db1f5`  
+**CI:** [Run #543](https://github.com/palestiny/education-platform/actions/runs/37926748960)  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+### Verified
+- The exact branch head completed its CI workflow successfully, including the test job.
+- Application-level assignment-close authorization executes before mutation and before an idempotency replay can be returned.
+- Regression tests cover denied and indeterminate outcomes without mutation, cross-tenant rejection, replay re-authorization, trusted resource/context/action construction, and cancellation propagation.
+- Authorization contract and readiness matrix evidence now point to the latest verified code head.
+
+### Remaining gaps
+- Production identity credential validation and durable membership/policy integration are not implemented.
+- Revocation freshness/atomicity is not guaranteed across authorization evaluation and persistence mutation.
+- Authorization for assignment creation and learner submission remains outside this accepted close-only scope.
+- PR #2 remains unmerged. CI success does not authorize merge.
