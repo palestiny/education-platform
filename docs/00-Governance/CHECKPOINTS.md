@@ -2260,3 +2260,17 @@ These are not inferred from DEC-0029.
 - The current authorization implementation remains application-level and fail-closed in production because the production authorizer has no real membership/policy adapter.
 - Remaining blockers include provider commitment and credential validation, durable membership/policy sources, revocation freshness/atomicity, and the broader learning journey.
 - No merge is authorized by this checkpoint.
+
+
+## Checkpoint 080 — Application Authorization Cancellation and Exact-Head CI
+
+**Date:** 2026-10-09  
+**Status:** EXACT-HEAD CI PASS  
+**Verified branch head:** `c43d62adfe769c9e28a7acfea368a73dc2bc3a4b`  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+- Added regression coverage proving the fail-closed assignment-close authorizer propagates a cancelled `CancellationToken` as cancellation rather than silently returning a decision.
+- Workflow run #519 passed on the exact verified branch head: https://github.com/palestiny/education-platform/actions/runs/37921856686. Restore, build, EF migration validation, migration-script generation, and tests completed successfully.
+- The application service enforces tenant-scoped lookup and resource-level authorization before mutation and before idempotency replay. Integration tests cover denied and indeterminate decisions without mutation, cross-tenant rejection, and authorization re-evaluation on replay.
+- Production credential validation, durable membership/policy integration, and revocation freshness/atomicity remain open. Fixture-backed passing tests do not prove production authorization readiness.
+- No merge is authorized by this checkpoint.
