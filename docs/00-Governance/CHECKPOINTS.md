@@ -2245,3 +2245,18 @@ These are not inferred from DEC-0029.
 - Workflow run #509 passed on the exact branch head, including restore, build, EF migration validation, migration-script generation, and tests: https://github.com/palestiny/education-platform/actions/runs/37916312384
 - Production credential validation, identity-provider selection/commitment, and durable membership/policy integration remain open. Passing CI does not close these gates.
 - No merge is authorized by this checkpoint.
+
+
+## Checkpoint 079 — Exact-Head CI for Authorization and Resolver Readiness Records
+
+**Date:** 2026-10-09  
+**Status:** EXACT-HEAD CI PASS  
+**Verified branch head:** `6ec0236c2741549778eff2e964d4e47d1e86b8f3`  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+- Workflow run #511 passed on the exact branch head: https://github.com/palestiny/education-platform/actions/runs/37917057904.
+- Workflow run #510 also passed on the same SHA: https://github.com/palestiny/education-platform/actions/runs/37917050812.
+- The CI job completed successfully; this confirms the current repository test/build workflow on this SHA, not production identity-provider or durable membership/policy readiness.
+- The current authorization implementation remains application-level and fail-closed in production because the production authorizer has no real membership/policy adapter.
+- Remaining blockers include provider commitment and credential validation, durable membership/policy sources, revocation freshness/atomicity, and the broader learning journey.
+- No merge is authorized by this checkpoint.
