@@ -2211,7 +2211,7 @@ These are not inferred from DEC-0029.
 
 **Date:** 2026-10-09  
 **Stage:** Production Identity Strategy / Adapter Contract  
-**Status:** IMPLEMENTATION COMMITTED — EXACT-HEAD CI PENDING  
+**Status:** EXACT-HEAD CI PASS for commit `c0267e7d654d0e212fe31b6231d106fd7674a520`  
 **PR:** #2 remains open and unmerged.
 
 ### Work completed
@@ -2228,5 +2228,6 @@ These are not inferred from DEC-0029.
 - Production requests remain unauthenticated until a real approved credential-validation adapter is configured; this is fail-closed behavior, not production authentication completion.
 
 ### Verification
-- Exact-head CI is pending for the latest resolver-boundary/test/doc commits. Do not infer success from prior green runs.
+- Exact-head workflow run #505 passed on commit `c0267e7d654d0e212fe31b6231d106fd7674a520`: https://github.com/palestiny/education-platform/actions/runs/37915608458. The build, EF migration validation/script generation, and test steps all succeeded.
+- The successful run verifies this branch head only; production credential validation remains unimplemented.
 - PR #2 remains open and unmerged.
