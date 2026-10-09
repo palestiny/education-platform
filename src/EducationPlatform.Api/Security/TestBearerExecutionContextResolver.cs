@@ -2,8 +2,17 @@ using ApplicationExecutionContext = EducationPlatform.Application.Security.Execu
 
 namespace EducationPlatform.Api.Security;
 
-public static class TestBearerExecutionContextResolver
+public sealed class TestBearerExecutionContextResolver : IExecutionContextResolver
 {
+    public ValueTask<ApplicationExecutionContext?> ResolveAsync(
+        HttpContext httpContext,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+        cancellationToken.ThrowIfCancellationRequested();
+        return ValueTask.FromResult(Resolve(httpContext));
+    }
+
     public static ApplicationExecutionContext? Resolve(HttpContext http)
     {
         if (!http.Request.Headers.TryGetValue("Authorization", out var value))
