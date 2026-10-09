@@ -116,6 +116,67 @@ public sealed class FirstSliceServiceIntegrationTests
         Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
     }
 
+
+    [Fact]
+    public async Task Close_authorization_uses_server_loaded_resource_context_and_requested_actor()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new CapturingCloseAuthorizer();
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "creator", "context-a", "goal-a", "learner-a",
+            "{}", "close-context-create", "correlation-create").Value;
+
+        await service.CloseAssignmentAsync(
+            "tenant-a", "closing-teacher", created.Id, 1, "close-context-key",
+            "correlation-close", TestContext.Current.CancellationToken);
+
+        Assert.NotNull(authorizer.Request);
+        Assert.Equal("closing-teacher", authorizer.Request.PrincipalId);
+        Assert.Equal("tenant-a", authorizer.Request.TenantId);
+        Assert.Equal(created.Id, authorizer.Request.AssignmentId);
+        Assert.Equal("context-a", authorizer.Request.LearningContextId);
+        Assert.Equal("assignment.close", authorizer.Request.Action);
+    }
+
+    [Fact]
+    public async Task Close_authorization_receives_caller_cancellation_token()
+    {
+        var store = new InMemoryFirstSliceStore();
+        using var cancellation = new CancellationTokenSource();
+        var authorizer = new CapturingCloseAuthorizer();
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "creator", "context-a", "goal-a", "learner-a",
+            "{}", "close-cancel-create", "correlation-create").Value;
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "closing-teacher", created.Id, 1, "close-cancel-key",
+                "correlation-close", cancellation.Token));
+
+        Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
+        Assert.NotNull(authorizer.ReceivedCancellationToken);
+        Assert.True(authorizer.ReceivedCancellationToken.Value.IsCancellationRequested);
+    }
+
+    private sealed class CapturingCloseAuthorizer : IAssignmentCloseAuthorizer
+    {
+        public AssignmentCloseAuthorizationRequest? Request { get; private set; }
+        public CancellationToken? ReceivedCancellationToken { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCloseAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            Request = request;
+            ReceivedCancellationToken = cancellationToken;
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(AuthorizationDecision.Allowed);
+        }
+    }
+
     private sealed class MutableCloseAuthorizer(AuthorizationDecision initialDecision)
         : IAssignmentCloseAuthorizer
     {
