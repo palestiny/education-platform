@@ -2205,3 +2205,28 @@ These are not inferred from DEC-0029.
 - It does not prove immediate or atomic revocation semantics; authorization and persistence mutation remain separate operations.
 - It does not close authorization for assignment creation or learner submission.
 - CI passing does not authorize merging. PR #2 remains open and unmerged pending explicit owner approval.
+
+
+## Checkpoint 077 — Provider-Neutral Execution Context Resolver Boundary
+
+**Date:** 2026-10-09  
+**Stage:** Production Identity Strategy / Adapter Contract  
+**Status:** IMPLEMENTATION COMMITTED — EXACT-HEAD CI PENDING  
+**PR:** #2 remains open and unmerged.
+
+### Work completed
+- Added API-layer `IExecutionContextResolver` as the provider-neutral seam between HTTP credential handling and the Application `ExecutionContext`.
+- Added `FailClosedExecutionContextResolver` as the production default. It does not accept fixture bearer strings as authenticated identities.
+- Converted `TestBearerExecutionContextResolver` into a Development/Testing adapter implementing the interface; its static resolver helper remains available for compatibility.
+- Registered the resolver by environment and routed request middleware through the interface instead of branching directly to the static test resolver.
+- Added contract tests for missing/unknown credentials, server-owned principal/tenant mapping, production rejection of test credentials, and cancellation propagation.
+- Updated `PRODUCTION_IDENTITY_PROVIDER_STRATEGY_GATE.md` to record this bounded implementation step.
+
+### Boundaries preserved
+- No identity provider was selected or integrated by this code change.
+- No provider SDK types, raw credentials, or provider-specific claims were added to Application/Domain.
+- Production requests remain unauthenticated until a real approved credential-validation adapter is configured; this is fail-closed behavior, not production authentication completion.
+
+### Verification
+- Exact-head CI is pending for the latest resolver-boundary/test/doc commits. Do not infer success from prior green runs.
+- PR #2 remains open and unmerged.
