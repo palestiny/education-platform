@@ -2288,3 +2288,18 @@ These are not inferred from DEC-0029.
 - Integration tests cover denied and indeterminate authorization without mutation, cross-tenant rejection, and re-evaluation before replay.
 - Production identity credential validation and durable membership/policy integration are still not implemented; revocation freshness/atomicity is not guaranteed.
 - This verification does not authorize merging PR #2.
+
+
+## Checkpoint 082 — Application Authorization Verification Record Refreshed
+
+**Date:** 2026-10-09  
+**Status:** EXACT-HEAD CI PASS  
+**Verified branch head:** `ca40313a84450d3e92d3b36ee19e375a5ef2e5cd`  
+**CI:** [Run #528](https://github.com/palestiny/education-platform/actions/runs/37922984570)  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+- Refreshed the authorization contract and implementation-readiness evidence to cite the latest verified branch head rather than the earlier #521/#522 head.
+- Run #528 completed successfully on the exact SHA above.
+- Application-level authorization remains enforced before mutation and idempotency replay; deterministic Development/Testing authorization is not production membership/policy integration.
+- Production identity credential validation, durable contextual membership/policy resolution, and revocation freshness/atomicity remain open.
+- No merge is authorized by this checkpoint.
