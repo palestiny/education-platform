@@ -90,7 +90,7 @@ app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
         if (!auth.HasAuthority("submission:create"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
-        var assignment = lookup.Get(assignmentId);
+        var assignment = lookup.Get(auth.TenantId, assignmentId);
         if (assignment is null || assignment.TenantId != auth.TenantId) return Results.NotFound();
         if (auth.PrincipalId != assignment.LearnerId) return Results.NotFound();
 
@@ -158,7 +158,7 @@ static object Error(string code) => new { code };
 
 public sealed class AssignmentLookup(IFirstSliceStore store)
 {
-    public EducationPlatform.Domain.FirstSlice.Assignment? Get(string id) => store.GetAssignment(id);
+    public EducationPlatform.Domain.FirstSlice.Assignment? Get(string tenantId, string id) => store.GetAssignment(tenantId, id);
 }
 
 public sealed record AssignmentRequest(string GoalId, string LearnerId, JsonElement Work);
