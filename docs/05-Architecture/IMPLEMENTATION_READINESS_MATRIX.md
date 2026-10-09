@@ -106,14 +106,14 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Security baseline | PASS for accepted baseline decisions |
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
-| Production identity/authentication | **OPEN — resolver seam CI-verified; latest branch head `6ec0236c2741549778eff2e964d4e47d1e86b8f3` passed run #511, but provider selection and real credential validation remain open** |
-| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; assignment-close scenarios passed runs #479/#480; latest branch head `6ec0236c2741549778eff2e964d4e47d1e86b8f3` passed run #511; production membership/policy integration remains open** |
+| Production identity/authentication | **OPEN — resolver seam CI-verified; latest verified branch head `c43d62adfe769c9e28a7acfea368a73dc2bc3a4b` passed run #519, but provider selection and real credential validation remain open** |
+| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; assignment-close scenarios passed runs #479/#480; latest verified branch head `c43d62adfe769c9e28a7acfea368a73dc2bc3a4b` passed run #519; production membership/policy integration remains open** |
 | Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
 
 ## 9. Recommendation
 
-Keep the verified first technical slice stable and preserve its regression guarantees. Resource-scoped fixture and regression-test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` passed CI (run #474). Application-use-case enforcement, denial/no-mutation, durable idempotency/audit/outbox non-mutation on denial, replay authorization re-checks against PostgreSQL, exact-resource grant matching, indeterminate fail-closed behavior, and cross-tenant rejection are covered by the verified suite. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
+Keep the verified first technical slice stable and preserve its regression guarantees. Resource-scoped fixture and regression-test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` passed CI (run #474). Application-use-case enforcement, denial/no-mutation, durable idempotency/audit/outbox non-mutation on denial, replay authorization re-checks against PostgreSQL, exact-resource grant matching, indeterminate fail-closed behavior, cross-tenant rejection, and fail-closed authorizer cancellation propagation are covered by the verified suite. Latest exact-head run #519 passed on `c43d62adfe769c9e28a7acfea368a73dc2bc3a4b`. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
 
 PR #2 remains a reviewable, unmerged change set; a successful CI run verifies only the tested code and scenarios, not the open gaps listed above.
