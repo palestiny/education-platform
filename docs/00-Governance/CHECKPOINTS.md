@@ -2217,7 +2217,7 @@ These are not inferred from DEC-0029.
 ### Work completed
 - Added API-layer `IExecutionContextResolver` as the provider-neutral seam between HTTP credential handling and the Application `ExecutionContext`.
 - Added `FailClosedExecutionContextResolver` as the production default. It does not accept fixture bearer strings as authenticated identities.
-- Converted `TestBearerExecutionContextResolver` into a Development/Testing adapter implementing the interface; its static resolver helper remains available for compatibility.
+- Converted `TestBearerExecutionContextResolver` into a Development/Testing adapter implementing the interface; credential-to-context mapping is private to the adapter so callers use the registered boundary.
 - Registered the resolver by environment and routed request middleware through the interface instead of branching directly to the static test resolver.
 - Added contract tests for missing/unknown credentials, server-owned principal/tenant mapping, production rejection of test credentials, and cancellation propagation.
 - Updated `PRODUCTION_IDENTITY_PROVIDER_STRATEGY_GATE.md` to record this bounded implementation step.
