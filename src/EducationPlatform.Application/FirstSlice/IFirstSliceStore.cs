@@ -4,7 +4,8 @@ namespace EducationPlatform.Application.FirstSlice;
 
 public interface IFirstSliceStore
 {
-    Assignment? GetAssignment(string id);
+    // Scope protected reads by the tenant from the trusted execution context.
+    Assignment? GetAssignment(string tenantId, string id);
 
     FirstSliceMutation<Assignment> CreateAssignment(
         string tenantId,
