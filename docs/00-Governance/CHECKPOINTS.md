@@ -2390,3 +2390,23 @@ These are not inferred from DEC-0029.
 - Authorization evaluation and persistence mutation do not provide atomic revocation semantics.
 - Assignment creation and learner submission authorization are outside the accepted DEC-0029 scope.
 - No merge is authorized by this checkpoint.
+
+
+## Checkpoint 087 — Current Authorization Evidence and Readiness Reconciliation
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** EXACT-HEAD CI PASS  
+**Verified code head:** `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39` — [run #551](https://github.com/palestiny/education-platform/actions/runs/37926998814)  
+**Verified current branch/documentation head:** `bd93376b9c82fea90eb84a230c4e35f80ab326b0` — [run #563](https://github.com/palestiny/education-platform/actions/runs/37936374424) and [run #562](https://github.com/palestiny/education-platform/actions/runs/37936367127)  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+### Completed
+- Reconciled stale readiness-matrix language that incorrectly said exact-head CI for documentation updates was pending.
+- Confirmed the code head's assignment-close implementation/tests passed, and the current branch head with subsequent documentation reconciliation also passed CI.
+- Kept production identity credential validation, durable membership/policy resolution, and revocation atomicity as explicit gaps.
+
+### Next work
+- Do not broaden authorization silently. The accepted DEC-0029 implementation scope is assignment close only.
+- The next design gate should decide the exact membership/eligibility contracts for assignment creation and learner submission before implementation; current hard-coded first-slice context and learner-ID checks are not substitutes for durable membership resolution.
+- PR #2 remains unmerged; no merge is authorized by this checkpoint.
