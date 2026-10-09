@@ -26,8 +26,10 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
         _assignments["closed-assignment"].Close();
     }
 
-    public Assignment? GetAssignment(string id) =>
-        _assignments.TryGetValue(id, out var assignment) ? assignment : null;
+    public Assignment? GetAssignment(string tenantId, string id) =>
+        _assignments.TryGetValue(id, out var assignment) && assignment.TenantId == tenantId
+            ? assignment
+            : null;
 
     public FirstSliceMutation<Assignment> CreateAssignment(
         string tenantId, string actorId, string contextId, string goalId,
@@ -99,9 +101,7 @@ public sealed class InMemoryFirstSliceStore : IFirstSliceStore
                 return ReadAssignment(existing.Value.Response);
             }
 
-            if (!_assignments.TryGetValue(assignmentId, out var assignment))
-                throw new InvalidOperationException("RESOURCE_NOT_FOUND");
-            if (assignment.TenantId != tenantId)
+            if (!_assignments.TryGetValue(assignmentId, out var assignment) || assignment.TenantId != tenantId)
                 throw new InvalidOperationException("RESOURCE_NOT_FOUND");
             if (assignment.Version != expectedVersion)
                 throw new InvalidOperationException("CONCURRENCY_CONFLICT");
