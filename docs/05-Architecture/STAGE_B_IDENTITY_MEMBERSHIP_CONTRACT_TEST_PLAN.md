@@ -94,3 +94,32 @@ Next:
 5. Only after the contract is reviewed and implementation is explicitly authorized, add GREEN behavior and production adapter integration.
 
 **Current result:** Accepted authorization principles are the baseline; the exact provider-neutral port, membership eligibility rules, onboarding/account-linking, lifecycle freshness and context-selection details remain open. No provider, schema, or production runtime behavior is authorized by this plan.
+
+
+## 7. Accepted assignment-close contract cases
+
+The Project Owner accepted close-policy Option B on 2026-10-09. These cases are now required test outcomes, not recommendations. They remain test specifications; no runtime implementation is claimed.
+
+| Test ID | Given | When | Expected result | Required side-effect assertion |
+|---|---|---|---|---|
+| CLOSE-POLICY-001 | Actor has no eligible membership in the assignment's learning context | Actor requests close with a generic `assignment:close` authority | Deny | Assignment state/version and audit/outbox mutation contract are preserved; no close mutation |
+| CLOSE-POLICY-002 | Actor has eligible context membership but policy does not grant close | Actor requests close | Deny | Assignment remains unchanged; denial does not leak cross-context details |
+| CLOSE-POLICY-003 | Actor has eligible context membership and explicit close grant for this resource/action | Actor requests close with valid expected version and idempotency key | Allow, subject to existing domain validation | Exactly one authoritative close mutation; actor, tenant, context and correlation remain attributable |
+| CLOSE-POLICY-004 | Actor has membership only in another learning context within the same tenant | Actor requests close | Deny | No close mutation; same-tenant membership is not treated as target-context membership |
+| CLOSE-POLICY-005 | Membership/policy resolver is unavailable or returns indeterminate state | Actor requests close | Fail closed with safe operational outcome | No generic-authority fallback and no assignment mutation |
+| CLOSE-POLICY-006 | Actor lacks the coarse `assignment:close` authority | Actor requests close even if a fake policy would otherwise allow | Deny | Defense-in-depth remains; the new policy does not bypass existing required authority checks |
+| CLOSE-POLICY-007 | Actor is in the right context and has close policy grant, but assignment belongs to a different tenant | Actor requests close | Reject using the approved non-disclosure response | No cross-tenant state change |
+| CLOSE-POLICY-008 | Actor is authorized and sends a retry with the same idempotency key and same request | Retry after successful close | Replay the original result according to the existing idempotency contract | No duplicate close/audit/outbox effect |
+| CLOSE-POLICY-009 | Actor is authorized but supplies a stale expected version | Actor requests close | Concurrency conflict | No overwrite of newer state; existing conflict semantics remain intact |
+
+### Test-layer placement
+
+- **Policy/contract tests:** CLOSE-POLICY-001 through 006 with deterministic resolver and policy fakes.
+- **API integration tests:** prove the policy is actually invoked by `POST /api/v1/assignments/{assignmentId}/close`, including the no-mutation outcomes and existing error semantics.
+- **PostgreSQL integration tests:** required once durable membership/policy inputs are designed and approved; do not pretend in-memory fakes prove persistence isolation.
+- **Security/provider tests:** separate; these cases do not prove external credential cryptographic validation.
+
+### Explicit implementation blocker
+
+The current close endpoint checks only trusted execution context, the coarse `assignment:close` authority, and tenant equality before calling the close use case. It does not currently resolve target-context membership or evaluate a resource-specific close grant. These cases therefore describe a known behavioral gap; they must not be marked passing until executable tests and the implementation exist. Do not silently invent membership tables or production identity-provider behavior to make the tests pass.
+
