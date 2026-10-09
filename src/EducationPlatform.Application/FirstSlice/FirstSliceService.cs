@@ -59,6 +59,10 @@ public sealed class FirstSliceService
         if (authorization != AuthorizationDecision.Allowed)
             throw new InvalidOperationException("AUTHORIZATION_UNAVAILABLE");
 
+        // A cooperative authorizer may return Allowed just as the request is cancelled.
+        // Re-check cancellation at the mutation boundary so the store is not called afterward.
+        cancellationToken.ThrowIfCancellationRequested();
+
         var fingerprint = Fingerprint($"assignment.close|{assignmentId}|{expectedVersion}");
         return _store.CloseAssignment(
             tenantId, actorId, assignmentId, expectedVersion, idempotencyKey, fingerprint, correlationId);
