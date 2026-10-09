@@ -34,7 +34,7 @@ The authorization outcome must distinguish:
 - **Denied** — membership or policy explicitly denies the operation.
 - **Indeterminate** — the required membership/policy decision cannot be established, including dependency failure or incomplete resolution.
 
-Only **Allowed** may proceed. **Denied** maps to a non-disclosing forbidden/not-found response consistent with the existing API contract. **Indeterminate** fails closed and must not mutate state. Exact status mapping for indeterminate outcomes must be aligned with the API error contract before implementation.
+Only **Allowed** may proceed. **Denied** maps to a non-disclosing forbidden/not-found response consistent with the existing API contract. **Indeterminate** fails closed and must not mutate state. The implemented API maps it to `503 AUTHORIZATION_UNAVAILABLE`; this indicates the authorization decision could not be established, not that the caller is authorized.
 
 No concrete provider, persistence schema, policy engine, membership eligibility predicate, or revocation freshness budget is selected here. Until a real implementation can establish both conditions, the protected operation must not silently fall back to the coarse authority check.
 
@@ -55,7 +55,7 @@ The authorization check and persistence mutation have a time-of-check/time-of-us
 
 Replace unscoped assignment lookup at protected API boundaries with a tenant-scoped query contract, e.g. `GetAssignment(tenantId, assignmentId)`. Review all call sites before changing the interface. A cross-tenant or missing assignment should be indistinguishable at the external boundary and should not expose assignment details.
 
-The persistence close command must retain its own `assignmentId + tenantId` predicate even when the API has already performed a scoped lookup. This second check protects against accidental bypass of the API lookup.
+The persistence close command retains its own `assignmentId + tenantId` predicate for a new mutation, even though the application service has already performed a scoped lookup. The application service must remain the authorized entry point: persistence-level idempotency replay is not independently protected by the store and must only be reachable after the service re-checks authorization.
 
 ## 6. Verification matrix (RED before GREEN)
 
