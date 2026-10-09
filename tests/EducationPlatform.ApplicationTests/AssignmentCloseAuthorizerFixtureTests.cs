@@ -88,6 +88,18 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
         Assert.Equal(AuthorizationDecision.Indeterminate, result);
     }
 
+
+    [Fact]
+    public async Task Fail_closed_authorizer_propagates_cancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var authorizer = new FailClosedAssignmentCloseAuthorizer();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await authorizer.AuthorizeAsync(Request(principalId: "authorized-teacher"), cancellation.Token));
+    }
+
     private static AssignmentCloseAuthorizationRequest Request(
         string principalId,
         string tenantId = "tenant-a",
