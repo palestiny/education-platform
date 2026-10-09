@@ -227,7 +227,8 @@ This gate does not decide:
 - Preferred provider candidate: **Microsoft Entra External ID**
 - Final provider commitment: **PENDING legal/privacy, commercial, operational and student/guardian policy closure in Sections 8 and 8A**
 - Production implementation authorization: **NOT YET GRANTED**
-- Next engineering step: write executable RED tests against the provider-neutral adapter contract; provider SDK integration remains outside Application/Domain boundaries.
+- Provider-neutral `IExecutionContextResolver` boundary is now implemented in the API adapter layer, with a fail-closed production default and a Development/Testing-only bearer fixture. Contract tests cover missing/unknown credentials, server-owned identity/tenant mapping, production rejection of fixture credentials, and cancellation propagation. Exact-head CI must pass before this increment is considered verified.
+- Production provider SDK integration remains unauthorized and must stay outside Application/Domain boundaries.
 
 ## 12. Evidence
 
