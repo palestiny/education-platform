@@ -12,7 +12,7 @@ public sealed class ExecutionContextResolverContractTests
         var resolver = new TestBearerExecutionContextResolver();
         var missing = new DefaultHttpContext();
         var unknown = new DefaultHttpContext();
-        unknown.Request.Headers.Authorization = "Bearer not-a-known-test-credential";
+        unknown.Request.Headers["Authorization"] = "Bearer not-a-known-test-credential";
 
         Assert.Null(await resolver.ResolveAsync(missing, TestContext.Current.CancellationToken));
         Assert.Null(await resolver.ResolveAsync(unknown, TestContext.Current.CancellationToken));
@@ -23,7 +23,7 @@ public sealed class ExecutionContextResolverContractTests
     {
         var resolver = new TestBearerExecutionContextResolver();
         var http = new DefaultHttpContext();
-        http.Request.Headers.Authorization = "Bearer authorized-teacher";
+        http.Request.Headers["Authorization"] = "Bearer authorized-teacher";
 
         var context = await resolver.ResolveAsync(http, TestContext.Current.CancellationToken);
 
@@ -39,7 +39,7 @@ public sealed class ExecutionContextResolverContractTests
     {
         var resolver = new FailClosedExecutionContextResolver();
         var http = new DefaultHttpContext();
-        http.Request.Headers.Authorization = "Bearer authorized-teacher";
+        http.Request.Headers["Authorization"] = "Bearer authorized-teacher";
 
         var context = await resolver.ResolveAsync(http, TestContext.Current.CancellationToken);
 
