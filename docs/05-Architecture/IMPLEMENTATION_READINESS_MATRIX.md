@@ -62,7 +62,7 @@ The following remain open or incomplete:
 
 - Production identity-provider selection and real credential-validation adapter.
 - Durable Person and contextual membership resolution.
-- Resource/action authorization based on target learning-context membership and explicit policy grants. In particular, accepted decision DEC-0029 for assignment close is not implemented by the current coarse `assignment:close` check alone.
+- Production resource/action authorization backed by durable membership and policy sources remains open. A provider-neutral assignment-close authorization port and deterministic Development/Testing fixture now enforce DEC-0029's two independent allow conditions at the API boundary; this is not production membership/policy integration.
 - Membership eligibility rules for assignment creation and learner submission.
 - Physical tenant isolation.
 - Jurisdiction-specific consent, age and privacy rules.
@@ -107,12 +107,13 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
 | Production identity/authentication | **OPEN — provider and real credential validation not closed** |
-| Contextual membership/resource policy | **GAP — assignment-close DEC-0029 not implemented** |
+| Assignment-close authorization contract | **IMPLEMENTED IN API BOUNDARY — deterministic fixture only; exact-head CI pending** |
+| Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
 
 ## 9. Recommendation
 
-Keep the verified first technical slice stable and preserve its regression guarantees. Next, close the provider-neutral contextual authorization contract and its enforcement/test strategy without claiming production identity is solved. Provider integration, membership persistence, and GREEN implementation must remain behind their respective owner decisions and implementation gate.
+Keep the verified first technical slice stable and preserve its regression guarantees. Next, verify the exact-head tests for the provider-neutral assignment-close port and denial/indeterminate cases. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
 
 PR #2 remains a reviewable, unmerged change set; a successful CI run verifies only the tested code and scenarios, not the open gaps listed above.
