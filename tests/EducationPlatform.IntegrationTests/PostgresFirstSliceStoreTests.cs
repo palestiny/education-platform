@@ -71,6 +71,70 @@ public sealed class PostgresFirstSliceStoreTests
     }
 
     [Fact]
+    public async Task Authorization_denial_does_not_write_close_idempotency_audit_or_outbox_records()
+    {
+        using var db = CreateFreshDatabase();
+        var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Denied);
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), authorizer);
+
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{}", "denied-close-create", "correlation-create");
+
+        var auditCountBefore = db.AuditRecords.Count();
+        var outboxCountBefore = db.OutboxMessages.Count();
+        var idempotencyCountBefore = db.IdempotencyRecords.Count();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "authorized-teacher", created.Value.Id, 1,
+                "denied-close-key", "correlation-denied-close",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Equal(1, db.Assignments.Single(x => x.Id == created.Value.Id).Version);
+        Assert.Equal(auditCountBefore, db.AuditRecords.Count());
+        Assert.Equal(outboxCountBefore, db.OutboxMessages.Count());
+        Assert.Equal(idempotencyCountBefore, db.IdempotencyRecords.Count());
+        Assert.Equal(1, authorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Revoked_authorization_cannot_replay_durable_close_response()
+    {
+        using var db = CreateFreshDatabase();
+        var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Allowed);
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), authorizer);
+
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{}", "durable-replay-create", "correlation-create");
+
+        var first = await service.CloseAssignmentAsync(
+            "tenant-a", "authorized-teacher", created.Value.Id, 1,
+            "durable-close-replay-key", "correlation-close",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal("CLOSED", first.Status);
+        var auditCountAfterClose = db.AuditRecords.Count();
+        var outboxCountAfterClose = db.OutboxMessages.Count();
+        var idempotencyCountAfterClose = db.IdempotencyRecords.Count();
+
+        authorizer.Decision = AuthorizationDecision.Denied;
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "authorized-teacher", created.Value.Id, 1,
+                "durable-close-replay-key", "correlation-retry",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Equal(auditCountAfterClose, db.AuditRecords.Count());
+        Assert.Equal(outboxCountAfterClose, db.OutboxMessages.Count());
+        Assert.Equal(idempotencyCountAfterClose, db.IdempotencyRecords.Count());
+        Assert.Equal(2, authorizer.CallCount);
+    }
+
+    [Fact]
     public void Reusing_idempotency_key_with_different_request_is_rejected()
     {
         using var db = CreateFreshDatabase();
@@ -182,6 +246,21 @@ public sealed class PostgresFirstSliceStoreTests
         {
             db.Database.ExecuteSqlRaw(
                 """ALTER TABLE outbox_messages DROP CONSTRAINT IF EXISTS forced_outbox_failure;""");
+        }
+    }
+
+    private sealed class MutableCloseAuthorizer(AuthorizationDecision initialDecision)
+        : IAssignmentCloseAuthorizer
+    {
+        public AuthorizationDecision Decision { get; set; } = initialDecision;
+        public int CallCount { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCloseAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return ValueTask.FromResult(Decision);
         }
     }
 
