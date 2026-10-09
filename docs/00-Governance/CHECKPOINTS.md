@@ -2184,3 +2184,24 @@ These are not inferred from DEC-0029.
 - API maps denial to 403, unavailable authorization to 503, and tenant-scoped missing resources to 404.
 - Resource-scope code/test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` passed run #474: https://github.com/palestiny/education-platform/actions/runs/37914126764. The run passed build, EF migration validation, idempotent migration script generation, and tests, including PostgreSQL denial/replay checks and exact-resource grant matching.
 - Production membership/policy integration is still absent; the production authorizer remains fail-closed. Authorization and persistence are not yet atomic with revocation.
+
+
+## Checkpoint 076 — Exact-Head Verification of Application Authorization
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** EXACT-HEAD CI PASS  
+**Verified branch head:** `99e8635b682527225d8f3f49d4761293f822efb8`  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+### Verification evidence
+- Workflow run #479 passed on the exact branch head: https://github.com/palestiny/education-platform/actions/runs/37914312303
+- Workflow run #480 passed on the exact branch head: https://github.com/palestiny/education-platform/actions/runs/37914317819
+- The successful CI job completed restore, build, EF migration validation, idempotent migration-script generation, and tests.
+- The PR verification notes record coverage for direct application-service denial/no mutation, re-checking authorization before replay, durable PostgreSQL idempotency/audit/outbox non-mutation on denied close, revoked-authorization replay denial, resource-specific grant matching, and cross-tenant rejection.
+
+### What this does not prove
+- Production identity-provider and durable membership/policy adapters remain unimplemented; production close authorization remains fail-closed.
+- It does not prove immediate or atomic revocation semantics; authorization and persistence mutation remain separate operations.
+- It does not close authorization for assignment creation or learner submission.
+- CI passing does not authorize merging. PR #2 remains open and unmerged pending explicit owner approval.
