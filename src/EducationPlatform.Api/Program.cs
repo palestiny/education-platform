@@ -35,6 +35,10 @@ else
 builder.Services.AddScoped<AssignmentLookup>();
 builder.Services.AddScoped<RequestExecutionContextAccessor>();
 builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
+    builder.Services.AddScoped<IExecutionContextResolver, TestBearerExecutionContextResolver>();
+else
+    builder.Services.AddScoped<IExecutionContextResolver, FailClosedExecutionContextResolver>();
 
 var app = builder.Build();
 
@@ -47,12 +51,11 @@ app.Use(async (http, next) =>
     http.Items["CorrelationId"] = correlationId;
     http.Response.Headers["X-Correlation-ID"] = correlationId;
 
-    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
-    {
-        var executionContext = TestBearerExecutionContextResolver.Resolve(http);
-        if (executionContext is not null)
-            http.RequestServices.GetRequiredService<RequestExecutionContextAccessor>().Set(executionContext);
-    }
+    var executionContext = await http.RequestServices
+        .GetRequiredService<IExecutionContextResolver>()
+        .ResolveAsync(http, http.RequestAborted);
+    if (executionContext is not null)
+        http.RequestServices.GetRequiredService<RequestExecutionContextAccessor>().Set(executionContext);
 
     await next();
 });
