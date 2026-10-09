@@ -2369,3 +2369,24 @@ These are not inferred from DEC-0029.
 - Authorization decision and persistence mutation are not atomic with revocation; no immediate revocation guarantee is claimed.
 - Assignment creation and learner submission authorization remain outside the accepted close-only scope.
 - PR #2 remains unmerged; CI success does not authorize merge.
+
+
+## Checkpoint 086 — Authorization Evidence Reconciled to Current Head
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** EXACT-HEAD CI PASS  
+**Verified code head:** `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39` — [run #551](https://github.com/palestiny/education-platform/actions/runs/37926998814)  
+**Verified documentation head:** `67a8c62957d40a5a38b32f9297df463bffd0d30b` — [run #557](https://github.com/palestiny/education-platform/actions/runs/37927393345)  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+### Completed
+- Reconciled the authorization contract's stale verification references with the exact verified code and documentation heads.
+- Confirmed the latest workflow on the documentation head passed the build, EF migration validation, migration-script generation, and test steps.
+- Preserved the distinction between fixture-backed close enforcement and production membership/policy integration.
+
+### Remaining gaps
+- Real production identity credential validation and durable contextual membership/resource-policy resolution remain open.
+- Authorization evaluation and persistence mutation do not provide atomic revocation semantics.
+- Assignment creation and learner submission authorization are outside the accepted DEC-0029 scope.
+- No merge is authorized by this checkpoint.
