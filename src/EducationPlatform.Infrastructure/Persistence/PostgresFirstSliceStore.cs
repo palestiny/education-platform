@@ -7,8 +7,8 @@ namespace EducationPlatform.Infrastructure.Persistence;
 
 public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFirstSliceStore
 {
-    public Assignment? GetAssignment(string id) =>
-        db.Assignments.SingleOrDefault(x => x.Id == id);
+    public Assignment? GetAssignment(string tenantId, string id) =>
+        db.Assignments.SingleOrDefault(x => x.Id == id && x.TenantId == tenantId);
 
     public FirstSliceMutation<Assignment> CreateAssignment(
         string tenantId, string actorId, string contextId, string goalId,
