@@ -64,13 +64,13 @@ public sealed class FirstSliceServiceIntegrationTests
 
         await service.CloseAssignmentAsync(
             "tenant-a", "authorized-teacher", created.Id, 1, "close-replay-key",
-            "correlation-close");
+            "correlation-close", TestContext.Current.CancellationToken);
 
         authorizer.Decision = AuthorizationDecision.Denied;
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CloseAssignmentAsync(
                 "tenant-a", "authorized-teacher", created.Id, 1, "close-replay-key",
-                "correlation-retry"));
+                "correlation-retry", TestContext.Current.CancellationToken));
 
         Assert.Equal("FORBIDDEN", error.Message);
         Assert.Equal(2, authorizer.CallCount);
