@@ -28,6 +28,15 @@ public static class TestBearerExecutionContextResolver
             "authorized-learner" => new ApplicationExecutionContext(
                 "authorized-learner", "tenant-a",
                 new HashSet<string>(["submission:create"])),
+            "close-member-without-grant" => new ApplicationExecutionContext(
+                "close-member-without-grant", "tenant-a",
+                new HashSet<string>(["assignment:close"])),
+            "close-grant-without-membership" => new ApplicationExecutionContext(
+                "close-grant-without-membership", "tenant-a",
+                new HashSet<string>(["assignment:close"])),
+            "close-authorization-indeterminate" => new ApplicationExecutionContext(
+                "close-authorization-indeterminate", "tenant-a",
+                new HashSet<string>(["assignment:close"])),
             _ => null
         };
     }
