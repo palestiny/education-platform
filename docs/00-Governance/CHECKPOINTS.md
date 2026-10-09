@@ -2274,3 +2274,17 @@ These are not inferred from DEC-0029.
 - The application service enforces tenant-scoped lookup and resource-level authorization before mutation and before idempotency replay. Integration tests cover denied and indeterminate decisions without mutation, cross-tenant rejection, and authorization re-evaluation on replay.
 - Production credential validation, durable membership/policy integration, and revocation freshness/atomicity remain open. Fixture-backed passing tests do not prove production authorization readiness.
 - No merge is authorized by this checkpoint.
+
+
+## Checkpoint 081 — Authorization Boundary Exact-Head Verification
+
+**Date:** 2026-10-09  
+**Status:** EXACT-HEAD CI PASS  
+**Verified branch head:** `0913b488db9056ff73e1e3073dfa1f53ebc4b216`  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+- Workflow runs [#521](https://github.com/palestiny/education-platform/actions/runs/37922527464) and [#522](https://github.com/palestiny/education-platform/actions/runs/37922530498) passed on the exact branch head.
+- The application use case tenant-scopes assignment lookup, checks the resource-level authorization port, and performs the check before mutation or idempotency replay.
+- Integration tests cover denied and indeterminate authorization without mutation, cross-tenant rejection, and re-evaluation before replay.
+- Production identity credential validation and durable membership/policy integration are still not implemented; revocation freshness/atomicity is not guaranteed.
+- This verification does not authorize merging PR #2.
