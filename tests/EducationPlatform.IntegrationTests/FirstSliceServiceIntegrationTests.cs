@@ -161,6 +161,41 @@ public sealed class FirstSliceServiceIntegrationTests
         Assert.True(authorizer.ReceivedCancellationToken.Value.IsCancellationRequested);
     }
 
+    [Fact]
+    public async Task Cancellation_after_authorization_prevents_store_mutation_even_if_authorizer_returns_allowed()
+    {
+        var store = new InMemoryFirstSliceStore();
+        using var cancellation = new CancellationTokenSource();
+        var authorizer = new CancellingAllowCloseAuthorizer(cancellation);
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "creator", "context-a", "goal-a", "learner-a",
+            "{}", "close-cancel-boundary-create", "correlation-create").Value;
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "closing-teacher", created.Id, 1, "close-cancel-boundary-key",
+                "correlation-close", cancellation.Token));
+
+        Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
+        Assert.Equal(1, authorizer.CallCount);
+    }
+
+    private sealed class CancellingAllowCloseAuthorizer(CancellationTokenSource cancellation)
+        : IAssignmentCloseAuthorizer
+    {
+        public int CallCount { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCloseAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            cancellation.Cancel();
+            return ValueTask.FromResult(AuthorizationDecision.Allowed);
+        }
+    }
+
     private sealed class CapturingCloseAuthorizer : IAssignmentCloseAuthorizer
     {
         public AssignmentCloseAuthorizationRequest? Request { get; private set; }
