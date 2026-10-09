@@ -13,7 +13,7 @@ public sealed class TestBearerExecutionContextResolver : IExecutionContextResolv
         return ValueTask.FromResult(Resolve(httpContext));
     }
 
-    public static ApplicationExecutionContext? Resolve(HttpContext http)
+    private static ApplicationExecutionContext? Resolve(HttpContext http)
     {
         if (!http.Request.Headers.TryGetValue("Authorization", out var value))
             return null;
