@@ -2172,13 +2172,15 @@ These are not inferred from DEC-0029.
 ## Checkpoint 075 — Application-Level Assignment-Close Enforcement
 
 **Date:** 2026-10-09  
-**Status:** Authorization implementation/test commit CI PASS — `b3a29856f5c6efefe390bd0883990d66938f34cd` (run #463)  
+**Status:** Resource-scope authorization code/test commit CI PASS — `bf70d7b544078f9d6c4179f71894834974d78cb5` (run #474)  
 **PR:** #2 remains open and unmerged.
 
 - Resource-level close authorization now runs inside `FirstSliceService.CloseAssignmentAsync`, not only in the API endpoint.
 - The service performs tenant-scoped resource lookup and checks authorization before invoking the mutation store, including before idempotency replay.
 - Added in-memory integration tests for direct service denial without mutation and authorization re-check on replay.
 - Added PostgreSQL integration tests proving denied close attempts leave close idempotency/audit/outbox records unchanged and a revoked authorization decision cannot retrieve a durable close replay.
+- Scoped fixture grants to the assignment resource ID and added a regression test proving a grant for assignment A does not authorize assignment B. Kept the default wildcard grant limited to the synthetic test teacher so API tests can use dynamically created assignments.
+- Fixed a dependency-injection constructor-selection issue found by CI after the fixture constructor was expanded; the explicit grant constructor is now private and custom grant fixtures are created through a factory.
 - API maps denial to 403, unavailable authorization to 503, and tenant-scoped missing resources to 404.
-- Authorization code/test commit `b3a29856f5c6efefe390bd0883990d66938f34cd` passed run #463: https://github.com/palestiny/education-platform/actions/runs/37913556177. The run passed build, EF migration validation, idempotent migration script generation, and tests, including PostgreSQL checks that denied close attempts do not write close idempotency/audit/outbox records and revoked authorization cannot replay a durable close response.
+- Resource-scope code/test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` passed run #474: https://github.com/palestiny/education-platform/actions/runs/37914126764. The run passed build, EF migration validation, idempotent migration script generation, and tests, including PostgreSQL denial/replay checks and exact-resource grant matching.
 - Production membership/policy integration is still absent; the production authorizer remains fail-closed. Authorization and persistence are not yet atomic with revocation.
