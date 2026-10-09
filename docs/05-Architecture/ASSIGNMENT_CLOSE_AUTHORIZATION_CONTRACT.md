@@ -83,7 +83,7 @@ Tests for missing membership, missing grant, wrong-resource grants, and indeterm
 2. Tenant-scoped assignment lookup is implemented.
 3. The application service now enforces authorization before mutation and before an idempotency replay can be returned.
 4. Integration tests exercise direct application-service denial/no mutation, authorization re-evaluation before replay, trusted resource/context/action construction, and cancellation propagation.
-5. Exact-head CI passed for branch head `0563a61b5e3b89dfa232b05f90b835d7298fa509` (run #535): https://github.com/palestiny/education-platform/actions/runs/37925738281. This verifies the branch head including the current authorization implementation and its documentation; production membership/policy integration remains unimplemented.
+5. Exact-head CI passed for branch head `4c05c4e5dbe2137bb7425861121872c4d17ac044` (run #540): https://github.com/palestiny/education-platform/actions/runs/37925932870. This verifies the branch head including the current authorization implementation and its documentation; production membership/policy integration remains unimplemented.
 6. Production membership/policy integration remains open and must not be conflated with fixture-based enforcement.
 
 ## 8. Explicit non-goals and open decisions
