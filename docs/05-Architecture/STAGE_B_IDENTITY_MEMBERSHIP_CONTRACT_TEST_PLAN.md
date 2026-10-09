@@ -123,3 +123,31 @@ The Project Owner accepted close-policy Option B on 2026-10-09. These cases are 
 
 The current close endpoint checks only trusted execution context, the coarse `assignment:close` authority, and tenant equality before calling the close use case. It does not currently resolve target-context membership or evaluate a resource-specific close grant. These cases therefore describe a known behavioral gap; they must not be marked passing until executable tests and the implementation exist. Do not silently invent membership tables or production identity-provider behavior to make the tests pass.
 
+
+
+## 8. Recommended application seam for the accepted close policy
+
+**Recommendation:** introduce a narrow Application-layer authorization port for assignment close rather than placing membership rules only in the HTTP endpoint or adding them directly to the persistence store.
+
+Conceptual flow:
+
+`API trusted ExecutionContext + Assignment → Application close-authorization port → explicit decision → existing close mutation`
+
+The port should receive the authenticated internal principal and the persisted assignment (including its tenant and learning-context IDs). It should not receive raw bearer tokens, provider SDK objects, or trust client-supplied tenant/context values. The policy decision should distinguish at least:
+- **Allowed** — eligible target-context membership and explicit close grant are both established.
+- **Denied** — a known policy/membership condition fails.
+- **Indeterminate/unavailable** — membership or policy state could not be established; fail closed.
+
+The HTTP layer should map those outcomes to approved safe responses; exact public error mapping remains an API decision. Domain/Application should not depend on HTTP status codes or provider-specific claims.
+
+### Ordering and replay safety
+
+The close authorization decision must happen **before** the close mutation and before any idempotency replay is returned to the caller. A previously successful idempotency key must not become a way for an actor whose access has since been revoked to retrieve a protected response. Once authorization succeeds, the existing idempotency, expected-version/concurrency, audit and outbox guarantees must remain intact.
+
+### Why not put the check only in the API or store?
+
+- **API-only check:** risks bypass if the same use case is invoked by another entry point.
+- **Persistence-store check:** mixes access policy with data mutation/persistence and is harder to test independently.
+- **Application port:** centralizes the use-case authorization boundary and supports deterministic fake implementations in contract tests while keeping the policy implementation provider-neutral.
+
+This is a design recommendation, not an implemented source contract. Before GREEN, define the port/result type and register an implementation for each environment; do not silently substitute an allow-all production implementation.
