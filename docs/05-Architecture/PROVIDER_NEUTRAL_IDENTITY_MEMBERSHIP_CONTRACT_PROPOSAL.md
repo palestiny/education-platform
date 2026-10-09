@@ -1,7 +1,7 @@
 # Provider-Neutral Identity & Membership Contract Proposal
 
 **Project:** Education Platform  
-**Status:** PROPOSAL ONLY — OWNER/GATE REVIEW REQUIRED  
+**Status:** CONTRACT DIRECTION PROPOSED — ASSIGNMENT-CLOSE POLICY B ACCEPTED; OTHER DETAILS OPEN  
 **Date:** 2026-10-09  
 **Related:** `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`, `PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md`
 
@@ -88,10 +88,25 @@ Write deterministic tests before implementing adapters or persistence. Use small
 | Membership exists but resource/action policy denies | Denied |
 | Resolver unavailable or returns invalid/ambiguous state | Fail closed; no test-token fallback |
 | Allowed operation | Execution context contains only trusted internal identity/context data; no provider claims/tokens |
+| Assignment close without eligible membership in the assignment's learning context | Denied; no assignment state mutation |
+| Assignment close with context membership but no explicit close-policy grant | Denied; membership alone is not permission |
+| Assignment close with eligible context membership and explicit resource/action grant | Allowed, subject to existing tenant, lifecycle, idempotency and concurrency checks |
+| Assignment close with membership in a different learning context | Denied; no assignment state mutation |
+| Assignment close when membership/policy resolution is unavailable or indeterminate | Fail closed; no fallback to the generic `assignment:close` authority alone |
 
 These tests should initially validate the proposed contracts and decision outcomes. They do not prove token signatures, issuer/audience validation, real provider configuration, revocation propagation, or legal consent semantics.
 
-## 6. Options and recommendation
+## 6. Assignment-close policy — owner decision accepted
+
+On 2026-10-09, the Project Owner accepted Option B for the first protected learning journey:
+
+> Closing an assignment requires eligible membership in the assignment's learning context and an explicit authorization policy grant for the close action on that assignment/resource.
+
+Membership or a generic `assignment:close` authority alone is insufficient. A future tenant-wide administrative override must be a separate explicit and auditable policy; this decision does not imply such an override.
+
+This accepted policy is a requirement for the contract and tests. It does not define the membership schema, exact membership eligibility predicate, policy engine, or authorize runtime implementation.
+
+## 7. Options and recommendation
 
 ### Option A — Put identity and membership in a single flat authority set
 - **Benefit:** fastest initial implementation.
@@ -108,7 +123,7 @@ These tests should initially validate the proposed contracts and decision outcom
 - **Cost/risk:** provider lock-in, untrusted claim leakage, brittle tests, and tenant/role semantics tied to external token shape.
 - **Recommendation:** reject.
 
-## 7. Decisions still open
+## 8. Decisions still open
 
 This proposal does **not** decide:
 - final identity provider or commercial plan;
@@ -121,12 +136,13 @@ This proposal does **not** decide:
 - emergency/support access;
 - production authentication implementation authorization.
 
-## 8. Exit criteria before Stage B GREEN
+## 9. Exit criteria before Stage B GREEN
 
-1. Project owner reviews the preferred contract direction and open choices.
-2. Product/security/privacy decisions needed for the first protected journey are recorded.
-3. Test names and outcomes are mapped to the accepted contract; ambiguous membership and unknown identity have explicit safe outcomes.
-4. Contract tests run and any intended RED is distinguished from harness/build failures.
-5. Only after a separate explicit implementation authorization may GREEN begin.
+1. Preserve the accepted assignment-close rule in the contract and test matrix.
+2. Define the minimal provider-neutral resolution result semantics and membership eligibility predicates for the first protected journey.
+3. Resolve which membership checks apply to assignment creation and learner submission; do not infer them from the close decision.
+4. Keep onboarding/account linking, context-selection UX, lifecycle source/revocation freshness, and guardian/consent policy explicitly open.
+5. Map each test to an accepted requirement and distinguish intended RED behavior from harness/build failures.
+6. Only after a separate explicit implementation authorization may GREEN begin.
 
-**Current gate result:** Stage A boundary verified. Stage B identity/membership contract is a proposal awaiting review. Production authentication and membership implementation remain unauthorized.
+**Current gate result:** Stage A boundary verified. Assignment-close policy B is owner-accepted. Provider-neutral identity/membership result semantics and other first-slice membership predicates remain under design. Production authentication and membership implementation remain unauthorized.
