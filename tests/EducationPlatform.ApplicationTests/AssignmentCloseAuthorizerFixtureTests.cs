@@ -41,7 +41,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     [Fact]
     public async Task Explicit_resource_grant_does_not_apply_to_a_different_assignment()
     {
-        var authorizer = new TestFixtureAssignmentCloseAuthorizer(
+        var authorizer = TestFixtureAssignmentCloseAuthorizer.WithGrants(
         [
             new AssignmentCloseGrant(
                 "authorized-teacher", "tenant-a", "context-a", "assignment-a", "assignment.close")
