@@ -21,4 +21,14 @@ public sealed class FirstSliceServiceIntegrationTests
         Assert.True(second.Replayed);
         Assert.Equal(first.Value.Id, second.Value.Id);
     }
+
+    [Fact]
+    public void Assignment_lookup_requires_matching_tenant()
+    {
+        var store = new InMemoryFirstSliceStore();
+
+        Assert.NotNull(store.GetAssignment("tenant-a", "assignment-a"));
+        Assert.Null(store.GetAssignment("tenant-b", "assignment-a"));
+        Assert.Null(store.GetAssignment("tenant-a", "missing-assignment"));
+    }
 }
