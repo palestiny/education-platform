@@ -45,7 +45,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CloseAssignmentAsync(
                 "tenant-a", "authorized-teacher", created.Id, 1, "close-denied",
-                "correlation-close-denied"));
+                "correlation-close-denied", TestContext.Current.CancellationToken));
 
         Assert.Equal("FORBIDDEN", error.Message);
         Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
