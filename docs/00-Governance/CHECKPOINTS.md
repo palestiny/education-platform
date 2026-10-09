@@ -2231,3 +2231,17 @@ These are not inferred from DEC-0029.
 - Exact-head workflow run #505 passed on commit `c0267e7d654d0e212fe31b6231d106fd7674a520`: https://github.com/palestiny/education-platform/actions/runs/37915608458. The build, EF migration validation/script generation, and test steps all succeeded.
 - The successful run verifies this branch head only; production credential validation remains unimplemented.
 - PR #2 remains open and unmerged.
+
+
+## Checkpoint 078 — Exact-Head CI for Resolver Boundary and Readiness Record
+
+**Date:** 2026-10-09  
+**Status:** EXACT-HEAD CI PASS  
+**Verified branch head:** `aea696e1c70eec7571fea2d69639af149d89ceb7`  
+**PR:** #2 remains open and unmerged.
+
+- The provider-neutral execution-context resolver boundary is implemented; test bearer resolution is registered only in Development/Testing and the production default fails closed.
+- The readiness matrix and PR verification notes now identify the resolver-boundary commit and its CI evidence.
+- Workflow run #509 passed on the exact branch head, including restore, build, EF migration validation, migration-script generation, and tests: https://github.com/palestiny/education-platform/actions/runs/37916312384
+- Production credential validation, identity-provider selection/commitment, and durable membership/policy integration remain open. Passing CI does not close these gates.
+- No merge is authorized by this checkpoint.
