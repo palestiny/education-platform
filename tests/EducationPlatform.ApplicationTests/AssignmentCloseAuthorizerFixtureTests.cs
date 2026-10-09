@@ -22,7 +22,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     {
         var result = await _authorizer.AuthorizeAsync(Request(
             principalId: "authorized-teacher",
-            learningContextId: "context-b"));
+            learningContextId: "context-b"), TestContext.Current.CancellationToken);
 
         Assert.Equal(AuthorizationDecision.Denied, result);
     }
@@ -32,7 +32,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     {
         var result = await _authorizer.AuthorizeAsync(Request(
             principalId: "authorized-teacher",
-            action: "assignment.delete"));
+            action: "assignment.delete"), TestContext.Current.CancellationToken);
 
         Assert.Equal(AuthorizationDecision.Denied, result);
     }
@@ -41,7 +41,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     public async Task Membership_without_grant_is_denied_by_the_fixture()
     {
         var result = await _authorizer.AuthorizeAsync(Request(
-            principalId: "close-member-without-grant"));
+            principalId: "close-member-without-grant"), TestContext.Current.CancellationToken);
 
         Assert.Equal(AuthorizationDecision.Denied, result);
     }
@@ -50,7 +50,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     public async Task Grant_without_membership_is_denied_by_the_fixture()
     {
         var result = await _authorizer.AuthorizeAsync(Request(
-            principalId: "close-grant-without-membership"));
+            principalId: "close-grant-without-membership"), TestContext.Current.CancellationToken);
 
         Assert.Equal(AuthorizationDecision.Denied, result);
     }
@@ -59,7 +59,7 @@ public sealed class AssignmentCloseAuthorizerFixtureTests
     public async Task Unavailable_authorization_is_not_treated_as_allow()
     {
         var result = await _authorizer.AuthorizeAsync(Request(
-            principalId: "close-authorization-indeterminate"));
+            principalId: "close-authorization-indeterminate"), TestContext.Current.CancellationToken);
 
         Assert.Equal(AuthorizationDecision.Indeterminate, result);
     }
