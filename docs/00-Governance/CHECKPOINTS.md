@@ -2115,3 +2115,27 @@ These are not inferred from DEC-0029.
 - CI must be checked for the latest commit before claiming verification.
 - Next useful work is to define deterministic contract cases for: no context membership → deny; context membership without close grant → deny; membership plus explicit close grant → allow; wrong-context membership → deny; and resolver unavailable → fail closed.
 - PR #2 remains open and unmerged.
+
+
+## Checkpoint 073 — Assignment-Close Contract Test Cases Specified
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Stage B Contract Design  
+**Status:** TEST SPECIFICATION RECORDED — EXACT-HEAD CI PENDING  
+**Runtime implementation:** Not performed; production identity/membership implementation remains outside the current authorization.
+
+### Work completed
+- Updated `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md` to make the owner-accepted close policy an explicit contract requirement.
+- Added nine deterministic close-policy cases to `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`.
+- Covered missing membership, membership without close grant, valid membership plus grant, wrong-context membership, resolver outage, existing coarse-authority defense in depth, tenant isolation, idempotent replay, and concurrency conflict.
+- Identified the current endpoint gap: it checks a coarse `assignment:close` authority and tenant equality but does not resolve target-context membership or evaluate a resource-specific close grant.
+
+### Verification
+- CI for the prior Checkpoint 072 head `7f5abe01672ddd4112088e81e3da78dec363bb52` succeeded: https://github.com/palestiny/education-platform/actions/runs/37862379604.
+- This checkpoint and the latest contract-test specification require exact-head CI; no success is claimed yet.
+
+### Next
+- Confirm the new documentation commit's CI result.
+- Review the existing application service/store seams to determine the smallest provider-neutral authorization port and how it can be tested without coupling Domain/Application to provider-specific types.
+- Keep assignment-create and learner-submit membership rules separate; DEC-0029 does not decide those rules.
+- PR #2 remains open and unmerged.
