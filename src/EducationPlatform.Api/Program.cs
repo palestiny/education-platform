@@ -28,6 +28,10 @@ else
 }
 
 builder.Services.AddScoped<FirstSliceService>();
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
+    builder.Services.AddSingleton<IAssignmentCloseAuthorizer, TestFixtureAssignmentCloseAuthorizer>();
+else
+    builder.Services.AddSingleton<IAssignmentCloseAuthorizer, FailClosedAssignmentCloseAuthorizer>();
 builder.Services.AddScoped<AssignmentLookup>();
 builder.Services.AddScoped<RequestExecutionContextAccessor>();
 builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
@@ -114,7 +118,7 @@ app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/close",
-    (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, AssignmentLookup lookup, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
+    async (HttpContext http, IExecutionContextAccessor context, IAssignmentCloseAuthorizer closeAuthorizer, FirstSliceService service, AssignmentLookup lookup, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
     {
         var auth = context.Current;
         if (auth is null)
@@ -125,6 +129,15 @@ app.MapPost("/api/v1/assignments/{assignmentId}/close",
         var assignment = lookup.Get(auth.TenantId, assignmentId);
         if (assignment is null || assignment.TenantId != auth.TenantId)
             return Results.NotFound();
+
+        var authorization = await closeAuthorizer.AuthorizeAsync(
+            new AssignmentCloseAuthorizationRequest(
+                auth.PrincipalId, auth.TenantId, assignment.Id, assignment.ContextId, "assignment.close"),
+            http.RequestAborted);
+        if (authorization == AuthorizationDecision.Denied)
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
+        if (authorization == AuthorizationDecision.Indeterminate)
+            return Results.Json(Error("AUTHORIZATION_UNAVAILABLE"), statusCode: StatusCodes.Status503ServiceUnavailable);
 
         try
         {
