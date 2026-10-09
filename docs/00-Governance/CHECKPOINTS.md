@@ -2303,3 +2303,25 @@ These are not inferred from DEC-0029.
 - Application-level authorization remains enforced before mutation and idempotency replay; deterministic Development/Testing authorization is not production membership/policy integration.
 - Production identity credential validation, durable contextual membership/policy resolution, and revocation freshness/atomicity remain open.
 - No merge is authorized by this checkpoint.
+
+
+## Checkpoint 083 — Assignment-Close Authorization Context and Cancellation Tests
+
+**Date:** 2026-10-09  
+**Stage:** First Protected Learning Journey / Assignment Close  
+**Status:** EXACT-HEAD CI PASS  
+**Verified head:** `0563a61b5e3b89dfa232b05f90b835d7298fa509`  
+**CI:** [Run #535](https://github.com/palestiny/education-platform/actions/runs/37925738281)  
+**PR:** [#2](https://github.com/palestiny/education-platform/pull/2) remains open and unmerged.
+
+### Verified in this increment
+- Build passed.
+- EF migration validation and idempotent migration-script generation passed.
+- Full test step passed on the exact head.
+- Added integration coverage proving the application service builds the authorization request from the caller identity, tenant scope, stored assignment ID/context, and fixed `assignment.close` action.
+- Added cancellation coverage proving a cancelled request propagates cancellation from the authorizer and leaves assignment version unchanged.
+
+### Remaining gaps
+- Production credential validation, durable membership/policy integration, and revocation freshness/atomicity remain unimplemented.
+- Authorization for assignment creation and learner submission remains outside this accepted close-only implementation scope.
+- PR #2 remains unmerged; this checkpoint does not authorize merge.
