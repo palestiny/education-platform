@@ -118,7 +118,7 @@ app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/close",
-    async (HttpContext http, IExecutionContextAccessor context, IAssignmentCloseAuthorizer closeAuthorizer, FirstSliceService service, AssignmentLookup lookup, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
+    async (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string assignmentId, [FromBody] CloseAssignmentRequest request) =>
     {
         var auth = context.Current;
         if (auth is null)
@@ -126,30 +126,26 @@ app.MapPost("/api/v1/assignments/{assignmentId}/close",
         if (!auth.HasAuthority("assignment:close"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
-        var assignment = lookup.Get(auth.TenantId, assignmentId);
-        if (assignment is null || assignment.TenantId != auth.TenantId)
-            return Results.NotFound();
-
-        var authorization = await closeAuthorizer.AuthorizeAsync(
-            new AssignmentCloseAuthorizationRequest(
-                auth.PrincipalId, auth.TenantId, assignment.Id, assignment.ContextId, "assignment.close"),
-            http.RequestAborted);
-        if (authorization == AuthorizationDecision.Denied)
-            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
-        if (authorization == AuthorizationDecision.Indeterminate)
-            return Results.Json(Error("AUTHORIZATION_UNAVAILABLE"), statusCode: StatusCodes.Status503ServiceUnavailable);
-
         try
         {
-            var mutation = service.CloseAssignment(
+            var assignment = await service.CloseAssignmentAsync(
                 auth.TenantId, auth.PrincipalId, assignmentId, request.ExpectedVersion,
                 http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
-                (string)http.Items["CorrelationId"]!);
-            return Results.Ok(mutation);
+                (string)http.Items["CorrelationId"]!,
+                http.RequestAborted);
+            return Results.Ok(assignment);
         }
         catch (InvalidOperationException ex) when (ex.Message == "RESOURCE_NOT_FOUND")
         {
             return Results.NotFound();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "FORBIDDEN")
+        {
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "AUTHORIZATION_UNAVAILABLE")
+        {
+            return Results.Json(Error("AUTHORIZATION_UNAVAILABLE"), statusCode: StatusCodes.Status503ServiceUnavailable);
         }
         catch (InvalidOperationException ex) when (ex.Message == "CONCURRENCY_CONFLICT")
         {
