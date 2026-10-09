@@ -122,7 +122,7 @@ app.MapPost("/api/v1/assignments/{assignmentId}/close",
         if (!auth.HasAuthority("assignment:close"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
-        var assignment = lookup.Get(assignmentId);
+        var assignment = lookup.Get(auth.TenantId, assignmentId);
         if (assignment is null || assignment.TenantId != auth.TenantId)
             return Results.NotFound();
 
