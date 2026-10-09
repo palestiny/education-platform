@@ -1,4 +1,5 @@
 using EducationPlatform.Application.FirstSlice;
+using EducationPlatform.Application.Security;
 using Xunit;
 
 namespace EducationPlatform.IntegrationTests;
@@ -9,7 +10,7 @@ public sealed class FirstSliceServiceIntegrationTests
     public void Idempotent_assignment_creation_reuses_the_authoritative_result()
     {
         var store = new InMemoryFirstSliceStore();
-        var service = new FirstSliceService(store);
+        var service = new FirstSliceService(store, new AllowCloseAuthorizer());
 
         var first = service.CreateAssignment(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a");
@@ -30,5 +31,12 @@ public sealed class FirstSliceServiceIntegrationTests
         Assert.NotNull(store.GetAssignment("tenant-a", "assignment-a"));
         Assert.Null(store.GetAssignment("tenant-b", "assignment-a"));
         Assert.Null(store.GetAssignment("tenant-a", "missing-assignment"));
+    }
+    private sealed class AllowCloseAuthorizer : IAssignmentCloseAuthorizer
+    {
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCloseAuthorizationRequest request,
+            CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult(AuthorizationDecision.Allowed);
     }
 }
