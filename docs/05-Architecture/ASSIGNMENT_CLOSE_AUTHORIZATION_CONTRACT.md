@@ -75,7 +75,7 @@ The contract tests must cover at least:
 | Stale expected version | Existing concurrency conflict | Second close commit |
 | Audit or outbox persistence fails | Existing atomic rollback behavior | Partial authoritative commit |
 
-Tests for missing membership, missing grant, and indeterminate evaluation must use explicit deterministic test doubles; they must not pretend to prove a production membership provider exists.
+Tests for missing membership, missing grant, wrong-resource grants, and indeterminate evaluation must use explicit deterministic test doubles; they must not pretend to prove a production membership provider exists. A grant for one assignment must not authorize a different assignment. The Development/Testing fixture uses an explicit wildcard grant only for its synthetic teacher identity so API tests can close dynamically created assignments; that wildcard is a fixture convenience, not the production policy model.
 
 ## 7. Implementation sequence
 
