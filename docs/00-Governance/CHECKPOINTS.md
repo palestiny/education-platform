@@ -2172,12 +2172,12 @@ These are not inferred from DEC-0029.
 ## Checkpoint 075 — Application-Level Assignment-Close Enforcement
 
 **Date:** 2026-10-09  
-**Status:** Exact-head CI PASS — commit `0b7476d4c1da73d0978b25a38ecc2b1448ebe2b2`  
+**Status:** Exact-head CI PASS — commit `a9180ae9a47cec7ace36614bb0956634c572eae3` (run #458)  
 **PR:** #2 remains open and unmerged.
 
 - Resource-level close authorization now runs inside `FirstSliceService.CloseAssignmentAsync`, not only in the API endpoint.
 - The service performs tenant-scoped resource lookup and checks authorization before invoking the mutation store, including before idempotency replay.
 - Added integration tests for direct service denial without mutation and authorization re-check on replay.
 - API maps denial to 403, unavailable authorization to 503, and tenant-scoped missing resources to 404.
-- Latest exact-head CI run #452 passed on commit `0b7476d4c1da73d0978b25a38ecc2b1448ebe2b2`: https://github.com/palestiny/education-platform/actions/runs/37907930645. Run #452 passed build, EF migration validation, idempotent migration script generation, and tests. Run #451 also passed on the same exact head: https://github.com/palestiny/education-platform/actions/runs/37907924578.
+- Latest exact-head CI run #458 passed on commit `a9180ae9a47cec7ace36614bb0956634c572eae3`: https://github.com/palestiny/education-platform/actions/runs/37913119534. Run #458 passed build, EF migration validation, idempotent migration script generation, and tests. Run #457 also passed on the same exact head: https://github.com/palestiny/education-platform/actions/runs/37913114205.
 - Production membership/policy integration is still absent; the production authorizer remains fail-closed. Authorization and persistence are not yet atomic with revocation.
