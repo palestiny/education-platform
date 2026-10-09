@@ -2,7 +2,7 @@
 
 **Project:** Education Platform  
 **Date:** 2026-10-09  
-**Status:** APPLICATION USE-CASE ENFORCEMENT IMPLEMENTED; production membership/policy integration remains incomplete  
+**Status:** APPLICATION USE-CASE ENFORCEMENT IMPLEMENTED AND CI VERIFIED; production membership/policy integration remains incomplete  
 **Branch:** `chore/architecture-gate-preparation`  
 **Related:** `FIRST_PROTECTED_LEARNING_JOURNEY_AUTHORIZATION_MAP.md`, `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`, DEC-0029
 
@@ -83,7 +83,7 @@ Tests for missing membership, missing grant, wrong-resource grants, and indeterm
 2. Tenant-scoped assignment lookup is implemented.
 3. The application service now enforces authorization before mutation and before an idempotency replay can be returned.
 4. Integration tests now exercise direct application-service denial/no mutation and authorization re-evaluation before replay.
-5. Exact-head CI is required to verify these latest application-boundary changes.
+5. Exact-head CI passed for branch head `99e8635b682527225d8f3f49d4761293f822efb8` (runs #479 and #480).
 6. Production membership/policy integration remains open and must not be conflated with fixture-based enforcement.
 
 ## 8. Explicit non-goals and open decisions
