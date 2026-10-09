@@ -2161,9 +2161,23 @@ These are not inferred from DEC-0029.
 - The test fixture is not a real identity, membership, or policy provider.
 - Production authorizer deliberately returns Indeterminate until a real approved adapter is configured, so protected close cannot silently succeed in production.
 - Membership schema/eligibility, policy engine, revocation freshness, and membership rules for creation/submission remain open.
-- The current API is the enforcement path; do not claim that arbitrary internal callers of the mutation store are independently protected by this API-layer authorization port.
+- The application service is the enforcement path for service callers. The persistence store remains a lower-level mutation component and is not itself an authorization boundary; callers must use the application use case rather than invoke the store directly.
 - Existing idempotency, concurrency, audit, and outbox behavior must be verified by exact-head CI.
 
 ### Verification
 - Previous exact-head run #404 succeeded for commit `6ae8fd806893f60de68a6318c88b36157ccac53c`, including tenant-scoped lookup changes.
 - Authorization-port and API tests are newer changes and require exact-head CI. No pass is claimed until that run completes.
+
+
+## Checkpoint 075 — Application-Level Assignment-Close Enforcement
+
+**Date:** 2026-10-09  
+**Status:** Exact-head CI PASS — commit `22e87d9f297a3ab601d419930b50fedf6119eea8`  
+**PR:** #2 remains open and unmerged.
+
+- Resource-level close authorization now runs inside `FirstSliceService.CloseAssignmentAsync`, not only in the API endpoint.
+- The service performs tenant-scoped resource lookup and checks authorization before invoking the mutation store, including before idempotency replay.
+- Added integration tests for direct service denial without mutation and authorization re-check on replay.
+- API maps denial to 403, unavailable authorization to 503, and tenant-scoped missing resources to 404.
+- CI run #448 passed on the exact commit: https://github.com/palestiny/education-platform/actions/runs/37905495176
+- Production membership/policy integration is still absent; the production authorizer remains fail-closed. Authorization and persistence are not yet atomic with revocation.
