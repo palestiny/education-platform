@@ -107,7 +107,7 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
 | Production identity/authentication | **OPEN — provider and real credential validation not closed** |
-| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; resource-scope code/test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` CI PASS (run #474)** |
+| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; latest branch head `99e8635b682527225d8f3f49d4761293f822efb8` CI PASS (runs #479 and #480); see PR #2 verification notes** |
 | Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
