@@ -25,10 +25,13 @@ public sealed class TestFixtureAssignmentCloseAuthorizer : IAssignmentCloseAutho
     {
     }
 
-    public TestFixtureAssignmentCloseAuthorizer(IEnumerable<AssignmentCloseGrant> grants)
+    private TestFixtureAssignmentCloseAuthorizer(IEnumerable<AssignmentCloseGrant> grants)
     {
         _grants = grants.ToHashSet();
     }
+
+    public static TestFixtureAssignmentCloseAuthorizer WithGrants(
+        IEnumerable<AssignmentCloseGrant> grants) => new(grants);
 
     public ValueTask<AuthorizationDecision> AuthorizeAsync(
         AssignmentCloseAuthorizationRequest request,
