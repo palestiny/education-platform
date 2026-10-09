@@ -76,6 +76,46 @@ public sealed class FirstSliceServiceIntegrationTests
         Assert.Equal(2, authorizer.CallCount);
     }
 
+    [Fact]
+    public async Task Indeterminate_authorization_is_enforced_inside_application_service_without_mutation()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Indeterminate);
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+            "{}", "close-indeterminate-create", "correlation-a").Value;
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "authorized-teacher", created.Id, 1, "close-indeterminate",
+                "correlation-close-indeterminate", TestContext.Current.CancellationToken));
+
+        Assert.Equal("AUTHORIZATION_UNAVAILABLE", error.Message);
+        Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
+        Assert.Equal(1, authorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Cross_tenant_close_is_not_authorized_or_mutated()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Allowed);
+        var service = new FirstSliceService(store, authorizer);
+        var created = service.CreateAssignment(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+            "{}", "close-tenant-create", "correlation-a").Value;
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-b", "authorized-teacher", created.Id, 1, "close-cross-tenant",
+                "correlation-close-cross-tenant", TestContext.Current.CancellationToken));
+
+        Assert.Equal("RESOURCE_NOT_FOUND", error.Message);
+        Assert.Equal(0, authorizer.CallCount);
+        Assert.Equal(1, store.GetAssignment("tenant-a", created.Id)!.Version);
+    }
+
     private sealed class MutableCloseAuthorizer(AuthorizationDecision initialDecision)
         : IAssignmentCloseAuthorizer
     {
