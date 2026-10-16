@@ -1,6 +1,6 @@
 # Implementation Readiness Matrix — First Technical Slice
 
-**Date:** 2026-10-09  
+**Date:** 2026-10-16  
 **Status:** FIRST TECHNICAL SLICE VERIFIED; BROADER LEARNING JOURNEY INCOMPLETE  
 **Implementation authorization:** Applies only to the existing first technical slice. It does not authorize production identity-provider integration or the still-unimplemented contextual membership/policy checks.
 
@@ -57,6 +57,7 @@ Evidence supports the following within the **existing first technical slice**:
 4. Server-derived tenant enforcement: implemented and CI verified for current API scenarios.
 5. Logical tenant isolation with defense-in-depth: accepted for the current phase.
 6. Idempotency, expected-version concurrency, and transactional audit/outbox behavior: covered by the existing regression suite; preserve these guarantees in future authorization work.
+7. Submission-vs-close stale-read protection: the submission transaction locks and re-reads the tenant-scoped assignment row before persisting; exact code head `0b7733da2230d604c722825f3aae65a099b24019` passed build, EF migration validation/script generation, and tests in [CI run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962). This proves the included PostgreSQL regression scenario, not every production concurrency schedule.
 
 The following remain open or incomplete:
 
@@ -106,8 +107,8 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Security baseline | PASS for accepted baseline decisions |
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
-| Production identity/authentication | **OPEN — resolver seam CI-verified; code head `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39` passed run #551 and current branch head `bd93376b9c82fea90eb84a230c4e35f80ab326b0` passed run #563; provider selection and real credential validation remain open** |
-| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; assignment-close scenarios passed runs #479/#480; code head `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39` passed run #551 and current branch head `bd93376b9c82fea90eb84a230c4e35f80ab326b0` passed run #563; production membership/policy integration remains open** |
+| Production identity/authentication | **OPEN — provider-neutral resolver seam and inactive-person fail-closed behavior are contract-tested; no provider selection, real credential validation, or production API wiring. Current PR #5 code head `0b7733da2230d604c722825f3aae65a099b24019` passed CI run [38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962); that run does not close production identity gaps.** |
+| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; PR #5 adds cross-tenant learner rejection, post-close rejection, and stale tracked assignment regression coverage. Code head `0b7733da2230d604c722825f3aae65a099b24019` passed build, migration validation/script generation, and tests in [CI run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962). Production membership/policy integration remains open.** |
 | Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
@@ -117,3 +118,14 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 Keep the verified first technical slice stable and preserve its regression guarantees. Resource-scoped fixture and regression-test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` passed CI (run #474). Application-use-case enforcement, denial/no-mutation, durable idempotency/audit/outbox non-mutation on denial, replay authorization re-checks against PostgreSQL, exact-resource grant matching, indeterminate fail-closed behavior, cross-tenant rejection, and fail-closed authorizer cancellation propagation are covered by the verified suite. Exact-head code run #551 passed on `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39`: https://github.com/palestiny/education-platform/actions/runs/37926998814. Subsequent documentation reconciliation is also CI-verified on current branch head `bd93376b9c82fea90eb84a230c4e35f80ab326b0` by runs #562 and #563: https://github.com/palestiny/education-platform/actions/runs/37936367127 and https://github.com/palestiny/education-platform/actions/runs/37936374424. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
 
 PR #2 remains a reviewable, unmerged change set; a successful CI run verifies only the tested code and scenarios, not the open gaps listed above.
+
+
+## 10. Latest verified increment — assignment lifecycle reliability
+
+- **Code head:** `0b7733da2230d604c722825f3aae65a099b24019`
+- **CI:** [run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962) — success, including build, EF migration validation, idempotent migration-script generation, and test step.
+- The submission persistence path now re-reads the tenant-scoped assignment row under a PostgreSQL row lock before checking that it remains open.
+- A PostgreSQL integration regression test loads ACTIVE state in one context, closes the assignment in a second context, then proves the stale context cannot persist a submission or reliability records.
+- Cross-tenant learner submission and post-close submission rejection tests are also included.
+- **Still open:** production identity provider/credential validation, durable Person/membership and resource-policy adapters, revocation freshness/atomicity across authorization and mutation, and the broader learning journey.
+- PR #5 remains draft and unmerged. Passing CI is not merge authorization.
