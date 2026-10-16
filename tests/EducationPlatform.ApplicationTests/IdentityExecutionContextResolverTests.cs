@@ -70,6 +70,32 @@ public sealed class IdentityExecutionContextResolverTests
         Assert.Null(result.Context);
     }
 
+    [Theory]
+    [InlineData("", "context-a", true)]
+    [InlineData("tenant-a", "", true)]
+    [InlineData("tenant-a", "context-a", false)]
+    public async Task Malformed_successful_membership_fails_closed(
+        string tenantId,
+        string learningContextId,
+        bool includeAuthorities)
+    {
+        var fakes = new ResolverFakes
+        {
+            Membership = new(
+                IdentityResolutionOutcome.AuthorizedContext,
+                tenantId,
+                learningContextId,
+                includeAuthorities ? new HashSet<string>() : null)
+        };
+
+        var result = await fakes.CreateResolver().ResolveAsync(
+            Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
+
+        Assert.Equal(IdentityResolutionOutcome.Indeterminate, result.Outcome);
+        Assert.Null(result.Context);
+        Assert.Equal(0, fakes.PolicyCalls);
+    }
+
     [Fact]
     public async Task Successful_resolution_uses_server_resolved_tenant_and_context()
     {
