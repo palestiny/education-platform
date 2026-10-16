@@ -24,6 +24,40 @@ public sealed class IdentityExecutionContextResolverTests
     }
 
     [Fact]
+    public async Task Successful_person_resolution_without_person_id_fails_closed()
+    {
+        var fakes = new ResolverFakes
+        {
+            Person = new(IdentityResolutionOutcome.AuthorizedContext)
+        };
+
+        var result = await fakes.CreateResolver().ResolveAsync(
+            Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
+
+        Assert.Equal(IdentityResolutionOutcome.Indeterminate, result.Outcome);
+        Assert.Null(result.Context);
+        Assert.Equal(0, fakes.LifecycleCalls);
+        Assert.Equal(0, fakes.MembershipCalls);
+        Assert.Equal(0, fakes.PolicyCalls);
+    }
+
+    [Theory]
+    [InlineData(PersonLifecycleState.Indeterminate)]
+    public async Task Unavailable_person_lifecycle_fails_closed(
+        PersonLifecycleState lifecycle)
+    {
+        var fakes = new ResolverFakes { Lifecycle = lifecycle };
+
+        var result = await fakes.CreateResolver().ResolveAsync(
+            Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
+
+        Assert.Equal(IdentityResolutionOutcome.Indeterminate, result.Outcome);
+        Assert.Null(result.Context);
+        Assert.Equal(0, fakes.MembershipCalls);
+        Assert.Equal(0, fakes.PolicyCalls);
+    }
+
+    [Fact]
     public async Task Inactive_person_fails_closed_before_membership_and_policy()
     {
         var fakes = new ResolverFakes { Lifecycle = PersonLifecycleState.Inactive };
