@@ -605,6 +605,60 @@ public sealed class DurableApiFirstSliceTests
         Assert.Equal(2, db.OutboxMessages.Count());
     }
 
+    [Fact]
+    public void Submission_rechecks_assignment_state_after_a_concurrent_close()
+    {
+        using var staleContext = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        var original = new EducationPlatform.Domain.FirstSlice.Assignment
+        {
+            Id = "assignment-close-race",
+            TenantId = "tenant-a",
+            ContextId = "context-a",
+            GoalId = "goal-a",
+            LearnerId = "authorized-learner",
+            Work = "{}"
+        };
+        staleContext.Assignments.Add(original);
+        staleContext.SaveChanges();
+
+        // Keep an ACTIVE assignment tracked in one context, then close it in another.
+        var staleAssignment = staleContext.Assignments.Single(x => x.Id == original.Id);
+        var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
+            .UseNpgsql(connection, npgsql =>
+                npgsql.MigrationsAssembly(typeof(EducationPlatformDbContext).Assembly.FullName))
+            .Options;
+        using (var closingContext = new EducationPlatformDbContext(options))
+        {
+            var assignmentToClose = closingContext.Assignments.Single(x => x.Id == original.Id);
+            assignmentToClose.Close();
+            closingContext.SaveChanges();
+        }
+
+        var store = new EducationPlatform.Infrastructure.Persistence.PostgresFirstSliceStore(staleContext);
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            store.CreateSubmission(
+                "tenant-a",
+                "authorized-learner",
+                staleAssignment,
+                "authorized-learner",
+                "{\"answer\":\"must not persist\"}",
+                "close-race-submit",
+                "close-race-fingerprint",
+                "close-race-correlation"));
+
+        Assert.Equal("BUSINESS_RULE_VIOLATION", error.Message);
+        staleContext.ChangeTracker.Clear();
+        Assert.Equal("CLOSED", staleContext.Assignments.Single().Status);
+        Assert.Equal(2, staleContext.Assignments.Single().Version);
+        Assert.Empty(staleContext.Submissions);
+        Assert.Empty(staleContext.IdempotencyRecords);
+        Assert.Empty(staleContext.AuditRecords);
+        Assert.Empty(staleContext.OutboxMessages);
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
