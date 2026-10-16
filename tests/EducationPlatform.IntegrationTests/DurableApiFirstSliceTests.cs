@@ -85,6 +85,126 @@ public sealed class DurableApiFirstSliceTests
         Assert.Equal("PENDING", outbox.Status);
     }
 
+    [Fact]
+    public async Task Production_environment_rejects_test_bearer_without_mutating_data()
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection);
+            });
+
+        using var client = factory.CreateClient();
+
+        var requests = new[]
+        {
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/learning-contexts/context-a/assignments")
+            {
+                Content = JsonContent.Create(new
+                {
+                    goalId = "goal-a",
+                    learnerId = "learner-a",
+                    work = new { prompt = "must not persist" }
+                })
+            },
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/assignments/assignment-a/submissions")
+            {
+                Content = JsonContent.Create(new
+                {
+                    payload = new { answer = "must not persist" }
+                })
+            },
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/assignments/assignment-a/close")
+            {
+                Content = JsonContent.Create(new { expectedVersion = 1 })
+            }
+        };
+
+        try
+        {
+            for (var index = 0; index < requests.Length; index++)
+            {
+                var request = requests[index];
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+                request.Headers.Add("Idempotency-Key", $"production-must-fail-closed-{index}");
+
+                var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+        finally
+        {
+            foreach (var request in requests)
+                request.Dispose();
+        }
+
+        db.ChangeTracker.Clear();
+        Assert.Empty(db.Assignments);
+        Assert.Empty(db.Submissions);
+        Assert.Empty(db.IdempotencyRecords);
+        Assert.Empty(db.AuditRecords);
+        Assert.Empty(db.OutboxMessages);
+    }
+
+    [Fact]
+    public async Task Api_rejects_missing_authority_and_cross_tenant_context_without_mutating_data()
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection));
+
+        using var client = factory.CreateClient();
+
+        async Task<HttpStatusCode> SendAssignmentRequest(string bearer, string idempotencyKey)
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/learning-contexts/context-a/assignments");
+            request.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearer);
+            request.Headers.Add("Idempotency-Key", idempotencyKey);
+            request.Content = JsonContent.Create(new
+            {
+                goalId = "goal-a",
+                learnerId = "learner-a",
+                work = new { prompt = "must not persist" }
+            });
+
+            using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+            return response.StatusCode;
+        }
+
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            await SendAssignmentRequest("teacher-without-authority", "missing-authority"));
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            await SendAssignmentRequest("tenant-a-teacher", "cross-tenant"));
+
+        db.ChangeTracker.Clear();
+        Assert.Empty(db.Assignments);
+        Assert.Empty(db.Submissions);
+        Assert.Empty(db.IdempotencyRecords);
+        Assert.Empty(db.AuditRecords);
+        Assert.Empty(db.OutboxMessages);
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
