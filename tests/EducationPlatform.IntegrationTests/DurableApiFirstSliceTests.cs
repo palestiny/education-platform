@@ -100,23 +100,56 @@ public sealed class DurableApiFirstSliceTests
             });
 
         using var client = factory.CreateClient();
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            "/api/v1/learning-contexts/context-a/assignments");
+        using var client = factory.CreateClient();
 
-        request.Headers.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
-        request.Headers.Add("Idempotency-Key", "production-must-fail-closed");
-        request.Content = JsonContent.Create(new
+        var requests = new[]
         {
-            goalId = "goal-a",
-            learnerId = "learner-a",
-            work = new { prompt = "must not persist" }
-        });
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/learning-contexts/context-a/assignments")
+            {
+                Content = JsonContent.Create(new
+                {
+                    goalId = "goal-a",
+                    learnerId = "learner-a",
+                    work = new { prompt = "must not persist" }
+                })
+            },
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/assignments/assignment-a/submissions")
+            {
+                Content = JsonContent.Create(new
+                {
+                    payload = new { answer = "must not persist" }
+                })
+            },
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                "/api/v1/assignments/assignment-a/close")
+            {
+                Content = JsonContent.Create(new { expectedVersion = 1 })
+            }
+        };
 
-        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        try
+        {
+            for (var index = 0; index < requests.Length; index++)
+            {
+                var request = requests[index];
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+                request.Headers.Add("Idempotency-Key", $"production-must-fail-closed-{index}");
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+        finally
+        {
+            foreach (var request in requests)
+                request.Dispose();
+        }
 
         db.ChangeTracker.Clear();
         Assert.Empty(db.Assignments);
