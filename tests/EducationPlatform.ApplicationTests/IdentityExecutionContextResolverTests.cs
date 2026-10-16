@@ -14,7 +14,7 @@ public sealed class IdentityExecutionContextResolverTests
             Person = new(IdentityResolutionOutcome.UnknownIdentity)
         };
 
-        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close");
+        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
 
         Assert.Equal(IdentityResolutionOutcome.UnknownIdentity, result.Outcome);
         Assert.Null(result.Context);
@@ -28,7 +28,7 @@ public sealed class IdentityExecutionContextResolverTests
     {
         var fakes = new ResolverFakes { Lifecycle = PersonLifecycleState.Inactive };
 
-        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close");
+        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
 
         Assert.Equal(IdentityResolutionOutcome.PersonInactive, result.Outcome);
         Assert.Null(result.Context);
@@ -48,7 +48,7 @@ public sealed class IdentityExecutionContextResolverTests
             Membership = new(membershipOutcome, "server-tenant", "context-a", new HashSet<string>())
         };
 
-        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close");
+        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
 
         Assert.Equal(membershipOutcome, result.Outcome);
         Assert.Null(result.Context);
@@ -64,7 +64,7 @@ public sealed class IdentityExecutionContextResolverTests
     {
         var fakes = new ResolverFakes { Decision = decision };
 
-        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close");
+        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
 
         Assert.Equal(expected, result.Outcome);
         Assert.Null(result.Context);
@@ -75,7 +75,7 @@ public sealed class IdentityExecutionContextResolverTests
     {
         var fakes = new ResolverFakes();
 
-        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close");
+        var result = await fakes.CreateResolver().ResolveAsync(Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
 
         Assert.Equal(IdentityResolutionOutcome.AuthorizedContext, result.Outcome);
         Assert.NotNull(result.Context);
