@@ -1,4 +1,5 @@
 using EducationPlatform.Application.Security;
+using ExecutionContext = EducationPlatform.Application.Security.ExecutionContext;
 
 namespace EducationPlatform.Application.Identity;
 
