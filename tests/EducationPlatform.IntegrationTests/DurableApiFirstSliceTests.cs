@@ -100,7 +100,6 @@ public sealed class DurableApiFirstSliceTests
             });
 
         using var client = factory.CreateClient();
-        using var client = factory.CreateClient();
 
         var requests = new[]
         {
