@@ -37,6 +37,9 @@ public sealed class TestBearerExecutionContextResolver : IExecutionContextResolv
             "authorized-learner" => new ApplicationExecutionContext(
                 "authorized-learner", "tenant-a",
                 new HashSet<string>(["submission:create"])),
+            "cross-tenant-learner" => new ApplicationExecutionContext(
+                "cross-tenant-learner", "tenant-b",
+                new HashSet<string>(["submission:create"])),
             "close-member-without-grant" => new ApplicationExecutionContext(
                 "close-member-without-grant", "tenant-a",
                 new HashSet<string>(["assignment:close"])),
