@@ -469,6 +469,67 @@ public sealed class DurableApiFirstSliceTests
         Assert.Equal(1, db.OutboxMessages.Count());
     }
 
+    [Fact]
+    public async Task Cross_tenant_learner_cannot_submit_to_assignment_without_mutating_data()
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection));
+
+        using var client = factory.CreateClient();
+        using var createRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        createRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        createRequest.Headers.Add("Idempotency-Key", "cross-tenant-learner-create");
+        createRequest.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { prompt = "tenant isolation" }
+        });
+
+        using var createResponse = await client.SendAsync(
+            createRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<AssignmentResponse>(
+            TestContext.Current.CancellationToken);
+        Assert.NotNull(created);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal("tenant-a", db.Assignments.Single().TenantId);
+        Assert.Equal(1, db.IdempotencyRecords.Count());
+        Assert.Equal(1, db.AuditRecords.Count());
+        Assert.Equal(1, db.OutboxMessages.Count());
+
+        using var submitRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/v1/assignments/{created.Id}/submissions");
+        submitRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "cross-tenant-learner");
+        submitRequest.Headers.Add("Idempotency-Key", "cross-tenant-learner-submit");
+        submitRequest.Content = JsonContent.Create(new
+        {
+            payload = new { answer = "must not persist" }
+        });
+
+        using var submitResponse = await client.SendAsync(
+            submitRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, submitResponse.StatusCode);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal("tenant-a", db.Assignments.Single().TenantId);
+        Assert.Empty(db.Submissions);
+        Assert.Equal(1, db.IdempotencyRecords.Count());
+        Assert.Equal(1, db.AuditRecords.Count());
+        Assert.Equal(1, db.OutboxMessages.Count());
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
