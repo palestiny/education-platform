@@ -149,6 +149,28 @@ public sealed class IdentityExecutionContextResolverTests
     }
 
     [Fact]
+    public async Task Successful_resolution_snapshots_authorities_from_membership_source()
+    {
+        var sourceAuthorities = new HashSet<string>(["assignment:close"]);
+        var fakes = new ResolverFakes
+        {
+            Membership = new(
+                IdentityResolutionOutcome.AuthorizedContext,
+                "server-tenant",
+                "context-a",
+                sourceAuthorities)
+        };
+
+        var result = await fakes.CreateResolver().ResolveAsync(
+            Identity, "assignment-1", "assignment.close", TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Context);
+        sourceAuthorities.Add("platform:admin");
+        Assert.Contains("assignment:close", result.Context.Authorities);
+        Assert.DoesNotContain("platform:admin", result.Context.Authorities);
+    }
+
+    [Fact]
     public async Task Cancellation_propagates_without_becoming_an_authorization_result()
     {
         using var source = new CancellationTokenSource();
