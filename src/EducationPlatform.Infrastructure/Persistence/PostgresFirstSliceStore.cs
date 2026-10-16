@@ -42,13 +42,25 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             tenantId, actorId, "submission.create", assignment.ContextId, idempotencyKey, requestFingerprint,
             () =>
             {
-                if (assignment.IsClosed)
+                // The route lookup may have loaded this assignment before a concurrent close.
+                // Lock and re-read the authoritative row inside this transaction so a stale
+                // tracked entity cannot permit a submission after closure has committed.
+                db.Entry(assignment).State = EntityState.Detached;
+                var currentAssignment = db.Assignments
+                    .FromSqlInterpolated(
+                        $"SELECT * FROM assignments WHERE id = {assignment.Id} AND tenant_id = {tenantId} FOR UPDATE")
+                    .AsTracking()
+                    .SingleOrDefault();
+
+                if (currentAssignment is null)
+                    throw new InvalidOperationException("RESOURCE_NOT_FOUND");
+                if (currentAssignment.IsClosed)
                     throw new InvalidOperationException("BUSINESS_RULE_VIOLATION");
 
                 var submission = new Submission
                 {
                     Id = Guid.NewGuid().ToString("N"),
-                    AssignmentId = assignment.Id,
+                    AssignmentId = currentAssignment.Id,
                     TenantId = tenantId,
                     LearnerId = learnerId,
                     Payload = payload
