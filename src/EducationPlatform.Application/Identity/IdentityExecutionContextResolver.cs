@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using EducationPlatform.Application.Security;
 using ExecutionContext = EducationPlatform.Application.Security.ExecutionContext;
 
@@ -133,7 +134,10 @@ public sealed class IdentityExecutionContextResolver(
 
         return new IdentityExecutionContextResolution(
             IdentityResolutionOutcome.AuthorizedContext,
-            new ExecutionContext(person.PersonId, membership.TenantId, membership.Authorities));
+            new ExecutionContext(
+                person.PersonId,
+                membership.TenantId,
+                membership.Authorities.ToFrozenSet(StringComparer.Ordinal)));
     }
 
     private static IdentityExecutionContextResolution Failure(IdentityResolutionOutcome outcome) =>
