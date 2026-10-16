@@ -205,6 +205,72 @@ public sealed class DurableApiFirstSliceTests
         Assert.Empty(db.OutboxMessages);
     }
 
+    [Theory]
+    [InlineData("close-member-without-grant", HttpStatusCode.Forbidden)]
+    [InlineData("close-grant-without-membership", HttpStatusCode.Forbidden)]
+    [InlineData("close-authorization-indeterminate", HttpStatusCode.ServiceUnavailable)]
+    public async Task Assignment_close_denial_or_indeterminate_authorization_does_not_mutate_data(
+        string bearer,
+        HttpStatusCode expectedStatus)
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection));
+
+        using var client = factory.CreateClient();
+        using var createRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        createRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        createRequest.Headers.Add("Idempotency-Key", "close-authorization-create");
+        createRequest.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { prompt = "authorization boundary" }
+        });
+
+        using var createResponse = await client.SendAsync(
+            createRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<AssignmentResponse>(
+            TestContext.Current.CancellationToken);
+        Assert.NotNull(created);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal(1, db.Assignments.Count());
+        Assert.Equal(1, db.IdempotencyRecords.Count());
+        Assert.Equal(1, db.AuditRecords.Count());
+        Assert.Equal(1, db.OutboxMessages.Count());
+
+        using var closeRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/v1/assignments/{created.Id}/close");
+        closeRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearer);
+        closeRequest.Headers.Add("Idempotency-Key", $"close-authorization-{bearer}");
+        closeRequest.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        using var closeResponse = await client.SendAsync(
+            closeRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(expectedStatus, closeResponse.StatusCode);
+
+        db.ChangeTracker.Clear();
+        var assignment = db.Assignments.Single();
+        Assert.Equal(created.Id, assignment.Id);
+        Assert.Equal("ACTIVE", assignment.Status);
+        Assert.Equal(1, assignment.Version);
+        Assert.Empty(db.Submissions);
+        Assert.Equal(1, db.IdempotencyRecords.Count());
+        Assert.Equal(1, db.AuditRecords.Count());
+        Assert.Equal(1, db.OutboxMessages.Count());
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
