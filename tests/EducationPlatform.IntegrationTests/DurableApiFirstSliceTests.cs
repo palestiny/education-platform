@@ -409,6 +409,66 @@ public sealed class DurableApiFirstSliceTests
         Assert.Equal(1, db.OutboxMessages.Count());
     }
 
+    [Fact]
+    public async Task Cross_tenant_actor_cannot_close_assignment_or_create_reliability_records()
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection));
+
+        using var client = factory.CreateClient();
+        using var createRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        createRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        createRequest.Headers.Add("Idempotency-Key", "cross-tenant-close-create");
+        createRequest.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { prompt = "tenant boundary" }
+        });
+
+        using var createResponse = await client.SendAsync(
+            createRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<AssignmentResponse>(
+            TestContext.Current.CancellationToken);
+        Assert.NotNull(created);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal("ACTIVE", db.Assignments.Single().Status);
+        Assert.Equal(1, db.Assignments.Single().Version);
+        Assert.Equal(1, db.IdempotencyRecords.Count());
+        Assert.Equal(1, db.AuditRecords.Count());
+        Assert.Equal(1, db.OutboxMessages.Count());
+
+        using var closeRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/v1/assignments/{created.Id}/close");
+        closeRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "tenant-a-teacher");
+        closeRequest.Headers.Add("Idempotency-Key", "cross-tenant-close-attempt");
+        closeRequest.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        using var closeResponse = await client.SendAsync(
+            closeRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, closeResponse.StatusCode);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal("ACTIVE", db.Assignments.Single().Status);
+        Assert.Equal(1, db.Assignments.Single().Version);
+        Assert.Empty(db.Submissions);
+        Assert.Equal(1, db.IdempotencyRecords.Count());
+        Assert.Equal(1, db.AuditRecords.Count());
+        Assert.Equal(1, db.OutboxMessages.Count());
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
