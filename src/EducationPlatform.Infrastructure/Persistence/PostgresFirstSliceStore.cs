@@ -48,7 +48,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
                 db.Entry(assignment).State = EntityState.Detached;
                 var currentAssignment = db.Assignments
                     .FromSqlInterpolated(
-                        $"SELECT * FROM assignments WHERE "Id" = {assignment.Id} AND "TenantId" = {tenantId} FOR UPDATE")
+                        $"SELECT * FROM assignments WHERE \"Id\" = {assignment.Id} AND \"TenantId\" = {tenantId} FOR UPDATE")
                     .AsTracking()
                     .SingleOrDefault();
 
