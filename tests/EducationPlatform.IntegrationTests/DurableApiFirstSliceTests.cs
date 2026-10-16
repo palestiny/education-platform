@@ -85,6 +85,47 @@ public sealed class DurableApiFirstSliceTests
         Assert.Equal("PENDING", outbox.Status);
     }
 
+    [Fact]
+    public async Task Production_environment_rejects_test_bearer_without_mutating_data()
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection);
+            });
+
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+
+        request.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        request.Headers.Add("Idempotency-Key", "production-must-fail-closed");
+        request.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { prompt = "must not persist" }
+        });
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        db.ChangeTracker.Clear();
+        Assert.Empty(db.Assignments);
+        Assert.Empty(db.Submissions);
+        Assert.Empty(db.IdempotencyRecords);
+        Assert.Empty(db.AuditRecords);
+        Assert.Empty(db.OutboxMessages);
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
