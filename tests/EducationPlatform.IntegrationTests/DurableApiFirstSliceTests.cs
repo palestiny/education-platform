@@ -271,6 +271,82 @@ public sealed class DurableApiFirstSliceTests
         Assert.Equal(1, db.OutboxMessages.Count());
     }
 
+    [Fact]
+    public async Task Assignment_close_replay_is_denied_after_actor_loses_resource_grant()
+    {
+        using var db = ResetDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        await using var factory = new WebApplicationFactory<global::Program>()
+            .WithWebHostBuilder(builder =>
+                builder.UseSetting("ConnectionStrings:EducationPlatform", connection));
+
+        using var client = factory.CreateClient();
+        using var createRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/v1/learning-contexts/context-a/assignments");
+        createRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        createRequest.Headers.Add("Idempotency-Key", "close-replay-create");
+        createRequest.Content = JsonContent.Create(new
+        {
+            goalId = "goal-a",
+            learnerId = "learner-a",
+            work = new { prompt = "protected replay" }
+        });
+
+        using var createResponse = await client.SendAsync(
+            createRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<AssignmentResponse>(
+            TestContext.Current.CancellationToken);
+        Assert.NotNull(created);
+
+        using var closeRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/v1/assignments/{created.Id}/close");
+        closeRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "authorized-teacher");
+        closeRequest.Headers.Add("Idempotency-Key", "protected-close-replay");
+        closeRequest.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        using var firstClose = await client.SendAsync(
+            closeRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, firstClose.StatusCode);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal("CLOSED", db.Assignments.Single().Status);
+        Assert.Equal(2, db.Assignments.Single().Version);
+        Assert.Equal(2, db.IdempotencyRecords.Count());
+        Assert.Equal(2, db.AuditRecords.Count());
+        Assert.Equal(2, db.OutboxMessages.Count());
+
+        using var replayRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/v1/assignments/{created.Id}/close");
+        replayRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "close-member-without-grant");
+        replayRequest.Headers.Add("Idempotency-Key", "protected-close-replay");
+        replayRequest.Content = JsonContent.Create(new { expectedVersion = 1 });
+
+        using var replayResponse = await client.SendAsync(
+            replayRequest, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, replayResponse.StatusCode);
+        var deniedBody = await replayResponse.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+        Assert.DoesNotContain(created.Id, deniedBody, StringComparison.Ordinal);
+
+        db.ChangeTracker.Clear();
+        var assignment = db.Assignments.Single();
+        Assert.Equal("CLOSED", assignment.Status);
+        Assert.Equal(2, assignment.Version);
+        Assert.Empty(db.Submissions);
+        Assert.Equal(2, db.IdempotencyRecords.Count());
+        Assert.Equal(2, db.AuditRecords.Count());
+        Assert.Equal(2, db.OutboxMessages.Count());
+    }
+
     private static EducationPlatformDbContext ResetDatabase()
     {
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
