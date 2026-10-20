@@ -1117,4 +1117,52 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Empty(verifyDb.OutboxMessages.Where(x => x.MessageType == "Assignment.AssignmentClosed"));
     }
 
+    [Fact]
+    public async Task Same_idempotency_key_is_conflict_across_contexts_for_same_actor_and_operation()
+    {
+        using var db = CreateFreshDatabase();
+        db.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "scope-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "scope-learner-a", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "scope-learner-b", Status = "ACTIVE" });
+        db.LearningContexts.AddRange(
+            new LearningContextAuthorityRecord { Id = "scope-context-a", TenantId = "tenant-a", Status = "ACTIVE" },
+            new LearningContextAuthorityRecord { Id = "scope-context-b", TenantId = "tenant-a", Status = "ACTIVE" });
+        db.LearningGoals.AddRange(
+            new LearningGoalAuthorityRecord { Id = "scope-goal-a", TenantId = "tenant-a", ContextId = "scope-context-a", Status = "ACTIVE" },
+            new LearningGoalAuthorityRecord { Id = "scope-goal-b", TenantId = "tenant-a", ContextId = "scope-context-b", Status = "ACTIVE" });
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord { TenantId = "tenant-a", ContextId = "scope-context-a", PersonId = "scope-teacher", MembershipType = "TEACHER", Status = "ACTIVE" },
+            new ContextualMembershipAuthorityRecord { TenantId = "tenant-a", ContextId = "scope-context-a", PersonId = "scope-learner-a", MembershipType = "LEARNER", Status = "ACTIVE" },
+            new ContextualMembershipAuthorityRecord { TenantId = "tenant-a", ContextId = "scope-context-b", PersonId = "scope-teacher", MembershipType = "TEACHER", Status = "ACTIVE" },
+            new ContextualMembershipAuthorityRecord { TenantId = "tenant-a", ContextId = "scope-context-b", PersonId = "scope-learner-b", MembershipType = "LEARNER", Status = "ACTIVE" });
+        db.ActionPolicyGrants.AddRange(
+            new ActionPolicyGrantAuthorityRecord { TenantId = "tenant-a", ContextId = "scope-context-a", SubjectType = "PERSON", SubjectId = "scope-teacher", Action = "assignment.create", Status = "ACTIVE" },
+            new ActionPolicyGrantAuthorityRecord { TenantId = "tenant-a", ContextId = "scope-context-b", SubjectType = "PERSON", SubjectId = "scope-teacher", Action = "assignment.create", Status = "ACTIVE" });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+
+        var first = await service.CreateAssignmentAsync(
+            "tenant-a", "scope-teacher", "scope-context-a", "scope-goal-a",
+            "scope-learner-a", "{\\"work\\":\\"context-a\\"}", "shared-key",
+            "scope-correlation-a", TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "scope-teacher", "scope-context-b", "scope-goal-b",
+                "scope-learner-b", "{\\"work\\":\\"context-b\\"}", "shared-key",
+                "scope-correlation-b", TestContext.Current.CancellationToken));
+
+        Assert.Equal("IDEMPOTENCY_CONFLICT", error.Message);
+        Assert.Single(db.Assignments);
+        Assert.Equal(first.Value.Id, db.Assignments.Single().Id);
+        Assert.Single(db.IdempotencyRecords.Where(x => x.OperationScope == "assignment.create"));
+        Assert.Equal(1, db.AuditRecords.Count(x => x.Operation == "assignment.create"));
+        Assert.Equal(1, db.OutboxMessages.Count(x => x.MessageType == "Assignment.AssignmentCreated"));
+    }
+
 }
