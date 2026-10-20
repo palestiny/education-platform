@@ -13,19 +13,19 @@ public sealed class PostgresPersistenceCollection { }
 public sealed class PostgresFirstSliceStoreTests
 {
     [Fact]
-    public void Atomic_assignment_creation_persists_idempotency_audit_and_outbox()
+    public async Task Atomic_assignment_creation_persists_idempotency_audit_and_outbox()
     {
         using var db = CreateFreshDatabase();
 
-        var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer());
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        var first = service.CreateAssignment(
+        var first = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "learner-a", "{}", "postgres-key", "correlation-a");
+            "learner-a", "{}", "postgres-key", "correlation-a", TestContext.Current.CancellationToken);
 
-        var second = service.CreateAssignment(
+        var second = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "learner-a", "{}", "postgres-key", "correlation-b");
+            "learner-a", "{}", "postgres-key", "correlation-b", TestContext.Current.CancellationToken);
 
         Assert.False(first.Replayed);
         Assert.True(second.Replayed);
@@ -40,16 +40,16 @@ public sealed class PostgresFirstSliceStoreTests
     public async Task Submission_retry_after_assignment_close_replays_without_duplicate_reliability_records()
     {
         using var db = CreateFreshDatabase();
-        var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer());
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        var created = service.CreateAssignment(
+        var created = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "authorized-learner", "{}", "submission-replay-create", "correlation-create");
+            "authorized-learner", "{}", "submission-replay-create", "correlation-create", TestContext.Current.CancellationToken);
 
         var assignment = db.Assignments.Single(x => x.Id == created.Value.Id);
-        var first = service.CreateSubmission(
-            "tenant-a", "authorized-learner", assignment, "authorized-learner",
-            "{\"answer\":\"test\"}", "submission-replay-key", "correlation-submit");
+        var first = await service.CreateSubmissionAsync(
+            "tenant-a", "authorized-learner", assignment.Id, "authorized-learner",
+            "{\"answer\":\"test\"}", "submission-replay-key", "correlation-submit", TestContext.Current.CancellationToken);
 
         Assert.False(first.Replayed);
 
@@ -57,9 +57,9 @@ public sealed class PostgresFirstSliceStoreTests
             "tenant-a", "authorized-teacher", assignment.Id, 1,
             "submission-replay-close", "correlation-close", TestContext.Current.CancellationToken);
 
-        var retry = service.CreateSubmission(
-            "tenant-a", "authorized-learner", assignment, "authorized-learner",
-            "{\"answer\":\"test\"}", "submission-replay-key", "correlation-retry");
+        var retry = await service.CreateSubmissionAsync(
+            "tenant-a", "authorized-learner", assignment.Id, "authorized-learner",
+            "{\"answer\":\"test\"}", "submission-replay-key", "correlation-retry", TestContext.Current.CancellationToken);
 
         Assert.True(retry.Replayed);
         Assert.Equal(first.Value.Id, retry.Value.Id);
@@ -75,11 +75,11 @@ public sealed class PostgresFirstSliceStoreTests
     {
         using var db = CreateFreshDatabase();
         var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Denied);
-        var service = new FirstSliceService(new PostgresFirstSliceStore(db), authorizer);
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        var created = service.CreateAssignment(
+        var created = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "learner-a", "{}", "denied-close-create", "correlation-create");
+            "learner-a", "{}", "denied-close-create", "correlation-create", TestContext.Current.CancellationToken);
 
         var auditCountBefore = db.AuditRecords.Count();
         var outboxCountBefore = db.OutboxMessages.Count();
@@ -104,11 +104,11 @@ public sealed class PostgresFirstSliceStoreTests
     {
         using var db = CreateFreshDatabase();
         var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Allowed);
-        var service = new FirstSliceService(new PostgresFirstSliceStore(db), authorizer);
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        var created = service.CreateAssignment(
+        var created = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "learner-a", "{}", "durable-replay-create", "correlation-create");
+            "learner-a", "{}", "durable-replay-create", "correlation-create", TestContext.Current.CancellationToken);
 
         var first = await service.CloseAssignmentAsync(
             "tenant-a", "authorized-teacher", created.Value.Id, 1,
@@ -135,19 +135,19 @@ public sealed class PostgresFirstSliceStoreTests
     }
 
     [Fact]
-    public void Reusing_idempotency_key_with_different_request_is_rejected()
+    public async Task Reusing_idempotency_key_with_different_request_is_rejected()
     {
         using var db = CreateFreshDatabase();
-        var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer());
+        var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        _ = service.CreateAssignment(
+        _ = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "learner-a", "{}", "conflict-key", "correlation-a");
+            "learner-a", "{}", "conflict-key", "correlation-a", TestContext.Current.CancellationToken);
 
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            service.CreateAssignment(
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
                 "tenant-a", "authorized-teacher", "context-a", "goal-a",
-                "learner-b", "{}", "conflict-key", "correlation-b"));
+                "learner-b", "{}", "conflict-key", "correlation-b", TestContext.Current.CancellationToken));
 
         Assert.Equal("IDEMPOTENCY_CONFLICT", ex.Message);
     }
@@ -156,11 +156,11 @@ public sealed class PostgresFirstSliceStoreTests
     public async Task Stale_expected_version_is_rejected_and_only_one_close_commits()
     {
         using var seedDb = CreateFreshDatabase();
-        var seedService = new FirstSliceService(new PostgresFirstSliceStore(seedDb), new AllowCloseAuthorizer());
+        var seedService = new FirstSliceService(new PostgresFirstSliceStore(seedDb), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        var created = seedService.CreateAssignment(
+        var created = await seedService.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a",
-            "learner-a", "{}", "concurrency-create", "correlation-create");
+            "learner-a", "{}", "concurrency-create", "correlation-create", TestContext.Current.CancellationToken);
 
         var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
         Assert.False(string.IsNullOrWhiteSpace(connection));
@@ -168,8 +168,8 @@ public sealed class PostgresFirstSliceStoreTests
         using var firstDb = CreateContext(connection!);
         using var secondDb = CreateContext(connection!);
 
-        var firstService = new FirstSliceService(new PostgresFirstSliceStore(firstDb), new AllowCloseAuthorizer());
-        var secondService = new FirstSliceService(new PostgresFirstSliceStore(secondDb), new AllowCloseAuthorizer());
+        var firstService = new FirstSliceService(new PostgresFirstSliceStore(firstDb), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
+        var secondService = new FirstSliceService(new PostgresFirstSliceStore(secondDb), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
         _ = await firstService.CloseAssignmentAsync(
             "tenant-a", "authorized-teacher", created.Value.Id, 1,
@@ -192,7 +192,7 @@ public sealed class PostgresFirstSliceStoreTests
     }
 
     [Fact]
-    public void Audit_failure_rolls_back_authoritative_mutation_and_outbox()
+    public async Task Audit_failure_rolls_back_authoritative_mutation_and_outbox()
     {
         using var db = CreateFreshDatabase();
         db.Database.ExecuteSqlRaw(
@@ -200,12 +200,12 @@ public sealed class PostgresFirstSliceStoreTests
 
         try
         {
-            var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer());
+            var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-            Assert.ThrowsAny<Exception>(() =>
-                service.CreateAssignment(
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+                await service.CreateAssignmentAsync(
                     "tenant-a", "authorized-teacher", "context-a", "goal-a",
-                    "learner-a", "{}", "audit-failure-key", "correlation-audit-failure"));
+                    "learner-a", "{}", "audit-failure-key", "correlation-audit-failure", TestContext.Current.CancellationToken));
 
             db.ChangeTracker.Clear();
             Assert.Empty(db.Assignments);
@@ -221,7 +221,7 @@ public sealed class PostgresFirstSliceStoreTests
     }
 
     [Fact]
-    public void Outbox_failure_rolls_back_authoritative_mutation_and_audit()
+    public async Task Outbox_failure_rolls_back_authoritative_mutation_and_audit()
     {
         using var db = CreateFreshDatabase();
         db.Database.ExecuteSqlRaw(
@@ -229,12 +229,12 @@ public sealed class PostgresFirstSliceStoreTests
 
         try
         {
-            var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer());
+            var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
             Assert.ThrowsAny<Exception>(() =>
-                service.CreateAssignment(
+                await service.CreateAssignmentAsync(
                     "tenant-a", "authorized-teacher", "context-a", "goal-a",
-                    "learner-a", "{}", "outbox-failure-key", "correlation-outbox-failure"));
+                    "learner-a", "{}", "outbox-failure-key", "correlation-outbox-failure", TestContext.Current.CancellationToken));
 
             db.ChangeTracker.Clear();
             Assert.Empty(db.Assignments);
