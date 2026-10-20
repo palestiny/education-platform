@@ -166,3 +166,26 @@ This gate can pass only when:
 **Atomic revocation:** PARTIALLY VERIFIED for the implemented command/revocation writer pair and tested lock schedules; not a blanket guarantee for every lifecycle writer.  
 **Still open:** the Infrastructure revocation writer is not registered or exposed as a production lifecycle API in the current `Program.cs`; person/context/goal lifecycle updates and all other authority writers need an explicit compatible lock protocol; bounded deadlock/serialization retry with fresh-transaction reauthorization and cancellation/exhaustion behavior remain unproven. Production credential validation, consent, and physical tenant isolation remain separate open gates.  
 **Next action:** close the lifecycle-writer ownership/exposure gap and define/test bounded transient-failure retry semantics. Do not treat this partial pass as production identity/authentication sign-off or merge authorization.
+
+## 10. Exact-head CI and lifecycle-writer review (2026-10-20)
+
+**Exact-head CI:** GitHub Actions Run #689 completed successfully on the current HEAD `7f1a8889b53db649f7b8274b82318caedbee4dac`. The run is [available here](https://github.com/palestiny/education-platform/actions/runs/39489189217). This confirms the repository workflow passed for this commit; it does not close the lifecycle/retry design gaps below.
+
+**Code review findings on the same branch:**
+
+- `PostgresAuthorityRevocationWriter` implements grant and membership revocation under the shared learning-context row lock.
+- The writer currently updates status/version only. It does not append audit/outbox records, does not accept a trusted actor/correlation context, and is not registered in `Program.cs` or exposed through a production API.
+- No production revocation endpoint should be added merely to make the writer reachable: the current production `IExecutionContextResolver` is fail-closed, and no production credential-validation implementation is established. An endpoint without a trusted actor and an explicit lifecycle authorization policy would create an unsafe authority-changing surface.
+- The integration test suite exercises the revocation writer and lock schedule, but a test of the writer does not establish a production caller boundary or audit completeness for authority lifecycle changes.
+
+**Decision for this stage:** keep production authority revocation fail-closed and not externally exposed. Before registering/exposing a lifecycle operation, define and test a typed lifecycle command contract that requires trusted actor identity, tenant/context scope, an explicit permission to revoke the target authority, correlation ID, audit and outbox writes in the same transaction, idempotency/replay semantics if applicable, and the shared lock order. Do not treat a caller-supplied actor ID as trusted identity.
+
+**Remaining implementation order:**
+
+1. Add a typed lifecycle command/service contract with trusted actor context and explicit target/action validation; preserve the writer's context-lock serialization.
+2. Make revocation audit/outbox atomic with the status/version update; add tests proving denial and rollback leave no partial lifecycle mutation or success records.
+3. Register only the internal service/command boundary after the contract and tests exist; do not add an HTTP route until production authentication and lifecycle authorization are implemented.
+4. Define bounded retries for classified PostgreSQL deadlock/serialization failures. Every retry must start a fresh transaction and repeat authorization; cancellation and retry exhaustion must not return success.
+5. Re-run the full CI suite on the exact new HEAD and retain the PR as draft until the remaining gates are reviewed.
+
+This is a deliberate security boundary, not a claim that the production revocation API is complete.
