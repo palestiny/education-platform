@@ -215,3 +215,17 @@ The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIB
 - Revocation, context/goal disablement, and policy changes must use compatible locks. Unique-key race losers restart the full authorization protocol; never return stored responses directly from the conflict catch.
 - Next implementation sequence: PostgreSQL two-connection RED tests → authority entities/migration/snapshot → typed transaction-aware persistence command → compatible lifecycle revocation locks → exact-head CI.
 - Explicitly not approved: identity provider, onboarding, guardian/consent, physical tenant isolation. Atomic revocation remains not implemented/not proven.
+
+
+## 18. Current verified status — Stage B authorization (2026-10-20)
+
+This section supersedes historical status statements in earlier entries where they describe the current branch as lacking the authority schema or transaction-aware command. Those statements remain historical records, not the current implementation state.
+
+- **Current branch HEAD before this matrix update:** `b3b37d16b526e21f1057e0deb466bdaf057a6b88`.
+- **Exact-head CI for that HEAD:** Run #690 was still in progress at review time; result not yet confirmed. Do not infer success from Run #689.
+- **Run #689:** succeeded on `7f1a8889b53db649f7b8274b82318caedbee4dac`: https://github.com/palestiny/education-platform/actions/runs/39489189217.
+- **Implemented on the branch:** platform-owned Person, learning-context, learning-goal, contextual-membership and action-policy records; A1 transaction-aware protected commands; PostgreSQL context locking; revocation writer; tests for revocation/replay and tested lock schedules.
+- **Still not production-ready:** revocation writer is not registered as an application lifecycle service or exposed via API; it does not yet include trusted actor/correlation metadata or atomic audit/outbox writes. Production execution-context resolution is fail-closed, so do not expose authority-changing routes until trusted identity and explicit lifecycle authorization exist.
+- **Still unproven:** every person/context/goal/membership/grant lifecycle writer follows the shared lock protocol; bounded deadlock/serialization retry with a fresh transaction and full reauthorization; cancellation and retry-exhaustion semantics; production credential verification, consent policy, and physical tenant isolation.
+- **PR #5:** open, Draft, unmerged. Keep it that way while exact-head CI and the security/reliability gates remain open.
+- **Next gate:** define a typed internal lifecycle command requiring trusted actor context, target-specific revoke permission, correlation metadata, idempotency policy, and atomic status + audit + outbox behavior; implement and test it before adding any HTTP route.
