@@ -861,7 +861,7 @@ public sealed class PostgresFirstSliceStoreTests
             x.SubjectId == "reverse-teacher" && x.Action == "assignment.create").Status);
         Assert.Single(verifyDb.IdempotencyRecords.Where(x => x.IdempotencyKey == "reverse-order-create-key"));
         Assert.Single(verifyDb.AuditRecords.Where(x => x.Operation == "assignment.create"));
-        Assert.Single(verifyDb.OutboxMessages.Where(x => x.MessageType == "AssignmentCreated"));
+        Assert.Single(verifyDb.OutboxMessages.Where(x => x.MessageType == "Assignment.AssignmentCreated"));
     }
 
     private static async Task AssertBackendWaitingForLockAsync(
