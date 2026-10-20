@@ -7,18 +7,19 @@
 
 ## 1. Purpose and scope
 
-Specify the smallest test-first increment that proves platform-owned membership/lifecycle authorization is serialized with protected PostgreSQL mutations. These tests are not proof of production identity-provider validation, consent policy, onboarding, or physical tenant isolation.
+Specify the test-first increment that proves platform-owned membership/lifecycle authorization is serialized with protected PostgreSQL mutations. These tests are not proof of production identity-provider validation, consent policy, onboarding, or physical tenant isolation.
 
-Do not create membership tables or production adapters before the initial command contract and test harness are reviewed. The current repository has no authoritative durable membership/policy model, so concurrency scenarios require a deliberately small test-owned authority fixture or schema proposal, not assumptions about a finished production schema.
+The branch now contains durable authority records and a production PostgreSQL adapter. The specification remains a verification checklist; earlier sequencing notes below describe the original RED-first plan and should not be read as a statement that the current branch lacks authority persistence.
 
 ## 2. Current implementation status and remaining proof obligations
 
 The branch now contains platform authority records and an EF migration, a typed `IFirstSliceTransactionalCommand`, a PostgreSQL implementation that locks the tenant-scoped learning context before authority checks and idempotency replay, and a revocation writer that takes the same context lock. Production DI registers the transactional command when PostgreSQL is configured outside Development/Testing.
 
-This is implementation evidence, not a blanket proof of atomic revocation. The required remaining checks include:
-- exact-head CI for the latest test additions;
-- deterministic two-connection barriers proving both lock orderings, rather than relying on task scheduling;
-- every future membership, grant, person, context, and goal lifecycle writer following a documented common lock order;
+This is implementation evidence, not a blanket proof of atomic revocation. The latest checked commit `4ca8a438d248c22fa6db749d538f637c0a830dea` passed GitHub Actions build, EF migration validation, idempotent migration-script generation, and tests (Run #39487766294). PostgreSQL tests now cover both observed context-lock orderings: revocation commits first and the protected command is denied; the protected command owns the context lock first while revocation is observed waiting, then both operations commit in order.
+
+The required remaining checks include:
+- repeat exact-head CI after any further changes;
+- broader proof that every membership, grant, person, context, and goal lifecycle writer follows the documented common lock order;
 - same-key behavior under concurrent conflict/deadlock, with retries restarting in a fresh transaction and reauthorizing;
 - explicit, tested idempotency scope across contexts and tenants.
 
@@ -121,7 +122,7 @@ The RED work must extend the existing PostgreSQL test harness rather than create
 - `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` now maps the platform-owned authority records in addition to first-slice persistence entities; migration `20261020170000_AddPlatformAuthorityRecords` adds the corresponding tables and tenant/context constraints. Keep schema snapshot and migration validation in CI.
 - The integration test project targets .NET 10 and uses xUnit v3 plus Npgsql via the Infrastructure project. Existing CI runs PostgreSQL, build, EF migration validation, idempotent migration-script generation, and tests.
 
-**Sequencing guard:** introduce the provider-neutral typed command contract and a deterministic PostgreSQL authority fixture first; then add concurrency tests using explicit barriers and separate contexts. Only after RED behavior is observable should production authority mappings/migration and the command implementation be added. A compiling mock-only test is not proof of transaction serialization.
+**Sequencing note (historical plan):** the original plan called for the provider-neutral typed command contract and PostgreSQL authority fixture before production mappings. The current branch has progressed beyond that initial stage. Keep any new authorization/lifecycle behavior test-first, and require explicit PostgreSQL lock observation plus separate contexts for concurrency claims; a compiling mock-only test is not proof of transaction serialization.
 
 ## 7. Exit criteria
 
