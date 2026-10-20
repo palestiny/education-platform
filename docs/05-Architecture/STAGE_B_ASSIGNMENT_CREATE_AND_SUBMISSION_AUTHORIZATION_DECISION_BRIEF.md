@@ -90,7 +90,7 @@ Option C (time-bounded positive authorization caching) is **not approved** for t
 
 - Prove whether the membership authority can participate in the protected command's transaction/locking protocol; choose Option A only if the actual ownership boundary supports it, otherwise implement the approved Option B fallback.
 - Define membership eligibility and authoritative sources without guessing a provider or schema.
-- Implement and test the accepted assignment-create and submission authorization contract through Application use cases and the persistence/API boundaries.
+- **Implemented and CI-verified:** provider-neutral Application authorization ports for assignment creation and learner submission; the Application use case now authorizes before calling the store, loads the assignment in trusted tenant scope for submissions, verifies the persisted recipient, and re-checks authorization before protected idempotency replay. The API maps denied decisions to 403 and indeterminate decisions to 503. Development/Testing uses deterministic fixtures only; production adapters remain fail-closed. The accepted contract is therefore wired at the Application boundary, but durable membership/policy integration and production eligibility evidence remain open.
 - Resolve production identity-provider selection, real credential validation, durable Person/contextual membership, and resource-policy adapters through their separate design gates.
 - Keep guardian policy, onboarding, age/consent/privacy, and other out-of-scope choices explicit rather than silently deciding them here.
 
@@ -101,4 +101,4 @@ No identity provider, membership table, account onboarding, guardian policy, or 
 **Owner policy decision gate: PASS — decisions recorded above.**  
 **Implementation / production authorization gate: OPEN.**
 
-These approvals authorize implementation of the specified policy contract and tests, not a provider choice or a claim that production authorization/revocation is already implemented. Passing test-fixture CI does not close the implementation or production-readiness gaps.
+These approvals authorize implementation of the specified policy contract and tests, not a provider choice or a claim that production authorization/revocation is already implemented. The Application boundary and deterministic contract tests are implemented and CI-verified, but fixture CI does not prove durable membership/policy integration or atomic revocation; production readiness remains OPEN.
