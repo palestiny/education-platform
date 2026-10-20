@@ -688,6 +688,79 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Single(db.OutboxMessages);
     }
 
+    [Fact]
+    public async Task Context_lock_serializes_creation_after_concurrent_authority_revocation()
+    {
+        using var seedDb = CreateFreshDatabase();
+        seedDb.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "race-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "race-learner", Status = "ACTIVE" });
+        seedDb.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "race-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        seedDb.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "race-goal", TenantId = "tenant-a", ContextId = "race-context", Status = "ACTIVE"
+        });
+        seedDb.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-context", PersonId = "race-teacher",
+                MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-context", PersonId = "race-learner",
+                MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        seedDb.ActionPolicyGrants.Add(new ActionPolicyGrantAuthorityRecord
+        {
+            TenantId = "tenant-a", ContextId = "race-context", SubjectType = "PERSON",
+            SubjectId = "race-teacher", Action = "assignment.create", Status = "ACTIVE"
+        });
+        await seedDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var commandDb = CreateContext(connection!);
+        using var revokeDb = CreateContext(connection!);
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(commandDb));
+
+        await using var revokeTransaction =
+            await revokeDb.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        _ = await revokeDb.LearningContexts.FromSqlInterpolated(
+                $"SELECT * FROM learning_contexts WHERE \"TenantId\" = {"tenant-a"} AND \"Id\" = {"race-context"} FOR UPDATE")
+            .AsTracking()
+            .SingleAsync(TestContext.Current.CancellationToken);
+        var grant = await revokeDb.ActionPolicyGrants.SingleAsync(
+            x => x.TenantId == "tenant-a" && x.ContextId == "race-context" &&
+                 x.SubjectId == "race-teacher" && x.Action == "assignment.create",
+            TestContext.Current.CancellationToken);
+        grant.Status = "REVOKED";
+        grant.Version++;
+        await revokeDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        // Start the protected command while the independent connection still owns the
+        // context lock. After revocation commits, the command must observe the revoked grant.
+        var createTask = service.CreateAssignmentAsync(
+            "tenant-a", "race-teacher", "race-context", "race-goal", "race-learner",
+            "{\"work\":\"race\"}", "race-revocation-key", "race-correlation",
+            TestContext.Current.CancellationToken).AsTask();
+        await revokeTransaction.CommitAsync(TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await createTask);
+        Assert.Equal("FORBIDDEN", error.Message);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Empty(verifyDb.Assignments);
+        Assert.Empty(verifyDb.IdempotencyRecords);
+        Assert.Empty(verifyDb.AuditRecords);
+        Assert.Empty(verifyDb.OutboxMessages);
+    }
+
     private static EducationPlatformDbContext CreateContext(string connection)
     {
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
