@@ -1148,13 +1148,13 @@ public sealed class PostgresFirstSliceStoreTests
 
         var first = await service.CreateAssignmentAsync(
             "tenant-a", "scope-teacher", "scope-context-a", "scope-goal-a",
-            "scope-learner-a", "{\\"work\\":\\"context-a\\"}", "shared-key",
+            "scope-learner-a", "{\"work\":\"context-a\"}", "shared-key",
             "scope-correlation-a", TestContext.Current.CancellationToken);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateAssignmentAsync(
                 "tenant-a", "scope-teacher", "scope-context-b", "scope-goal-b",
-                "scope-learner-b", "{\\"work\\":\\"context-b\\"}", "shared-key",
+                "scope-learner-b", "{\"work\":\"context-b\"}", "shared-key",
                 "scope-correlation-b", TestContext.Current.CancellationToken));
 
         Assert.Equal("IDEMPOTENCY_CONFLICT", error.Message);
@@ -1208,7 +1208,7 @@ public sealed class PostgresFirstSliceStoreTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateAssignmentAsync(
                 "tenant-a", "role-teacher", "role-context", "role-goal",
-                "role-learner", "{\\"work\\":\\"role-test\\"}", "role-test-key",
+                "role-learner", "{\"work\":\"role-test\"}", "role-test-key",
                 "role-test-correlation", TestContext.Current.CancellationToken));
 
         Assert.Equal("FORBIDDEN", error.Message);
