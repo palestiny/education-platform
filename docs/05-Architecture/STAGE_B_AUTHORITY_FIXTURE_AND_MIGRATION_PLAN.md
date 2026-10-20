@@ -57,3 +57,12 @@ Do not infer identity-provider selection, credential-validation protocol, guardi
 - CI confirms restore, build, EF migration validation, idempotent migration-script generation, and tests as reported by the repository workflow. It does not add authority tables or change runtime behavior.
 - **Next implementation checkpoint remains:** add the PostgreSQL authority fixture and RED concurrency/replay tests, then implement the EF model and migration using the repository's actual .NET/EF tooling. Do not manually claim migration correctness from documentation-only CI.
 - PR #5 remains open, draft, and unmerged.
+
+## 7. Exact-head verification checkpoint — 2026-10-20 (revocation replay coverage)
+
+- Added PostgreSQL integration test `Revoked_creation_authorization_cannot_replay_durable_assignment_response`: after a successful assignment creation, the mutable authorizer denies the same request/key; the retry must return `FORBIDDEN` and counts for assignments, idempotency, audit, and outbox remain unchanged.
+- Added PostgreSQL integration test `Revoked_submission_authorization_cannot_replay_durable_submission_response`: after a successful submission, the authorizer denies the same request/key; the retry must return `FORBIDDEN` and counts for submissions, idempotency, audit, and outbox remain unchanged.
+- Commit: `4858e7b50c70c928db5ff88a46aeec8288854623`.
+- CI run [39455136254](https://github.com/palestiny/education-platform/actions/runs/39455136254) completed successfully. This includes restore/build, EF migration validation, idempotent migration script generation, and PostgreSQL integration tests.
+- These tests prove the current Application service invokes its authorizer before reaching the persistence replay path for assignment creation and submission. They use a mutable test authorizer; they do **not** prove that authoritative membership/policy state is locked in the same database transaction, nor do they prove revocation-versus-command serialization.
+- Next implementation remains the PostgreSQL authority entities and reviewed EF-generated migration, followed by the transaction-aware command adapter and true two-connection revoke-versus-command tests. Atomic revocation remains **NOT IMPLEMENTED / NOT PROVEN**.
