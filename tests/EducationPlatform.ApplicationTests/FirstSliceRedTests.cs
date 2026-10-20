@@ -442,10 +442,25 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
         Assert.Equal(HttpStatusCode.OK, allowedResponse.StatusCode);
     }
 
+
+    [Fact]
+    public async Task ASSIGNMENT_CREATE_POLICY_001_Denial_does_not_consume_idempotency_key()
+    {
+        const string key = "assignment-create-policy-denial";
+        var denied = await PostAssignment(
+            "authorized-teacher", key, goalId: "goal-from-another-context");
+        Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+
+        var allowed = await PostAssignment(
+            "authorized-teacher", key, goalId: "goal-a");
+        Assert.Equal(HttpStatusCode.Created, allowed.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> PostAssignment(
         string? actor = null,
         string? idempotencyKey = null,
-        string learnerId = "learner-a")
+        string learnerId = "learner-a",
+        string goalId = "goal-a")
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
@@ -459,7 +474,7 @@ public sealed class FirstSliceRedTests : IClassFixture<WebApplicationFactory<glo
 
         request.Content = JsonContent.Create(new
         {
-            goalId = "goal-a",
+            goalId,
             learnerId,
             work = new { }
         });
