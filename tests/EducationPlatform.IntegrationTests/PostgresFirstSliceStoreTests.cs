@@ -411,13 +411,13 @@ public sealed class PostgresFirstSliceStoreTests
 
         var results = await Task.WhenAll(firstTask, secondTask);
 
-        Assert.Single(results.Where(x => !x.Replayed));
-        Assert.Single(results.Where(x => x.Replayed));
+        Assert.Single(results, x => !x.Replayed);
+        Assert.Single(results, x => x.Replayed);
         Assert.Equal(results[0].Value.Id, results[1].Value.Id);
 
         using var verifyDb = CreateContext(connection!);
         Assert.Single(verifyDb.Assignments);
-        Assert.Single(verifyDb.IdempotencyRecords.Where(x => x.IdempotencyKey == "concurrent-same-key"));
+        Assert.Single(verifyDb.IdempotencyRecords, x => x.IdempotencyKey == "concurrent-same-key");
         Assert.Single(verifyDb.AuditRecords);
         Assert.Single(verifyDb.OutboxMessages);
     }
@@ -448,11 +448,11 @@ public sealed class PostgresFirstSliceStoreTests
         var firstTask = firstService.CloseAssignmentAsync(
             "tenant-a", "authorized-teacher", created.Value.Id, 1,
             "concurrent-close-same-key", "correlation-close-first",
-            TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken).AsTask();
         var secondTask = secondService.CloseAssignmentAsync(
             "tenant-a", "authorized-teacher", created.Value.Id, 1,
             "concurrent-close-same-key", "correlation-close-second",
-            TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken).AsTask();
 
         var results = await Task.WhenAll(firstTask, secondTask);
 
