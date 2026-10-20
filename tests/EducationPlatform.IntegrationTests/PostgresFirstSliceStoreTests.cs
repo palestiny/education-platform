@@ -945,8 +945,8 @@ public sealed class PostgresFirstSliceStoreTests
         await blockerTransaction.CommitAsync(TestContext.Current.CancellationToken);
         var results = await Task.WhenAll(firstTask, secondTask);
 
-        Assert.Single(results.Where(x => !x.Replayed));
-        Assert.Single(results.Where(x => x.Replayed));
+        Assert.Single(results, x => !x.Replayed);
+        Assert.Single(results, x => x.Replayed);
         Assert.Single(results.Select(x => x.Value.Id).Distinct());
 
         using var verifyDb = CreateContext(connection!);
