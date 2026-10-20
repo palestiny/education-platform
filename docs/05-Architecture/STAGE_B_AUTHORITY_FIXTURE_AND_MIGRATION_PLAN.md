@@ -8,7 +8,7 @@
 
 The current EF Core context maps only assignments, submissions, idempotency records, audit records, and outbox messages. Assignment context, goal, and learner identifiers are bounded strings, not foreign keys to authoritative rows. The typed Application command contract exists at `IFirstSliceTransactionalCommand.cs`, but `FirstSliceService` is not wired to it and there is no transactional implementation yet.
 
-The latest contract commit passed CI run 632: build, EF migration validation, idempotent migration-script generation, and tests. This verifies compilation/current tests, not transactional revocation behavior.
+The latest exact branch head at the time of this checkpoint is `07dfcea1f4f76205545374d1f74b22a5053f4b0b`. CI run [39450635293](https://github.com/palestiny/education-platform/actions/runs/39450635293), workflow run #634, completed successfully. This verifies the current branch baseline and documentation, not transactional revocation behavior.
 
 ## 2. Minimum authority records for the approved first slice
 
@@ -50,12 +50,10 @@ This plan is not itself proof of atomic revocation. That claim remains **NOT IMP
 
 Do not infer identity-provider selection, credential-validation protocol, guardian/consent rules, onboarding, group assignment behavior, or physical tenant isolation from this plan.
 
-
 ## 6. Exact-head verification checkpoint — 2026-10-20
 
-- **Branch head:** `82d20616b2a68c46e4d0c5e211cccb6012c2b079`
-- **CI run:** [run 39450253493](https://github.com/palestiny/education-platform/actions/runs/39450253493), workflow run #633 — success.
-- Verified steps on that exact head: restore, build, EF migration validation, idempotent migration-script generation, and test suite.
-- This commit only adds/updates design documentation; it does not add authority tables or change runtime behavior.
-- **Next implementation checkpoint remains unchanged:** add authority fixture and RED concurrency/replay tests, then implement the EF model and generated migration using the repository's actual .NET/EF tooling. Do not manually claim migration correctness from documentation-only CI.
+- Prior docs-only checkpoint `82d20616b2a68c46e4d0c5e211cccb6012c2b079` passed CI run #633.
+- The subsequent checkpoint commit `07dfcea1f4f76205545374d1f74b22a5053f4b0b` passed CI run #634.
+- CI confirms restore, build, EF migration validation, idempotent migration-script generation, and tests as reported by the repository workflow. It does not add authority tables or change runtime behavior.
+- **Next implementation checkpoint remains:** add the PostgreSQL authority fixture and RED concurrency/replay tests, then implement the EF model and migration using the repository's actual .NET/EF tooling. Do not manually claim migration correctness from documentation-only CI.
 - PR #5 remains open, draft, and unmerged.
