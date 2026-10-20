@@ -231,7 +231,7 @@ public sealed class PostgresFirstSliceStoreTests
         {
             var service = new FirstSliceService(new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-            Assert.ThrowsAny<Exception>(() =>
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
                 await service.CreateAssignmentAsync(
                     "tenant-a", "authorized-teacher", "context-a", "goal-a",
                     "learner-a", "{}", "outbox-failure-key", "correlation-outbox-failure", TestContext.Current.CancellationToken));
@@ -261,6 +261,29 @@ public sealed class PostgresFirstSliceStoreTests
         {
             CallCount++;
             return ValueTask.FromResult(Decision);
+        }
+    }
+
+
+    private sealed class AllowCreationAuthorizer : IAssignmentCreationAuthorizer
+    {
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCreationAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(AuthorizationDecision.Allowed);
+        }
+    }
+
+    private sealed class AllowSubmissionAuthorizer : ILearnerSubmissionAuthorizer
+    {
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            LearnerSubmissionAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(AuthorizationDecision.Allowed);
         }
     }
 
