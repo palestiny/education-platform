@@ -76,27 +76,30 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         string requestFingerprint, Func<(T Value, string Status)> mutation,
         string correlationId)
     {
-        if (!string.IsNullOrWhiteSpace(idempotencyKey))
-        {
-            var existing = db.IdempotencyRecords.SingleOrDefault(x =>
-                x.TenantId == tenantId &&
-                x.ActorId == actorId &&
-                x.OperationScope == operation &&
-                x.IdempotencyKey == idempotencyKey);
-
-            if (existing is not null)
-            {
-                if (existing.RequestFingerprint != requestFingerprint)
-                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
-
-                return new FirstSliceMutation<T>(
-                    JsonSerializer.Deserialize<T>(existing.ResponseJson)!,
-                    true);
-            }
-        }
-
         using var transaction = db.Database.BeginTransaction();
         try
+        {
+            // Resolve a replay only after entering the transaction. Final authorization
+            // must still be enforced by the transactional command boundary.
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var existing = db.IdempotencyRecords.AsNoTracking().SingleOrDefault(x =>
+                    x.TenantId == tenantId &&
+                    x.ActorId == actorId &&
+                    x.OperationScope == operation &&
+                    x.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                {
+                    if (existing.RequestFingerprint != requestFingerprint)
+                        throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                    transaction.Commit();
+                    return new FirstSliceMutation<T>(
+                        JsonSerializer.Deserialize<T>(existing.ResponseJson)!,
+                        true);
+                }
+            }
         {
             var (value, status) = mutation();
 
@@ -149,7 +152,9 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         catch (DbUpdateException ex) when (IsIdempotencyUniqueViolation(ex) && !string.IsNullOrWhiteSpace(idempotencyKey))
         {
             transaction.Rollback();
-            var existing = db.IdempotencyRecords.Single(x =>
+            db.ChangeTracker.Clear();
+            using var replayTransaction = db.Database.BeginTransaction();
+            var existing = db.IdempotencyRecords.AsNoTracking().Single(x =>
                 x.TenantId == tenantId &&
                 x.ActorId == actorId &&
                 x.OperationScope == operation &&
@@ -158,6 +163,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             if (existing.RequestFingerprint != requestFingerprint)
                 throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
 
+            replayTransaction.Commit();
             return new FirstSliceMutation<T>(
                 JsonSerializer.Deserialize<T>(existing.ResponseJson)!,
                 true);
@@ -168,25 +174,28 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         string tenantId, string actorId, string assignmentId, int expectedVersion,
         string? idempotencyKey, string requestFingerprint, string correlationId)
     {
-        if (!string.IsNullOrWhiteSpace(idempotencyKey))
-        {
-            var existing = db.IdempotencyRecords.SingleOrDefault(x =>
-                x.TenantId == tenantId &&
-                x.ActorId == actorId &&
-                x.OperationScope == "assignment.close" &&
-                x.IdempotencyKey == idempotencyKey);
-
-            if (existing is not null)
-            {
-                if (existing.RequestFingerprint != requestFingerprint)
-                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
-
-                return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
-            }
-        }
-
         using var transaction = db.Database.BeginTransaction();
         try
+        {
+            // Resolve a replay inside the transaction, after the current use-case
+            // authorization pre-check. The transactional command must enforce final authorization.
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var existing = db.IdempotencyRecords.AsNoTracking().SingleOrDefault(x =>
+                    x.TenantId == tenantId &&
+                    x.ActorId == actorId &&
+                    x.OperationScope == "assignment.close" &&
+                    x.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                {
+                    if (existing.RequestFingerprint != requestFingerprint)
+                        throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                    transaction.Commit();
+                    return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
+                }
+            }
         {
             var assignment = db.Assignments.SingleOrDefault(x =>
                 x.Id == assignmentId && x.TenantId == tenantId);
@@ -253,7 +262,9 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         catch (DbUpdateException ex) when (IsIdempotencyUniqueViolation(ex) && !string.IsNullOrWhiteSpace(idempotencyKey))
         {
             transaction.Rollback();
-            var existing = db.IdempotencyRecords.Single(x =>
+            db.ChangeTracker.Clear();
+            using var replayTransaction = db.Database.BeginTransaction();
+            var existing = db.IdempotencyRecords.AsNoTracking().Single(x =>
                 x.TenantId == tenantId &&
                 x.ActorId == actorId &&
                 x.OperationScope == "assignment.close" &&
@@ -262,6 +273,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             if (existing.RequestFingerprint != requestFingerprint)
                 throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
 
+            replayTransaction.Commit();
             return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
         }
     }
