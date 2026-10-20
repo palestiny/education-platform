@@ -188,3 +188,13 @@ The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIB
 - **Not yet implemented/proven:** durable membership/policy schema, transaction-aware command code, membership-revocation serialization, replay-after-revocation protection inside the transaction, and the associated PostgreSQL concurrency tests.
 - **Next gate:** implement/verify the compiling test contract and then run the required RED → GREEN sequence without merging a knowingly red PR. No schema/provider/onboarding details are implicitly approved.
 - CI must be checked against the exact current PR head; earlier successful code CI does not verify later documentation commits.
+
+
+## 16. Authority schema boundary — blocking design decision (2026-10-20)
+
+- Added `STAGE_B_AUTHORITY_SCHEMA_BOUNDARY_DECISION_BRIEF.md` after inspecting the actual EF model and initial migration.
+- The current model persists assignments, submissions, idempotency, audit, and outbox; `ContextId`, `GoalId`, and `LearnerId` are bounded strings, not foreign keys to authoritative context/goal/membership records.
+- Locking a future membership row alone cannot prove that the learner and goal remain eligible in the same context. A1 needs a named source of truth for every fact used in the final authorization decision.
+- Owner decision required: (A) platform persists contexts and goals in the same PostgreSQL authority, (B) an existing module supplies transaction-aware access over the same transaction, or (C) external/remote source, which cannot satisfy the current atomic guarantee without revising scope or using the approved fresh-check fallback.
+- No authority schema was created and no production adapter was added. Atomic revocation remains not implemented/not proven.
+- CI run #626 passed for commit `92ecdc569218aa57dd82496f81ad286672769086`; the authority-schema brief and later documentation updates require exact-head CI verification.
