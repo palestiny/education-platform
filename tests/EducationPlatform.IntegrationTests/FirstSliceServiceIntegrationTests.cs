@@ -13,10 +13,10 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
         var first = await service.CreateAssignmentAsync(
-            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a");
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a", TestContext.Current.CancellationToken);
 
         var second = await service.CreateAssignmentAsync(
-            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a");
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a", TestContext.Current.CancellationToken);
 
         Assert.Equal(first.Value.Id, second.Value.Id);
         Assert.True(second.Replayed);
@@ -40,7 +40,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-            "{}", "close-denied-create", "correlation-a")).Value;
+            "{}", "close-denied-create", "correlation-a", TestContext.Current.CancellationToken)).Value;
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CloseAssignmentAsync(
@@ -60,7 +60,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-            "{}", "close-replay-create", "correlation-a")).Value;
+            "{}", "close-replay-create", "correlation-a", TestContext.Current.CancellationToken)).Value;
 
         await service.CloseAssignmentAsync(
             "tenant-a", "authorized-teacher", created.Id, 1, "close-replay-key",
@@ -84,7 +84,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-            "{}", "close-indeterminate-create", "correlation-a")).Value;
+            "{}", "close-indeterminate-create", "correlation-a", TestContext.Current.CancellationToken)).Value;
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CloseAssignmentAsync(
@@ -104,7 +104,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-            "{}", "close-tenant-create", "correlation-a")).Value;
+            "{}", "close-tenant-create", "correlation-a", TestContext.Current.CancellationToken)).Value;
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CloseAssignmentAsync(
@@ -125,7 +125,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "creator", "context-a", "goal-a", "learner-a",
-            "{}", "close-context-create", "correlation-create")).Value;
+            "{}", "close-context-create", "correlation-create", TestContext.Current.CancellationToken)).Value;
 
         await service.CloseAssignmentAsync(
             "tenant-a", "closing-teacher", created.Id, 1, "close-context-key",
@@ -148,7 +148,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "creator", "context-a", "goal-a", "learner-a",
-            "{}", "close-cancel-create", "correlation-create")).Value;
+            "{}", "close-cancel-create", "correlation-create", TestContext.Current.CancellationToken)).Value;
         cancellation.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
@@ -170,7 +170,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
         var created = (await service.CreateAssignmentAsync(
             "tenant-a", "creator", "context-a", "goal-a", "learner-a",
-            "{}", "close-cancel-boundary-create", "correlation-create")).Value;
+            "{}", "close-cancel-boundary-create", "correlation-create", TestContext.Current.CancellationToken)).Value;
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await service.CloseAssignmentAsync(
@@ -240,13 +240,13 @@ public sealed class FirstSliceServiceIntegrationTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateAssignmentAsync(
                 "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-                "{}", "create-denied-key", "correlation-denied"));
+                "{}", "create-denied-key", "correlation-denied", TestContext.Current.CancellationToken));
 
         Assert.Equal("FORBIDDEN", error.Message);
         authorizer.Decision = AuthorizationDecision.Allowed;
         var allowed = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-            "{}", "create-denied-key", "correlation-allowed");
+            "{}", "create-denied-key", "correlation-allowed", TestContext.Current.CancellationToken);
         Assert.False(allowed.Replayed);
         Assert.Equal(2, authorizer.CallCount);
     }
@@ -263,13 +263,13 @@ public sealed class FirstSliceServiceIntegrationTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateAssignmentAsync(
                 "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-                "{}", "create-indeterminate-key", "correlation-indeterminate"));
+                "{}", "create-indeterminate-key", "correlation-indeterminate", TestContext.Current.CancellationToken));
 
         Assert.Equal("AUTHORIZATION_UNAVAILABLE", error.Message);
         authorizer.Decision = AuthorizationDecision.Allowed;
         var allowed = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
-            "{}", "create-indeterminate-key", "correlation-allowed");
+            "{}", "create-indeterminate-key", "correlation-allowed", TestContext.Current.CancellationToken);
         Assert.False(allowed.Replayed);
     }
 
@@ -285,13 +285,13 @@ public sealed class FirstSliceServiceIntegrationTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateSubmissionAsync(
                 "tenant-a", "authorized-learner", "assignment-a", "authorized-learner",
-                "{\"answer\":\"test\"}", "submit-denied-key", "correlation-denied"));
+                "{\"answer\":\"test\"}", "submit-denied-key", "correlation-denied", TestContext.Current.CancellationToken));
 
         Assert.Equal("FORBIDDEN", error.Message);
         authorizer.Decision = AuthorizationDecision.Allowed;
         var allowed = await service.CreateSubmissionAsync(
             "tenant-a", "authorized-learner", "assignment-a", "authorized-learner",
-            "{\"answer\":\"test\"}", "submit-denied-key", "correlation-allowed");
+            "{\"answer\":\"test\"}", "submit-denied-key", "correlation-allowed", TestContext.Current.CancellationToken);
         Assert.False(allowed.Replayed);
         Assert.Equal(2, authorizer.CallCount);
     }
@@ -308,7 +308,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateSubmissionAsync(
                 "tenant-a", "another-learner", "assignment-a", "another-learner",
-                "{\"answer\":\"test\"}", "submit-wrong-recipient", "correlation-wrong-recipient"));
+                "{\"answer\":\"test\"}", "submit-wrong-recipient", "correlation-wrong-recipient", TestContext.Current.CancellationToken));
 
         Assert.Equal("RESOURCE_NOT_FOUND", error.Message);
         Assert.Equal(0, authorizer.CallCount);
@@ -325,7 +325,7 @@ public sealed class FirstSliceServiceIntegrationTests
 
         await service.CreateSubmissionAsync(
             "tenant-a", "authorized-learner", "assignment-a", "authorized-learner",
-            "{\"answer\":\"test\"}", "submit-context-key", "correlation-context");
+            "{\"answer\":\"test\"}", "submit-context-key", "correlation-context", TestContext.Current.CancellationToken);
 
         Assert.NotNull(authorizer.Request);
         Assert.Equal("authorized-learner", authorizer.Request.PrincipalId);
