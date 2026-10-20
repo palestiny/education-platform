@@ -1165,4 +1165,57 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Equal(1, db.OutboxMessages.Count(x => x.MessageType == "Assignment.AssignmentCreated"));
     }
 
+    [Fact]
+    public async Task Transactional_creation_rejects_active_membership_of_ineligible_type()
+    {
+        using var db = CreateFreshDatabase();
+        db.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "role-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "role-learner", Status = "ACTIVE" });
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "role-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "role-goal", TenantId = "tenant-a", ContextId = "role-context", Status = "ACTIVE"
+        });
+        // Both memberships are active, but their types are deliberately reversed.
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "role-context",
+                PersonId = "role-teacher", MembershipType = "LEARNER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "role-context",
+                PersonId = "role-learner", MembershipType = "TEACHER", Status = "ACTIVE"
+            });
+        db.ActionPolicyGrants.Add(new ActionPolicyGrantAuthorityRecord
+        {
+            TenantId = "tenant-a", ContextId = "role-context",
+            SubjectType = "PERSON", SubjectId = "role-teacher",
+            Action = "assignment.create", Status = "ACTIVE"
+        });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "role-teacher", "role-context", "role-goal",
+                "role-learner", "{\\"work\\":\\"role-test\\"}", "role-test-key",
+                "role-test-correlation", TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Empty(db.Assignments);
+        Assert.Empty(db.IdempotencyRecords);
+        Assert.Empty(db.AuditRecords);
+        Assert.Empty(db.OutboxMessages);
+    }
+
 }
