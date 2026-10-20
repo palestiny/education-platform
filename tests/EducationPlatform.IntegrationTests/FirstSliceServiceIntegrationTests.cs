@@ -12,7 +12,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var store = new InMemoryFirstSliceStore();
         var service = new FirstSliceService(store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed), new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
 
-        var first = (await service.CreateAssignmentAsync(
+        var first = await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a", "{}", "integration-key", "correlation-a");
 
         var second = await service.CreateAssignmentAsync(
@@ -38,7 +38,7 @@ public sealed class FirstSliceServiceIntegrationTests
         var store = new InMemoryFirstSliceStore();
         var authorizer = new MutableCloseAuthorizer(AuthorizationDecision.Denied);
         var service = new FirstSliceService(store, authorizer, new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
-        var created = await service.CreateAssignmentAsync(
+        var created = (await service.CreateAssignmentAsync(
             "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
             "{}", "close-denied-create", "correlation-a")).Value;
 
