@@ -668,11 +668,12 @@ public sealed class PostgresFirstSliceStoreTests
             "authority-correlation-first", TestContext.Current.CancellationToken);
         Assert.False(first.Replayed);
 
-        var grant = await db.ActionPolicyGrants.SingleAsync(
-            x => x.Action == "assignment.create" && x.SubjectId == "authority-teacher",
-            TestContext.Current.CancellationToken);
-        db.ActionPolicyGrants.Remove(grant);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var revokeDb = CreateContext(connection!);
+        await new PostgresAuthorityRevocationWriter(revokeDb).RevokeGrantAsync(
+            "tenant-a", "authority-context", "PERSON", "authority-teacher",
+            "assignment.create", TestContext.Current.CancellationToken);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.CreateAssignmentAsync(
