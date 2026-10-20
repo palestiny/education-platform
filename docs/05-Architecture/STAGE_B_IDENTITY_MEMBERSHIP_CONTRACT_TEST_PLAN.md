@@ -1,7 +1,7 @@
 # Stage B — Identity & Membership Contract Test Plan
 
 **Project:** Education Platform  
-**Status:** ASSIGNMENT-CLOSE APPLICATION CONTRACT IMPLEMENTED; ASSIGNMENT-CREATE/SUBMISSION POLICY ACCEPTED ON 2026-10-20; APPLICATION CONTRACT IMPLEMENTATION STILL OPEN  
+**Status:** ASSIGNMENT-CLOSE AND CREATE/SUBMISSION APPLICATION AUTHORIZATION PORTS IMPLEMENTED; PRODUCTION MEMBERSHIP/POLICY ADAPTERS STILL OPEN  
 **Date:** 2026-10-09  
 **Inputs:** `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`, `PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md`
 
@@ -187,4 +187,4 @@ Option A is preferred only if the selected authoritative membership source can p
 
 ### Current implementation status
 
-The existing first-slice API performs coarse endpoint authority checks and the Application service currently enforces the contextual policy port for assignment-close only. The approved assignment-create and learner-submission policy contracts above are **not yet implemented in the Application use cases**. Durable membership/policy adapters and production identity validation remain separate open gates. Do not invent a provider, membership schema, eligibility source, or transactional boundary to make these tests pass.
+The Application service now enforces separate provider-neutral authorization ports for assignment creation, learner submission, and assignment close. Create and submit authorization runs before the store call (therefore before mutation/idempotency replay); submission loads the assignment in trusted tenant scope and verifies the persisted recipient. API responses map Denied to 403 and Indeterminate to 503. Development/Testing uses deterministic fixtures; production create/submit/close authorization adapters remain fail-closed until real authoritative membership and resource-policy adapters are designed and implemented. The new create/submit contract cases include denied and indeterminate no-mutation behavior, idempotency-key non-consumption on denial, recipient mismatch, and trusted persisted context. Durable membership/policy adapters, eligibility predicates, provider validation, and the revocation transaction/fallback decision remain open. Do not invent a provider, membership schema, eligibility source, or transactional boundary to make these tests pass.
