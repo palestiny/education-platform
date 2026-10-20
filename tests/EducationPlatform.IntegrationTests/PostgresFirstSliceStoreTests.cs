@@ -770,6 +770,100 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Empty(verifyDb.OutboxMessages);
     }
 
+    [Fact]
+    public async Task Transactional_command_lock_wins_before_grant_revocation()
+    {
+        using var seedDb = CreateFreshDatabase();
+        seedDb.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "reverse-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "reverse-learner", Status = "ACTIVE" });
+        seedDb.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "reverse-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        seedDb.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "reverse-goal", TenantId = "tenant-a",
+            ContextId = "reverse-context", Status = "ACTIVE"
+        });
+        seedDb.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "reverse-context",
+                PersonId = "reverse-teacher", MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "reverse-context",
+                PersonId = "reverse-learner", MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        seedDb.ActionPolicyGrants.Add(new ActionPolicyGrantAuthorityRecord
+        {
+            TenantId = "tenant-a", ContextId = "reverse-context", SubjectType = "PERSON",
+            SubjectId = "reverse-teacher", Action = "assignment.create", Status = "ACTIVE"
+        });
+        await seedDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var commandDb = CreateContext(connection!);
+        using var revokeDb = CreateContext(connection!);
+        using var blockerDb = CreateContext(connection!);
+        using var observerDb = CreateContext(connection!);
+        await commandDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        await revokeDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        var commandBackendPid = await commandDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
+        var revokeBackendPid = await revokeDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(commandDb));
+        var revocationWriter = new PostgresAuthorityRevocationWriter(revokeDb);
+
+        // Hold the target table lock so the real protected command pauses after it has
+        // acquired the context lock and passed its transaction-local authority checks.
+        await using var blockerTransaction =
+            await blockerDb.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        await blockerDb.Database.ExecuteSqlRawAsync(
+            "LOCK TABLE assignments IN ACCESS EXCLUSIVE MODE",
+            TestContext.Current.CancellationToken);
+
+        var createTask = service.CreateAssignmentAsync(
+            "tenant-a", "reverse-teacher", "reverse-context", "reverse-goal", "reverse-learner",
+            "{\"work\":\"reverse-order\"}", "reverse-order-create-key", "reverse-order-correlation",
+            TestContext.Current.CancellationToken).AsTask();
+        await AssertBackendWaitingForLockAsync(
+            observerDb, commandBackendPid, TestContext.Current.CancellationToken);
+
+        // Revocation now attempts the same context lock. Observing its actual PostgreSQL
+        // lock wait proves the command owns the lock first; no timing-only sleep is used.
+        var revokeTask = revocationWriter.RevokeGrantAsync(
+            "tenant-a", "reverse-context", "PERSON", "reverse-teacher", "assignment.create",
+            TestContext.Current.CancellationToken);
+        await AssertBackendWaitingForLockAsync(
+            observerDb, revokeBackendPid, TestContext.Current.CancellationToken);
+
+        await blockerTransaction.CommitAsync(TestContext.Current.CancellationToken);
+        var created = await createTask;
+        await revokeTask;
+
+        Assert.False(created.Replayed);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Single(verifyDb.Assignments.Where(x =>
+            x.TenantId == "tenant-a" && x.ContextId == "reverse-context"));
+        Assert.Equal("REVOKED", verifyDb.ActionPolicyGrants.Single(x =>
+            x.TenantId == "tenant-a" && x.ContextId == "reverse-context" &&
+            x.SubjectId == "reverse-teacher" && x.Action == "assignment.create").Status);
+        Assert.Single(verifyDb.IdempotencyRecords.Where(x => x.IdempotencyKey == "reverse-order-create-key"));
+        Assert.Single(verifyDb.AuditRecords.Where(x => x.Operation == "assignment.create"));
+        Assert.Single(verifyDb.OutboxMessages.Where(x => x.MessageType == "AssignmentCreated"));
+    }
+
     private static async Task AssertBackendWaitingForLockAsync(
         EducationPlatformDbContext observerDb, int backendPid, CancellationToken cancellationToken)
     {
