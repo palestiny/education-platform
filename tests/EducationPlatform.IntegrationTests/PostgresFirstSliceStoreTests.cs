@@ -249,6 +249,62 @@ public sealed class PostgresFirstSliceStoreTests
         }
     }
 
+
+    [Fact]
+    public async Task Assignment_creation_authorization_denial_writes_no_durable_records()
+    {
+        using var db = CreateFreshDatabase();
+        var creationAuthorizer = new MutableCreationAuthorizer(AuthorizationDecision.Denied);
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            creationAuthorizer, new AllowSubmissionAuthorizer());
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "authorized-teacher", "context-a", "goal-a",
+                "learner-a", "{}", "postgres-create-denied", "correlation-create-denied",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Empty(db.Assignments);
+        Assert.Empty(db.IdempotencyRecords);
+        Assert.Empty(db.AuditRecords);
+        Assert.Empty(db.OutboxMessages);
+        Assert.Equal(1, creationAuthorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Submission_authorization_denial_writes_no_durable_records()
+    {
+        using var db = CreateFreshDatabase();
+        var submissionAuthorizer = new MutableSubmissionAuthorizer(AuthorizationDecision.Denied);
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), submissionAuthorizer);
+
+        var created = await service.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "authorized-learner", "{}", "postgres-submit-denied-create", "correlation-create",
+            TestContext.Current.CancellationToken);
+
+        var auditCountBefore = db.AuditRecords.Count();
+        var outboxCountBefore = db.OutboxMessages.Count();
+        var idempotencyCountBefore = db.IdempotencyRecords.Count();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateSubmissionAsync(
+                "tenant-a", "authorized-learner", created.Value.Id, "authorized-learner",
+                "{\"answer\":\"test\"}", "postgres-submit-denied", "correlation-submit-denied",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Empty(db.Submissions);
+        Assert.Equal(auditCountBefore, db.AuditRecords.Count());
+        Assert.Equal(outboxCountBefore, db.OutboxMessages.Count());
+        Assert.Equal(idempotencyCountBefore, db.IdempotencyRecords.Count());
+        Assert.Equal(1, submissionAuthorizer.CallCount);
+    }
+
     private sealed class MutableCloseAuthorizer(AuthorizationDecision initialDecision)
         : IAssignmentCloseAuthorizer
     {
@@ -264,6 +320,39 @@ public sealed class PostgresFirstSliceStoreTests
         }
     }
 
+
+
+    private sealed class MutableCreationAuthorizer(AuthorizationDecision initialDecision)
+        : IAssignmentCreationAuthorizer
+    {
+        public AuthorizationDecision Decision { get; set; } = initialDecision;
+        public int CallCount { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCreationAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            CallCount++;
+            return ValueTask.FromResult(Decision);
+        }
+    }
+
+    private sealed class MutableSubmissionAuthorizer(AuthorizationDecision initialDecision)
+        : ILearnerSubmissionAuthorizer
+    {
+        public AuthorizationDecision Decision { get; set; } = initialDecision;
+        public int CallCount { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            LearnerSubmissionAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            CallCount++;
+            return ValueTask.FromResult(Decision);
+        }
+    }
 
     private sealed class AllowCreationAuthorizer : IAssignmentCreationAuthorizer
     {
