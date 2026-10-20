@@ -945,4 +945,176 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Equal(1, verifyDb.AuditRecords.Count(x => x.Operation == "assignment.close"));
         Assert.Equal(1, verifyDb.OutboxMessages.Count(x => x.MessageType == "Assignment.AssignmentClosed"));
     }
+
+    [Fact]
+    public async Task Transactional_submission_started_during_membership_revocation_fails_closed()
+    {
+        using var seedDb = CreateFreshDatabase();
+        seedDb.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "race-submit-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "race-submit-learner", Status = "ACTIVE" });
+        seedDb.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "race-submit-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        seedDb.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "race-submit-goal", TenantId = "tenant-a",
+            ContextId = "race-submit-context", Status = "ACTIVE"
+        });
+        seedDb.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-submit-context",
+                PersonId = "race-submit-teacher", MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-submit-context",
+                PersonId = "race-submit-learner", MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        seedDb.ActionPolicyGrants.AddRange(
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-submit-context", SubjectType = "PERSON",
+                SubjectId = "race-submit-teacher", Action = "assignment.create", Status = "ACTIVE"
+            },
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-submit-context", SubjectType = "PERSON",
+                SubjectId = "race-submit-learner", Action = "submission.create", Status = "ACTIVE"
+            });
+        await seedDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var seedService = new FirstSliceService(
+            new PostgresFirstSliceStore(seedDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(seedDb));
+        var assignment = await seedService.CreateAssignmentAsync(
+            "tenant-a", "race-submit-teacher", "race-submit-context", "race-submit-goal",
+            "race-submit-learner", "{\"work\":\"race\"}", "race-submit-create",
+            "race-submit-correlation-create", TestContext.Current.CancellationToken);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var commandDb = CreateContext(connection!);
+        using var revokeDb = CreateContext(connection!);
+        var submitService = new FirstSliceService(
+            new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(commandDb));
+
+        await using var revokeTransaction =
+            await revokeDb.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        _ = await revokeDb.LearningContexts.FromSqlInterpolated(
+                $"SELECT * FROM learning_contexts WHERE \"TenantId\" = {"tenant-a"} AND \"Id\" = {"race-submit-context"} FOR UPDATE")
+            .AsTracking().SingleAsync(TestContext.Current.CancellationToken);
+        var membership = await revokeDb.ContextualMemberships.SingleAsync(
+            x => x.TenantId == "tenant-a" && x.ContextId == "race-submit-context" &&
+                 x.PersonId == "race-submit-learner" && x.MembershipType == "LEARNER",
+            TestContext.Current.CancellationToken);
+        membership.Status = "REVOKED";
+        membership.Version++;
+        await revokeDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var submitTask = submitService.CreateSubmissionAsync(
+            "tenant-a", "race-submit-learner", assignment.Value.Id, "race-submit-learner",
+            "{\"answer\":\"race\"}", "race-submit-key", "race-submit-correlation",
+            TestContext.Current.CancellationToken).AsTask();
+        await revokeTransaction.CommitAsync(TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await submitTask);
+        Assert.Equal("FORBIDDEN", error.Message);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Empty(verifyDb.Submissions);
+        Assert.Empty(verifyDb.IdempotencyRecords.Where(x => x.OperationScope == "submission.create"));
+        Assert.Empty(verifyDb.AuditRecords.Where(x => x.Operation == "submission.create"));
+        Assert.Empty(verifyDb.OutboxMessages.Where(x => x.MessageType == "Submission.SubmissionCreated"));
+    }
+
+    [Fact]
+    public async Task Transactional_close_started_during_grant_revocation_fails_closed()
+    {
+        using var seedDb = CreateFreshDatabase();
+        seedDb.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "race-close-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "race-close-learner", Status = "ACTIVE" });
+        seedDb.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "race-close-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        seedDb.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "race-close-goal", TenantId = "tenant-a",
+            ContextId = "race-close-context", Status = "ACTIVE"
+        });
+        seedDb.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-close-context",
+                PersonId = "race-close-teacher", MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-close-context",
+                PersonId = "race-close-learner", MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        seedDb.ActionPolicyGrants.AddRange(
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-close-context", SubjectType = "PERSON",
+                SubjectId = "race-close-teacher", Action = "assignment.create", Status = "ACTIVE"
+            },
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "race-close-context", SubjectType = "PERSON",
+                SubjectId = "race-close-teacher", Action = "assignment.close", Status = "ACTIVE"
+            });
+        await seedDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var seedService = new FirstSliceService(
+            new PostgresFirstSliceStore(seedDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(seedDb));
+        var assignment = await seedService.CreateAssignmentAsync(
+            "tenant-a", "race-close-teacher", "race-close-context", "race-close-goal",
+            "race-close-learner", "{\"work\":\"race\"}", "race-close-create",
+            "race-close-correlation-create", TestContext.Current.CancellationToken);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var commandDb = CreateContext(connection!);
+        using var revokeDb = CreateContext(connection!);
+        var closeService = new FirstSliceService(
+            new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(commandDb));
+
+        await using var revokeTransaction =
+            await revokeDb.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        _ = await revokeDb.LearningContexts.FromSqlInterpolated(
+                $"SELECT * FROM learning_contexts WHERE \"TenantId\" = {"tenant-a"} AND \"Id\" = {"race-close-context"} FOR UPDATE")
+            .AsTracking().SingleAsync(TestContext.Current.CancellationToken);
+        var grant = await revokeDb.ActionPolicyGrants.SingleAsync(
+            x => x.TenantId == "tenant-a" && x.ContextId == "race-close-context" &&
+                 x.SubjectId == "race-close-teacher" && x.Action == "assignment.close",
+            TestContext.Current.CancellationToken);
+        grant.Status = "REVOKED";
+        grant.Version++;
+        await revokeDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var closeTask = closeService.CloseAssignmentAsync(
+            "tenant-a", "race-close-teacher", assignment.Value.Id, 1,
+            "race-close-key", "race-close-correlation", TestContext.Current.CancellationToken);
+        await revokeTransaction.CommitAsync(TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await closeTask);
+        Assert.Equal("FORBIDDEN", error.Message);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Equal("OPEN", verifyDb.Assignments.Single(x => x.Id == assignment.Value.Id).Status);
+        Assert.Empty(verifyDb.IdempotencyRecords.Where(x => x.OperationScope == "assignment.close"));
+        Assert.Empty(verifyDb.AuditRecords.Where(x => x.Operation == "assignment.close"));
+        Assert.Empty(verifyDb.OutboxMessages.Where(x => x.MessageType == "Assignment.AssignmentClosed"));
+    }
+
 }
