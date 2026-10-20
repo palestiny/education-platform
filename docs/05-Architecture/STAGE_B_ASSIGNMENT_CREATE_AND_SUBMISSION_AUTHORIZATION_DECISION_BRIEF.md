@@ -80,7 +80,35 @@ Approve **Assignment creation Option B** and **Learner submission Option B**, wi
 - Test denial, resolver outage, inactive/revoked membership, wrong context, wrong recipient, cross-tenant requests, and no-mutation behavior at Application and PostgreSQL/API integration layers.
 - Define revocation consistency explicitly before claiming immediate revocation. A pre-mutation authorization check alone cannot guarantee atomicity with a membership change unless the storage/transaction protocol supports it.
 
-## 5. Decisions still required from the owner
+## 5. Revocation consistency — decision options
+
+The application must not promise "immediate revocation" unless the authorization read and protected mutation have a consistency protocol that supports that guarantee. Rechecking authorization on every request is necessary, but by itself it does not eliminate a race where membership is revoked after the check and before the mutation.
+
+### Option A: Transactionally enforced revocation (strongest guarantee; recommended if the data boundary permits it)
+
+Membership state and the protected command participate in a shared database transaction/locking protocol, so revocation and submission are serialized against the same authoritative membership state.
+
+- **Guarantee:** a submission cannot commit based on membership that was already revoked earlier in the serialization order.
+- **Cost:** requires a shared transactional boundary and carefully designed lock ordering; it may not be possible if membership is owned by an external provider/service.
+- **Important:** this is a design target, not a claim about the current implementation.
+
+### Option B: Fresh authoritative check with an explicitly bounded race
+
+Read membership/policy from the authoritative source for every command, disable positive authorization caching, and define/document the remaining check-to-mutation race and any source replication delay.
+
+- **Guarantee:** fresher decisions than cached authorization, but not atomic revocation unless the source and mutation share a consistency protocol.
+- **Cost:** latency and availability depend on the authority source; a source outage must fail closed.
+
+### Option C: Time-bounded cached authorization
+
+Allow a positive decision cache with a defined maximum TTL and invalidation behavior.
+
+- **Guarantee:** revocation takes effect no later than the documented bound only if cache invalidation, source replication, and clock assumptions all uphold it.
+- **Cost:** simpler/cheaper reads, but a nonzero exposure window; not appropriate unless the owner explicitly accepts that window and it is enforceable.
+
+**Recommendation:** prefer Option A if membership and the command can share a transaction boundary. If they cannot, use Option B as the initial safe direction and explicitly document that it does not provide atomic revocation; do not claim a maximum delay until the authoritative source's consistency and failure behavior have been verified. Option C requires explicit owner acceptance of a measurable exposure window.
+
+## 6. Decisions still required from the owner
 
 1. Approve or reject Assignment creation Option B.
 2. Approve or reject Learner submission Option B.
@@ -89,7 +117,7 @@ Approve **Assignment creation Option B** and **Learner submission Option B**, wi
 
 No identity provider, membership table, account onboarding, guardian policy, or production adapter is selected by this brief.
 
-## 6. Gate result
+## 7. Gate result
 
 **Status: OPEN — do not broaden implementation until the owner accepts the contract.**
 
