@@ -384,6 +384,44 @@ public sealed class PostgresFirstSliceStoreTests
             ValueTask.FromResult(AuthorizationDecision.Allowed);
     }
 
+    [Fact]
+    public async Task Concurrent_same_key_assignment_creation_commits_one_result_and_replays_the_winner()
+    {
+        using var seedDb = CreateFreshDatabase();
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+
+        using var firstDb = CreateContext(connection!);
+        using var secondDb = CreateContext(connection!);
+        var firstService = new FirstSliceService(
+            new PostgresFirstSliceStore(firstDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
+        var secondService = new FirstSliceService(
+            new PostgresFirstSliceStore(secondDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
+
+        var firstTask = firstService.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{\"work\":\"same\"}", "concurrent-same-key",
+            "correlation-concurrent-first", TestContext.Current.CancellationToken).AsTask();
+        var secondTask = secondService.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{\"work\":\"same\"}", "concurrent-same-key",
+            "correlation-concurrent-second", TestContext.Current.CancellationToken).AsTask();
+
+        var results = await Task.WhenAll(firstTask, secondTask);
+
+        Assert.Single(results.Where(x => !x.Replayed));
+        Assert.Single(results.Where(x => x.Replayed));
+        Assert.Equal(results[0].Value.Id, results[1].Value.Id);
+
+        using var verifyDb = CreateContext(connection!);
+        Assert.Single(verifyDb.Assignments);
+        Assert.Single(verifyDb.IdempotencyRecords.Where(x => x.IdempotencyKey == "concurrent-same-key"));
+        Assert.Single(verifyDb.AuditRecords);
+        Assert.Single(verifyDb.OutboxMessages);
+    }
+
     private static EducationPlatformDbContext CreateContext(string connection)
     {
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
