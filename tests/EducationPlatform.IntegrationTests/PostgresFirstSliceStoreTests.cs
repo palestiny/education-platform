@@ -800,3 +800,150 @@ public sealed class PostgresFirstSliceStoreTests
         return db;
     }
 }
+
+    [Fact]
+    public async Task Transactional_submission_replay_is_denied_after_authoritative_membership_revocation()
+    {
+        using var db = CreateFreshDatabase();
+        db.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "submit-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "submit-learner", Status = "ACTIVE" });
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "submit-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "submit-goal", TenantId = "tenant-a", ContextId = "submit-context", Status = "ACTIVE"
+        });
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "submit-context", PersonId = "submit-teacher",
+                MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "submit-context", PersonId = "submit-learner",
+                MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        db.ActionPolicyGrants.AddRange(
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "submit-context", SubjectType = "PERSON",
+                SubjectId = "submit-teacher", Action = "assignment.create", Status = "ACTIVE"
+            },
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "submit-context", SubjectType = "PERSON",
+                SubjectId = "submit-learner", Action = "submission.create", Status = "ACTIVE"
+            });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+        var assignment = await service.CreateAssignmentAsync(
+            "tenant-a", "submit-teacher", "submit-context", "submit-goal", "submit-learner",
+            "{\"work\":\"submit-revocation\"}", "submit-revocation-create", "submit-correlation-create",
+            TestContext.Current.CancellationToken);
+        var first = await service.CreateSubmissionAsync(
+            "tenant-a", "submit-learner", assignment.Value.Id, "submit-learner",
+            "{\"answer\":\"ok\"}", "submit-revocation-key", "submit-correlation-first",
+            TestContext.Current.CancellationToken);
+        Assert.False(first.Replayed);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var revokeDb = CreateContext(connection!);
+        await new PostgresAuthorityRevocationWriter(revokeDb).RevokeMembershipAsync(
+            "tenant-a", "submit-context", "submit-learner", "LEARNER",
+            TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateSubmissionAsync(
+                "tenant-a", "submit-learner", assignment.Value.Id, "submit-learner",
+                "{\"answer\":\"ok\"}", "submit-revocation-key", "submit-correlation-retry",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Single(verifyDb.Submissions);
+        Assert.Equal(1, verifyDb.IdempotencyRecords.Count(x => x.OperationScope == "submission.create"));
+        Assert.Equal(1, verifyDb.AuditRecords.Count(x => x.Operation == "submission.create"));
+        Assert.Equal(1, verifyDb.OutboxMessages.Count(x => x.MessageType == "Submission.SubmissionCreated"));
+    }
+
+    [Fact]
+    public async Task Transactional_close_replay_is_denied_after_authoritative_grant_revocation()
+    {
+        using var db = CreateFreshDatabase();
+        db.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "close-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "close-learner", Status = "ACTIVE" });
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "close-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "close-goal", TenantId = "tenant-a", ContextId = "close-context", Status = "ACTIVE"
+        });
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "close-context", PersonId = "close-teacher",
+                MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "close-context", PersonId = "close-learner",
+                MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        db.ActionPolicyGrants.AddRange(
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "close-context", SubjectType = "PERSON",
+                SubjectId = "close-teacher", Action = "assignment.create", Status = "ACTIVE"
+            },
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "close-context", SubjectType = "PERSON",
+                SubjectId = "close-teacher", Action = "assignment.close", Status = "ACTIVE"
+            });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+        var assignment = await service.CreateAssignmentAsync(
+            "tenant-a", "close-teacher", "close-context", "close-goal", "close-learner",
+            "{\"work\":\"close-revocation\"}", "close-revocation-create", "close-correlation-create",
+            TestContext.Current.CancellationToken);
+        var first = await service.CloseAssignmentAsync(
+            "tenant-a", "close-teacher", assignment.Value.Id, 1,
+            "close-revocation-key", "close-correlation-first", TestContext.Current.CancellationToken);
+        Assert.Equal("CLOSED", first.Status);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var revokeDb = CreateContext(connection!);
+        await new PostgresAuthorityRevocationWriter(revokeDb).RevokeGrantAsync(
+            "tenant-a", "close-context", "PERSON", "close-teacher", "assignment.close",
+            TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "close-teacher", assignment.Value.Id, 1,
+                "close-revocation-key", "close-correlation-retry", TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Equal("CLOSED", verifyDb.Assignments.Single(x => x.Id == assignment.Value.Id).Status);
+        Assert.Equal(1, verifyDb.IdempotencyRecords.Count(x => x.OperationScope == "assignment.close"));
+        Assert.Equal(1, verifyDb.AuditRecords.Count(x => x.Operation == "assignment.close"));
+        Assert.Equal(1, verifyDb.OutboxMessages.Count(x => x.MessageType == "Assignment.AssignmentClosed"));
+    }
+
