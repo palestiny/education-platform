@@ -178,3 +178,13 @@ The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIB
 - Approval does not establish atomic revocation: the transaction protocol, lock order, and PostgreSQL command-versus-revocation concurrency tests remain open.
 - At the time this matrix entry was authored, the docs-only head was `bdca832429fa6e14f44bb4fcfd85ec7466a04e2f`; the transaction-design gate was subsequently refined in commit `4071779965fa8fa97531d329baab493d1cf8bbb8`. The latest docs-only commits have no associated PR-triggered workflow run returned by the connector; do not treat earlier code CI as exact-head verification.
 - PR #5 remains draft/open/unmerged. No membership schema/provider was selected and no merge was performed.
+
+
+## 15. Transaction-aware authorization decision — owner approved (2026-10-20)
+
+- **A1 approved:** typed transaction-aware persistence command owns the PostgreSQL transaction and performs final authoritative membership/lifecycle and action-policy checks, resource locking, mutation, idempotency, audit, and outbox work within that boundary.
+- The command contract and global lock-order expectations are recorded in `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`.
+- The executable test-first requirements are specified in `STAGE_B_TRANSACTIONAL_AUTHORIZATION_RED_TEST_SPECIFICATION.md` (TA-001 through TA-012), including separate PostgreSQL connections and deterministic concurrency barriers.
+- **Not yet implemented/proven:** durable membership/policy schema, transaction-aware command code, membership-revocation serialization, replay-after-revocation protection inside the transaction, and the associated PostgreSQL concurrency tests.
+- **Next gate:** implement/verify the compiling test contract and then run the required RED → GREEN sequence without merging a knowingly red PR. No schema/provider/onboarding details are implicitly approved.
+- CI must be checked against the exact current PR head; earlier successful code CI does not verify later documentation commits.
