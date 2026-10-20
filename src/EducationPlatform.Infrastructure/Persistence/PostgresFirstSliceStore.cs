@@ -257,6 +257,32 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         catch (DbUpdateConcurrencyException)
         {
             transaction.Rollback();
+            db.ChangeTracker.Clear();
+
+            // A concurrent request using the same idempotency key may have committed
+            // the close while this context was waiting on the assignment version token.
+            // Resolve that winner in a fresh transaction before returning a conflict.
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                using var replayTransaction = db.Database.BeginTransaction();
+                var existing = db.IdempotencyRecords.AsNoTracking().SingleOrDefault(x =>
+                    x.TenantId == tenantId &&
+                    x.ActorId == actorId &&
+                    x.OperationScope == "assignment.close" &&
+                    x.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                {
+                    if (existing.RequestFingerprint != requestFingerprint)
+                        throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                    replayTransaction.Commit();
+                    return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
+                }
+
+                replayTransaction.Commit();
+            }
+
             throw new InvalidOperationException("CONCURRENCY_CONFLICT");
         }
         catch (DbUpdateException ex) when (IsIdempotencyUniqueViolation(ex) && !string.IsNullOrWhiteSpace(idempotencyKey))
