@@ -16,6 +16,11 @@ if (!string.IsNullOrWhiteSpace(connectionString))
             connectionString,
             npgsql => npgsql.MigrationsAssembly(typeof(EducationPlatformDbContext).Assembly.FullName)));
     builder.Services.AddScoped<IFirstSliceStore, PostgresFirstSliceStore>();
+    // Production uses the authority-backed transaction boundary. Development and
+    // integration fixtures retain their explicit test authorizers until seeded with
+    // platform-owned authority records.
+    if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+        builder.Services.AddScoped<IFirstSliceTransactionalCommand, PostgresFirstSliceTransactionalCommand>();
 }
 else if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
 {
