@@ -1276,14 +1276,24 @@ public sealed class PostgresFirstSliceStoreTests
             "wrong-role-learner", "{\"work\":\"role-test\"}", "wrong-role-create",
             "wrong-role-create-correlation", TestContext.Current.CancellationToken);
 
-        // Both records remain ACTIVE, but their membership types no longer authorize
-        // the corresponding submission and close commands.
-        var teacherMembership = await db.ContextualMemberships.SingleAsync(
-            x => x.PersonId == "wrong-role-teacher", TestContext.Current.CancellationToken);
-        var learnerMembership = await db.ContextualMemberships.SingleAsync(
-            x => x.PersonId == "wrong-role-learner", TestContext.Current.CancellationToken);
-        teacherMembership.MembershipType = "LEARNER";
-        learnerMembership.MembershipType = "TEACHER";
+        // MembershipType participates in the membership key, so replace the
+        // authority rows rather than mutating their key in place.
+        var existingMemberships = await db.ContextualMemberships
+            .Where(x => x.ContextId == "wrong-role-context")
+            .ToListAsync(TestContext.Current.CancellationToken);
+        db.ContextualMemberships.RemoveRange(existingMemberships);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                PersonId = "wrong-role-teacher", MembershipType = "LEARNER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                PersonId = "wrong-role-learner", MembershipType = "TEACHER", Status = "ACTIVE"
+            });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var submissionError = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
