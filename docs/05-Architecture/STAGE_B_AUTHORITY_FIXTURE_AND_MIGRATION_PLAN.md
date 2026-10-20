@@ -132,3 +132,15 @@ This section supersedes the earlier "no revocation writer" statement in section 
 
 The shared lock protocol is now implemented for the protected commands and these two authority-revocation methods. **Do not call atomic revocation fully proven until the current CI passes and all future context, membership, grant, and lifecycle mutation paths are required to use this writer/lock protocol.** Same-key race recovery and broader concurrency coverage remain follow-up work.
 
+## 12. Exact-head verification — revocation replay tests for all protected commands
+
+- Test commit `011febce892e3f2b82a142e427bb6d6a68bc9a27` passed GitHub Actions [run 39462240539](https://github.com/palestiny/education-platform/actions/runs/39462240539), including restore, build, EF migration validation, idempotent migration-script generation, and the PostgreSQL integration test step.
+- The immediately preceding test commit `609d31d59315268b10d236078a536253bfdc119c` failed at build because the appended tests were outside the test class. The class boundary was corrected in `011febc`; the corrected exact head passed.
+- Added `Transactional_submission_replay_is_denied_after_authoritative_membership_revocation`: successful submission, authoritative learner-membership revocation through `PostgresAuthorityRevocationWriter`, then retry with the same idempotency key; the retry is denied and the original submission/audit/outbox/idempotency counts remain unchanged.
+- Added `Transactional_close_replay_is_denied_after_authoritative_grant_revocation`: successful close, revoke `assignment.close`, then retry with the same idempotency key; the retry is denied and no duplicate reliability records are written.
+- Together with the existing independent-connection create-versus-revoke test, these provide command-specific coverage for revocation-before-replay and a real lock-ordering race for creation.
+
+**Remaining verification boundary:** the current test suite does not yet demonstrate independent-connection revocation races for submission and close, nor the same idempotency key racing across distinct contexts. The revocation writer covers membership and action-grant revocation; other future context/person lifecycle mutation paths must adopt the same context lock protocol. Do not overstate the current evidence as exhaustive proof of every possible revocation schedule.
+
+**Current status:** transaction-aware command wiring for create/submit/close = implemented; authority records and migration = CI-verified; replay after authoritative revocation = tested for create/submit/close; create-vs-revoke lock ordering = tested with independent PostgreSQL connections; submission/close revoke-race schedules and cross-context idempotency collision behavior = follow-up. Production identity credential verification and authority-record provisioning remain outside this slice. PR #5 remains open, draft, and unmerged.
+
