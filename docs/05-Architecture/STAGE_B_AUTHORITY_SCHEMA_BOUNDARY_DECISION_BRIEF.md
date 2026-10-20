@@ -1,76 +1,75 @@
 # Stage B — Authority Schema Boundary Decision Brief
 
-**Status:** BLOCKING DESIGN DECISION — NO AUTHORITY TABLES CREATED  
-**Date:** 2026-10-20  
-**Approved decisions:** platform-owned Person/contextual membership lifecycle; A1 typed transaction-aware persistence command  
+**Status:** OWNER-APPROVED IMPLEMENTATION DIRECTION — schema/code not yet implemented  
+**Decision date:** 2026-10-20  
+**Owner decision:** Option A approved. The platform owns and persists tenant-scoped learning contexts and learning goals in the same PostgreSQL transaction authority as membership, policy, and protected commands.  
+**Previously approved:** platform-owned Person mapping and contextual membership lifecycle; A1 typed transaction-aware persistence command.  
 **Related:** `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`, `STAGE_B_TRANSACTIONAL_AUTHORIZATION_RED_TEST_SPECIFICATION.md`, `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`
 
-## 1. Why this is the next gate
+## 1. Decision and scope
 
-A1 is approved, and the current store/transaction boundary has been inspected. Before writing executable concurrency tests against durable membership state, the repository must define which persisted rows are authoritative and lockable.
+The owner approved **Option A**. Do not reopen this decision unless implementation discovers a concrete contradiction. The authority will be platform-owned and relational, with all final authorization checks and protected mutations using one PostgreSQL transaction boundary.
 
-The current EF model contains assignments, submissions, idempotency records, audit records, and outbox messages. It does **not** contain durable platform Person mappings, contextual memberships/lifecycle, action policies, learning-context records, or learning-goal records. Existing assignment `ContextId`, `GoalId`, and `LearnerId` are bounded strings, not foreign keys to an authoritative eligibility model.
+This approval chooses ownership and transaction topology. It does **not** choose an identity provider, credential verification protocol, onboarding UX, guardian/consent policy, final table names/columns, or physical tenant isolation.
 
-Therefore, merely adding a membership row and locking it would not prove that:
-- the referenced learner is eligible in the assignment's context;
-- the goal belongs to that same context and remains eligible;
-- the actor is allowed to perform the exact action;
-- revocation/policy changes serialize with the command;
-- all rows representing the decision are read from the same source of truth.
+## 2. Minimum authority model to implement
 
-## 2. Proposed minimum authority boundary (for owner review)
+Implement these provider-neutral records in the platform's PostgreSQL authority. Refine exact EF types, keys, constraints, and migration details against existing code before committing:
 
-Keep this small and provider-neutral. This is a proposed domain boundary, **not an approved final schema**.
+- **Person:** stable internal Person ID. External identity linkage must use a provider-neutral issuer + subject pair with a uniqueness constraint. Never treat client-supplied IDs or unverified claims as authenticated identity.
+- **LearningContext:** stable context ID scoped to a tenant, with lifecycle state/version. A context is not interchangeable across tenants.
+- **LearningGoal:** stable goal ID scoped to a tenant and one learning context, with lifecycle/eligibility state/version. A goal cannot be eligible in a different context merely because its ID is supplied.
+- **ContextualMembership:** Person + tenant + context, membership/eligibility lifecycle state, and concurrency version. Enforce uniqueness for the intended active membership identity and define lifecycle transitions explicitly.
+- **ActionPolicyGrant:** membership-scoped typed action code (initially `assignment.create` and `submission.create`), lifecycle state/version, and uniqueness rules preventing ambiguous duplicate active grants.
+- **Assignment linkage:** assignment creation must verify the actor's eligible membership and `assignment.create` grant, the recipient's eligible membership in the same tenant/context, and the eligible goal's ownership by that context. Persist references/constraints so invalid cross-tenant/context combinations cannot be represented silently.
 
-- **Person mapping:** stable platform Person ID mapped to an external issuer/subject tuple. Credential secrets and provider SDK objects are not stored in this domain table.
-- **Learning context:** tenant-scoped context/organization/classroom identifier that defines the authorization boundary.
-- **Contextual membership:** Person + tenant + context + lifecycle state + eligibility state/version. Membership lifecycle transitions (activate/suspend/revoke) update this authoritative row.
-- **Action policy grant:** tenant/context + principal/membership scope + typed action code + lifecycle state/version. Only the platform authority can grant/revoke these rows.
-- **Learning goal eligibility:** a durable, context-scoped goal/learning-target record (or an already-existing authoritative module contract that provides equivalent lockable state).
-- **Assignment/recipient references:** assignment creation must validate the goal and learner under the same context and ensure their authoritative rows cannot be invalidated between final validation and commit.
+Avoid broad role/permission frameworks in this first slice. Use typed action codes and explicit eligibility predicates. Exact schema must enforce tenant/context alignment with composite foreign keys where practical, not only application string comparisons.
 
-Use stable IDs and tenant-scoped unique constraints. Decide exact natural keys, foreign keys, deletion behavior, indexes, status enums, and optimistic versions only after inspecting product/domain contracts. Do not store arbitrary provider claims as membership or policy.
+## 3. Transaction and lock contract
 
-## 3. Two implementation shapes to compare
+The A1 transaction-aware persistence command owns the PostgreSQL transaction. It performs final authoritative checks and locks before mutation, idempotency replay, audit/outbox writes, and commit.
 
-### Option S1 — platform-owned minimum relational authority
+Required global lock order, refined to actual rows:
+1. tenant-scoped learning context row;
+2. relevant membership rows in deterministic stable-key order (actor and recipient, where both apply);
+3. relevant action-policy grant rows in deterministic stable-key order;
+4. learning goal row for assignment creation, or assignment row for submission/close;
+5. idempotency key serialization/lookup only after current authorization checks;
+6. protected mutation plus idempotency/audit/outbox records, committed together.
 
-Add a small set of platform-owned relational entities in the same PostgreSQL database/transaction authority. Protected commands and lifecycle changes lock the relevant membership, policy, context, and goal rows in the agreed global order.
+Membership revocation/suspension, context disablement, goal disablement, and policy-grant revocation must acquire compatible locks and update the same authoritative rows. Their commit order must be observable by protected commands:
+- if revocation commits before the protected command obtains the authoritative locks, the command denies and creates no protected side effects;
+- if the protected command obtains the relevant locks first, revocation waits until that command commits/rolls back.
 
-**Advantages:** strongest ability to prove revocation and eligibility serialization; relational constraints and indexes can express tenant/context boundaries.
+For operations involving more than one resource, lock rows in deterministic order to avoid deadlocks. A deadlock/serialization retry must restart the entire command and re-run all authoritative checks. Do not call an external identity provider or remote policy service while holding database locks.
 
-**Costs/risks:** introduces new durable domain entities and lifecycle rules; must decide context and goal ownership, how membership is provisioned, and how stable external subjects map to Person records. Must not pretend that table presence alone solves identity verification or enrollment.
+## 4. Idempotency and replay contract
 
-### Option S2 — existing authoritative module contract
+- Do not return a stored response before final authorization in the current transaction.
+- A retry after membership/policy revocation must be denied even if a prior successful response exists.
+- Fingerprint mismatch is checked only after authorization, so it cannot disclose protected idempotency state to a now-unauthorized caller.
+- A unique-key race loser must roll back and restart the full authorization protocol in a fresh transaction. It must never deserialize and return a saved response directly from a unique-violation catch.
+- Mutation, idempotency, audit, and outbox rows commit or roll back as one unit.
 
-If another module is intended to own learning contexts, goals, or eligibility, use its typed provider-neutral port only if it can participate in the same PostgreSQL connection/transaction and exposes a documented lock/serialization contract.
+## 5. Verified current gap
 
-**Advantages:** preserves domain ownership and avoids duplicate sources of truth.
+The inspected current EF model persists assignments, submissions, idempotency, audit, and outbox. It does not yet persist Person, LearningContext, LearningGoal, ContextualMembership, or ActionPolicyGrant authority records. Assignment `ContextId`, `GoalId`, and `LearnerId` are bounded strings rather than references to this authority model.
 
-**Costs/risks:** no such durable authority/transaction-sharing contract has yet been verified in the current first-slice model. A remote service or a separate transaction is not sufficient for an atomic-revocation claim.
+The current `FirstSliceService` performs authorization before calling the store. `PostgresFirstSliceStore.ExecuteAtomic` performs idempotency lookup before beginning a transaction, and the unique-conflict catch can return a stored response after rollback without a new authorization pass. Those paths must be replaced by the A1 command boundary; documentation alone does not close the gap.
 
-## 4. Recommendation
+## 6. Implementation sequence (RED → GREEN)
 
-Prefer S1 for membership and policy lifecycle only if the product architecture confirms that the platform owns these records. For context and goal eligibility, first confirm the existing domain ownership contract rather than silently inventing duplicate context/goal tables. If no authoritative context/goal model exists, bring a narrow S1 proposal back for approval before implementation.
+1. Add PostgreSQL integration-test fixtures/factories using two independent connections and deterministic coordination barriers.
+2. Add failing tests for TA-001/002 (denial has no side effects), TA-003/004 (revocation/command serialization), TA-006/007 (replay and fingerprint checks after revocation), TA-008 (same-key race), and TA-011/012 (rollback/cancellation/deadlock retry).
+3. Add the authority entities, EF configuration, migration and model snapshot; use composite tenant/context constraints where supported.
+4. Add a typed transaction-aware command for creation and submission. Move final authorization, row locks, idempotency lookup, mutation, audit/outbox writes, and commit into that command.
+5. Make revocation/policy-change operations use the same locks and order. Do not claim atomicity until the two-connection PostgreSQL tests prove both lock-order outcomes.
+6. Run the complete solution test suite, migration validation, idempotent migration-script generation, and exact-head CI. Preserve PR #5 open and unmerged until review.
 
-Do not proceed with production membership schema or adapters until the context/goal authority boundary is resolved. A test-only fake can test Application decisions, but it cannot prove real PostgreSQL revocation serialization.
+## 7. Out of scope / explicit non-claims
 
-## 5. Required owner decision
-
-Confirm the source of truth for learning contexts and goals:
-
-- **Option A:** platform owns and persists tenant-scoped learning contexts and goals in the same PostgreSQL authority; membership, policy, goal/context eligibility, and protected command can be locked and validated in one transaction.
-- **Option B:** an existing domain module owns contexts/goals and supplies typed transaction-aware access on the same PostgreSQL connection/transaction. The module and contract must be named and verified before coding.
-- **Option C:** contexts/goals are external or remote. This cannot satisfy the current atomic A1 promise as-is; either revise the atomicity scope or explicitly use the approved fresh-check fallback with its residual race.
-
-This is not a provider selection. External credential validation remains provider-neutral regardless of the selected context/goal authority.
-
-## 6. Exit criteria
-
-- One authoritative owner is named for context and goal eligibility.
-- The minimum persisted rows participating in authorization are identified.
-- A1 lock ordering is refined to include only actual authoritative rows, with a deadlock analysis.
-- RED tests TA-001–TA-012 map to schema/command operations.
-- Only then create migration/entity changes and executable PostgreSQL concurrency tests.
-
-**Current status:** A1 transaction-aware command is approved; authority schema boundary is not fully resolved; no membership/context/goal schema has been created; atomic revocation remains not implemented/not proven.
+- No identity provider or credential-verification technology has been selected.
+- No guardian/consent policy, enrollment workflow, or platform owner administration UX has been approved.
+- No physical PostgreSQL row-level-security/tenant-isolation strategy has been selected.
+- No production authorization adapter exists until implemented and tested.
+- Atomic revocation is **not yet implemented or proven**.
