@@ -422,6 +422,48 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Single(verifyDb.OutboxMessages);
     }
 
+    [Fact]
+    public async Task Concurrent_same_key_assignment_close_replays_committed_winner()
+    {
+        using var seedDb = CreateFreshDatabase();
+        var seedService = new FirstSliceService(
+            new PostgresFirstSliceStore(seedDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
+        var created = await seedService.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{}", "concurrent-close-create", "correlation-create",
+            TestContext.Current.CancellationToken);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var firstDb = CreateContext(connection!);
+        using var secondDb = CreateContext(connection!);
+        var firstService = new FirstSliceService(
+            new PostgresFirstSliceStore(firstDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
+        var secondService = new FirstSliceService(
+            new PostgresFirstSliceStore(secondDb), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer());
+
+        var firstTask = firstService.CloseAssignmentAsync(
+            "tenant-a", "authorized-teacher", created.Value.Id, 1,
+            "concurrent-close-same-key", "correlation-close-first",
+            TestContext.Current.CancellationToken);
+        var secondTask = secondService.CloseAssignmentAsync(
+            "tenant-a", "authorized-teacher", created.Value.Id, 1,
+            "concurrent-close-same-key", "correlation-close-second",
+            TestContext.Current.CancellationToken);
+
+        var results = await Task.WhenAll(firstTask, secondTask);
+
+        Assert.Equal(results[0].Id, results[1].Id);
+        using var verifyDb = CreateContext(connection!);
+        Assert.Equal("CLOSED", verifyDb.Assignments.Single(x => x.Id == created.Value.Id).Status);
+        Assert.Equal(2, verifyDb.IdempotencyRecords.Count());
+        Assert.Equal(2, verifyDb.AuditRecords.Count());
+        Assert.Equal(2, verifyDb.OutboxMessages.Count());
+    }
+
     private static EducationPlatformDbContext CreateContext(string connection)
     {
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
