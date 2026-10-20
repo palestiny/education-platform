@@ -105,6 +105,21 @@ Creation locks and validates the goal/context/recipient authority rows needed to
 - No external network/provider call while database authority locks are held.
 - No successful protected replay before transaction-local reauthorization.
 
+## 7. Existing repository harness — verified implementation map
+
+The RED work must extend the existing PostgreSQL test harness rather than create a parallel testing framework:
+
+- `tests/EducationPlatform.IntegrationTests/PostgresFirstSliceStoreTests.cs` is the starting point for TA-001/002/005/006/008/009/010/011/012. It uses `EDUCATION_PLATFORM_TEST_CONNECTION`, applies EF migrations, and disables parallel execution for the PostgreSQL collection.
+- `CreateFreshDatabase()` clears the five current first-slice tables and returns one DbContext. Concurrency tests must create **two separately constructed contexts/connections** from the configured connection string; never share one DbContext across concurrent actors.
+- `CreateContext(string connection)` constructs an independent Npgsql-backed DbContext and can be reused as the basis for a two-connection fixture.
+- Existing audit/outbox failure tests already demonstrate database-enforced rollback; preserve that coverage when adding authority tables.
+- `src/EducationPlatform.Application/FirstSlice/IFirstSliceStore.cs` currently exposes separate create/submit/close calls and has no transaction-aware authorization command. `FirstSliceService` invokes creation/submission authorizers before calling the store.
+- `src/EducationPlatform.Infrastructure/Persistence/PostgresFirstSliceStore.cs` performs the idempotency lookup before beginning the mutation transaction. Its unique-conflict recovery must not be reused as a protected replay path without restarting authorization in a fresh transaction.
+- `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` currently maps only Assignment, Submission, IdempotencyRecord, AuditRecord, and OutboxMessage. Authority entities and migration are absent.
+- The integration test project targets .NET 10 and uses xUnit v3 plus Npgsql via the Infrastructure project. Existing CI runs PostgreSQL, build, EF migration validation, idempotent migration-script generation, and tests.
+
+**Sequencing guard:** introduce the provider-neutral typed command contract and a deterministic PostgreSQL authority fixture first; then add concurrency tests using explicit barriers and separate contexts. Only after RED behavior is observable should production authority mappings/migration and the command implementation be added. A compiling mock-only test is not proof of transaction serialization.
+
 ## 7. Exit criteria
 
 The RED specification becomes implementation-ready when:
