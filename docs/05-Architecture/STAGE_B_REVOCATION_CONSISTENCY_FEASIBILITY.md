@@ -1,85 +1,69 @@
 # Stage B — Revocation Consistency Feasibility Assessment
 
-**Status:** TECHNICAL ASSESSMENT COMPLETE — AUTHORITY OWNERSHIP DECISION OPEN  
+**Status:** AUTHORITY OWNERSHIP APPROVED — TRANSACTION PROTOCOL DESIGN REQUIRED  
 **Date:** 2026-10-20  
 **Decision owner:** Project Owner  
-**Related:** `STAGE_B_ASSIGNMENT_CREATE_AND_SUBMISSION_AUTHORIZATION_DECISION_BRIEF.md`, `IMPLEMENTATION_READINESS_MATRIX.md`, `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`, `adr/ADR-0001-initial-modular-monolith.md`
+**Related:** `STAGE_B_ASSIGNMENT_CREATE_AND_SUBMISSION_AUTHORIZATION_DECISION_BRIEF.md`, `IMPLEMENTATION_READINESS_MATRIX.md`, `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`, `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`, `adr/ADR-0001-initial-modular-monolith.md`
 
-## 1. Question
+## 1. Decision record
 
-The owner approved Option A (transactionally enforced revocation) if feasible; otherwise use Option B (fresh authoritative check, no positive authorization cache initially, fail closed, and document the residual race).
+The project owner approved this direction on 2026-10-20:
 
-This assessment checks feasibility against the repository's current architecture without silently choosing an identity provider or membership schema.
+- The platform owns the authoritative Person mapping and contextual membership/lifecycle state in the same PostgreSQL authority/transaction boundary as protected first-slice commands.
+- External credential verification remains provider-neutral at the API/infrastructure boundary.
+- The platform membership authority is separate from external login credentials and provider-specific SDK/token models.
+- Revocation consistency follows Option A only after a transaction-aware protocol and tests demonstrate serialization between revocation and protected mutation.
+- If implementation evidence later shows the shared transaction/locking boundary cannot be maintained, stop and return to the owner with the evidence; use the already-approved Option B fallback rather than claiming atomic revocation.
+- Positive authorization caching (Option C) is not approved.
+
+This approves the **authority-ownership direction**, not a provider, final database schema, onboarding process, or production implementation.
 
 ## 2. Verified current facts
 
-- The accepted architecture is a modular monolith, explicitly allowing local transactions and logical module boundaries without requiring a separate database per module.
+- The accepted architecture is a modular monolith, allowing local transactions and logical module boundaries without requiring a separate database per module.
 - The current PostgreSQL `EducationPlatformDbContext` owns first-slice assignments, submissions, idempotency records, audit records, and outbox messages.
-- The current context does **not** contain a Person, contextual membership, membership lifecycle, or resource-policy persistence model.
-- The new Application authorization ports currently return a decision before calling the mutation store. This centralizes policy enforcement in the use case, but the current call shape does not itself keep a membership row lock/transaction open through the protected mutation.
-- Production authorization adapters remain fail-closed. The Development/Testing fixtures are deterministic test fixtures, not authoritative membership state.
+- The current context does not yet contain the complete Person, contextual membership, membership lifecycle, or resource-policy persistence model.
+- Application authorization ports currently return a decision before calling the mutation store. This does not keep a membership lock/transaction open through the protected mutation.
+- Production authorization adapters remain fail-closed. Development/Testing fixtures are deterministic fixtures, not authoritative membership state.
 
-## 3. Feasibility result
+## 3. Feasibility conclusion
 
-**Option A is conditionally feasible, but not yet proven or implemented.**
+**Option A is conditionally feasible, but not yet implemented or proven.**
 
-It is feasible if the platform's authoritative contextual membership and lifecycle state can be read and locked in the same PostgreSQL transaction boundary as the protected assignment/submission mutation. The existing modular-monolith architecture and PostgreSQL persistence are compatible with that approach.
+The approved direction makes it architecturally possible for membership lifecycle changes and protected commands to serialize against the same PostgreSQL authority. The final authoritative membership/policy check must be integrated with the protected command's transaction boundary; an earlier Application pre-check alone is insufficient.
 
-It is **not** established as feasible if the authoritative membership decision lives only in an external identity provider or in a separate store that cannot participate in the same transaction/locking protocol. A remote pre-check, even immediately before mutation, is not atomic revocation.
+A remote identity provider may authenticate a credential and map its stable subject to a platform Person, but it does not own the platform's contextual membership lifecycle. Do not persist raw credentials or let provider SDK objects cross the Application boundary.
 
-The current Application port calls alone do not provide Option A: a decision returned before the store transaction leaves a check-to-mutation gap. The final authoritative membership check/lock must be integrated into the protected command's transaction boundary, while the Application use case remains the policy orchestration boundary.
+## 4. Required next step
 
-## 4. Recommended direction for owner review
+Complete `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md` before creating membership schema or production adapters. That gate must decide and test the command transaction contract, membership/revocation lock protocol, lock ordering, failure and retry behavior, tenant scoping, idempotency, and audit/outbox atomicity.
 
-**Recommendation:** keep external credential verification provider-neutral at the API/infrastructure boundary, and consider platform-owned Person + contextual membership/lifecycle state in the same PostgreSQL authority as the first-slice commands. If approved and validated, use a transaction-aware command boundary that evaluates the relevant membership/policy state under the transaction/locking protocol before the mutation commits.
+No membership tables, provider choice, or onboarding flow are authorized by this feasibility record alone.
 
-Why this is the preferred path:
-- supports the already-approved person-centric identity and contextual-membership model;
-- gives the platform a single authoritative place to revoke membership independently of the identity provider;
-- makes Option A technically attainable without distributed transactions;
-- preserves provider neutrality and the modular-monolith architecture;
-- keeps provider login identity separate from application membership and resource/action permission.
+## 5. Minimum protocol requirements
 
-This is a recommendation, **not an approved schema decision**. It does not specify tables, columns, identity provider, onboarding flow, or the final transaction API.
-
-## 5. Minimum protocol requirements if Option A is approved
-
-Before claiming atomic revocation, a design and tests must establish:
-
-1. The protected command and membership/lifecycle check use the same database transaction and authoritative data source.
-2. The command locks the target resource and the relevant membership rows using a documented, consistent lock order.
-3. Revocation updates/locks the same authoritative membership row, so command and revocation serialize.
-4. If revocation commits first, a later command observes inactive/revoked membership and performs no mutation.
-5. If the command obtains the relevant membership lock first, revocation waits and is serialized after that command.
-6. Deadlock behavior, cancellation, transaction failure, retry/idempotency, audit/outbox atomicity, and tenant scoping are tested.
-7. The command still re-evaluates authorization before returning a protected idempotency replay.
+1. Protected command and authoritative membership/lifecycle check use the same PostgreSQL transaction and source of truth.
+2. The command locks the target resource and relevant membership/lifecycle rows using a documented consistent lock order.
+3. Revocation changes/locks the same authoritative membership row so command and revocation serialize.
+4. If revocation commits first, a later command observes inactive/revoked membership and performs no protected mutation.
+5. If a command obtains the relevant membership lock first, revocation waits and is serialized after that command.
+6. Deadlock, cancellation, transaction failure, retry/idempotency, audit/outbox atomicity, and tenant scoping are tested.
+7. Authorization is re-evaluated before returning a protected idempotency replay.
 8. No raw credentials or provider SDK objects enter the Application domain.
 
-A remote policy provider cannot be described as atomically consistent with the PostgreSQL mutation unless an actual shared transactional protocol is demonstrated.
-
-## 6. Approved fallback if Option A cannot be implemented
+## 6. Approved fallback if Option A cannot be proven
 
 Use Option B:
 - perform a fresh authoritative membership/policy check for each protected command and before protected idempotency replay;
 - disable positive authorization caching initially;
 - fail closed on denial, ambiguity, outage, or indeterminate results;
-- document the remaining check-to-mutation race and only state replication/staleness bounds that are verified from the actual source;
+- document the remaining check-to-mutation race and only state staleness bounds verified from the actual source;
 - do not claim immediate or atomic revocation.
 
-Option C (positive authorization caching with TTL) remains unapproved.
+## 7. Gate status
 
-## 7. Owner decision still required
-
-The policy decision is approved; authority ownership is not. Before implementing membership persistence, the owner must accept or reject this recommendation:
-
-- **A. Platform-owned Person/contextual membership/lifecycle authority in the same PostgreSQL transaction boundary** — recommended to make Option A feasible.
-- **B. Membership remains authoritative in a remote/separate system** — use Option B unless a real shared transaction/locking mechanism can be proven.
-- **C. Defer this ownership decision** — keep production protected commands fail-closed and do not implement a pretend membership adapter.
-
-No schema or provider is selected by this assessment.
-
-## 8. Gate result
-
-**Technical feasibility:** Option A is conditionally feasible with same-database platform-owned membership and a transaction-aware authorization/mutation boundary.  
-**Owner authority-ownership decision:** OPEN.  
-**Production revocation guarantee:** NOT IMPLEMENTED / NOT CLAIMED.
+- **Authority ownership direction:** APPROVED by project owner on 2026-10-20.
+- **Provider-neutral credential boundary:** previously accepted; no provider selected.
+- **Transactional protocol:** OPEN — design and tests required.
+- **Membership schema/adapters:** NOT AUTHORIZED UNTIL TRANSACTIONAL DESIGN GATE PASSES.
+- **Production atomic-revocation guarantee:** NOT IMPLEMENTED / NOT CLAIMED.
