@@ -144,3 +144,10 @@ The shared lock protocol is now implemented for the protected commands and these
 
 **Current status:** transaction-aware command wiring for create/submit/close = implemented; authority records and migration = CI-verified; replay after authoritative revocation = tested for create/submit/close; create-vs-revoke lock ordering = tested with independent PostgreSQL connections; submission/close revoke-race schedules and cross-context idempotency collision behavior = follow-up. Production identity credential verification and authority-record provisioning remain outside this slice. PR #5 remains open, draft, and unmerged.
 
+## 13. Latest revocation-race test iteration — pending exact-head CI
+
+- Added independent-DbContext PostgreSQL regression scenarios for submission started during learner-membership revocation and close started during action-grant revocation.
+- The first CI attempt for these two scenarios passed build and migration validation but failed one assertion because the domain's initial assignment status is `ACTIVE`, not `OPEN`. The denied close itself returned `FORBIDDEN`; the test expectation was corrected to `ACTIVE`.
+- Fix commit: `58055f3a38d798d02512b0f37f3f57994886c536`.
+- **Verification status:** the corrected assertion has not yet been confirmed by a completed CI run. Do not treat the latest two race tests as passing until exact-head CI succeeds.
+
