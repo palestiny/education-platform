@@ -464,6 +464,70 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Equal(2, verifyDb.OutboxMessages.Count());
     }
 
+    [Fact]
+    public async Task Revoked_creation_authorization_cannot_replay_durable_assignment_response()
+    {
+        using var db = CreateFreshDatabase();
+        var authorizer = new MutableCreationAuthorizer(AuthorizationDecision.Allowed);
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            authorizer, new AllowSubmissionAuthorizer());
+
+        var first = await service.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "learner-a", "{}", "create-revocation-replay-key", "correlation-create",
+            TestContext.Current.CancellationToken);
+        var counts = (db.Assignments.Count(), db.IdempotencyRecords.Count(),
+            db.AuditRecords.Count(), db.OutboxMessages.Count());
+
+        authorizer.Decision = AuthorizationDecision.Denied;
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "authorized-teacher", "context-a", "goal-a",
+                "learner-a", "{}", "create-revocation-replay-key", "correlation-retry",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Equal(counts, (db.Assignments.Count(), db.IdempotencyRecords.Count(),
+            db.AuditRecords.Count(), db.OutboxMessages.Count()));
+        Assert.Equal(2, authorizer.CallCount);
+        Assert.NotNull(first.Value.Id);
+    }
+
+    [Fact]
+    public async Task Revoked_submission_authorization_cannot_replay_durable_submission_response()
+    {
+        using var db = CreateFreshDatabase();
+        var authorizer = new MutableSubmissionAuthorizer(AuthorizationDecision.Allowed);
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), authorizer);
+
+        var created = await service.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a",
+            "authorized-learner", "{}", "submission-revocation-create", "correlation-create",
+            TestContext.Current.CancellationToken);
+        var first = await service.CreateSubmissionAsync(
+            "tenant-a", "authorized-learner", created.Value.Id, "authorized-learner",
+            "{\"answer\":\"test\"}", "submission-revocation-replay-key", "correlation-submit",
+            TestContext.Current.CancellationToken);
+        var counts = (db.Submissions.Count(), db.IdempotencyRecords.Count(),
+            db.AuditRecords.Count(), db.OutboxMessages.Count());
+
+        authorizer.Decision = AuthorizationDecision.Denied;
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateSubmissionAsync(
+                "tenant-a", "authorized-learner", created.Value.Id, "authorized-learner",
+                "{\"answer\":\"test\"}", "submission-revocation-replay-key", "correlation-retry",
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Equal(counts, (db.Submissions.Count(), db.IdempotencyRecords.Count(),
+            db.AuditRecords.Count(), db.OutboxMessages.Count()));
+        Assert.Equal(2, authorizer.CallCount);
+        Assert.NotNull(first.Value.Id);
+    }
+
     private static EducationPlatformDbContext CreateContext(string connection)
     {
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
