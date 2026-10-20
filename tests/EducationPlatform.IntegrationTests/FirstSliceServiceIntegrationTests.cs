@@ -227,6 +227,162 @@ public sealed class FirstSliceServiceIntegrationTests
         }
     }
 
+
+    [Fact]
+    public async Task Assignment_creation_denial_happens_before_store_and_idempotency()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableCreationAuthorizer(AuthorizationDecision.Denied);
+        var service = new FirstSliceService(
+            store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed),
+            authorizer, new AllowSubmissionAuthorizer());
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+                "{}", "create-denied-key", "correlation-denied"));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        authorizer.Decision = AuthorizationDecision.Allowed;
+        var allowed = await service.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+            "{}", "create-denied-key", "correlation-allowed");
+        Assert.False(allowed.Replayed);
+        Assert.Equal(2, authorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Indeterminate_assignment_creation_fails_closed_before_mutation()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableCreationAuthorizer(AuthorizationDecision.Indeterminate);
+        var service = new FirstSliceService(
+            store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed),
+            authorizer, new AllowSubmissionAuthorizer());
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+                "{}", "create-indeterminate-key", "correlation-indeterminate"));
+
+        Assert.Equal("AUTHORIZATION_UNAVAILABLE", error.Message);
+        authorizer.Decision = AuthorizationDecision.Allowed;
+        var allowed = await service.CreateAssignmentAsync(
+            "tenant-a", "authorized-teacher", "context-a", "goal-a", "learner-a",
+            "{}", "create-indeterminate-key", "correlation-allowed");
+        Assert.False(allowed.Replayed);
+    }
+
+    [Fact]
+    public async Task Submission_denial_happens_before_store_and_idempotency()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableSubmissionAuthorizer(AuthorizationDecision.Denied);
+        var service = new FirstSliceService(
+            store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed),
+            new AllowCreationAuthorizer(), authorizer);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateSubmissionAsync(
+                "tenant-a", "authorized-learner", "assignment-a", "authorized-learner",
+                "{\"answer\":\"test\"}", "submit-denied-key", "correlation-denied"));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        authorizer.Decision = AuthorizationDecision.Allowed;
+        var allowed = await service.CreateSubmissionAsync(
+            "tenant-a", "authorized-learner", "assignment-a", "authorized-learner",
+            "{\"answer\":\"test\"}", "submit-denied-key", "correlation-allowed");
+        Assert.False(allowed.Replayed);
+        Assert.Equal(2, authorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Submission_rejects_non_recipient_before_calling_authorizer()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new MutableSubmissionAuthorizer(AuthorizationDecision.Allowed);
+        var service = new FirstSliceService(
+            store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed),
+            new AllowCreationAuthorizer(), authorizer);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateSubmissionAsync(
+                "tenant-a", "another-learner", "assignment-a", "another-learner",
+                "{\"answer\":\"test\"}", "submit-wrong-recipient", "correlation-wrong-recipient"));
+
+        Assert.Equal("RESOURCE_NOT_FOUND", error.Message);
+        Assert.Equal(0, authorizer.CallCount);
+    }
+
+    [Fact]
+    public async Task Submission_authorization_uses_persisted_assignment_context()
+    {
+        var store = new InMemoryFirstSliceStore();
+        var authorizer = new CapturingSubmissionAuthorizer();
+        var service = new FirstSliceService(
+            store, new MutableCloseAuthorizer(AuthorizationDecision.Allowed),
+            new AllowCreationAuthorizer(), authorizer);
+
+        await service.CreateSubmissionAsync(
+            "tenant-a", "authorized-learner", "assignment-a", "authorized-learner",
+            "{\"answer\":\"test\"}", "submit-context-key", "correlation-context");
+
+        Assert.NotNull(authorizer.Request);
+        Assert.Equal("authorized-learner", authorizer.Request.PrincipalId);
+        Assert.Equal("tenant-a", authorizer.Request.TenantId);
+        Assert.Equal("assignment-a", authorizer.Request.AssignmentId);
+        Assert.Equal("context-a", authorizer.Request.LearningContextId);
+        Assert.Equal("authorized-learner", authorizer.Request.LearnerId);
+        Assert.Equal("submission.create", authorizer.Request.Action);
+    }
+
+
+    private sealed class MutableCreationAuthorizer(AuthorizationDecision initialDecision)
+        : IAssignmentCreationAuthorizer
+    {
+        public AuthorizationDecision Decision { get; set; } = initialDecision;
+        public int CallCount { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            AssignmentCreationAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            CallCount++;
+            return ValueTask.FromResult(Decision);
+        }
+    }
+
+    private sealed class MutableSubmissionAuthorizer(AuthorizationDecision initialDecision)
+        : ILearnerSubmissionAuthorizer
+    {
+        public AuthorizationDecision Decision { get; set; } = initialDecision;
+        public int CallCount { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            LearnerSubmissionAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            CallCount++;
+            return ValueTask.FromResult(Decision);
+        }
+    }
+
+    private sealed class CapturingSubmissionAuthorizer : ILearnerSubmissionAuthorizer
+    {
+        public LearnerSubmissionAuthorizationRequest? Request { get; private set; }
+
+        public ValueTask<AuthorizationDecision> AuthorizeAsync(
+            LearnerSubmissionAuthorizationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Request = request;
+            return ValueTask.FromResult(AuthorizationDecision.Allowed);
+        }
+    }
+
     private sealed class AllowCreationAuthorizer : IAssignmentCreationAuthorizer
     {
         public ValueTask<AuthorizationDecision> AuthorizeAsync(
