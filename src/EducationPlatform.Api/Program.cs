@@ -40,7 +40,6 @@ else
     builder.Services.AddSingleton<IAssignmentCreationAuthorizer, FailClosedAssignmentCreationAuthorizer>();
     builder.Services.AddSingleton<ILearnerSubmissionAuthorizer, FailClosedLearnerSubmissionAuthorizer>();
 }
-builder.Services.AddScoped<AssignmentLookup>();
 builder.Services.AddScoped<RequestExecutionContextAccessor>();
 builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
 if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
@@ -191,11 +190,6 @@ app.MapPost("/api/v1/assignments/{assignmentId}/close",
 app.Run();
 
 static object Error(string code) => new { code };
-
-public sealed class AssignmentLookup(IFirstSliceStore store)
-{
-    public EducationPlatform.Domain.FirstSlice.Assignment? Get(string tenantId, string id) => store.GetAssignment(tenantId, id);
-}
 
 public sealed record AssignmentRequest(string GoalId, string LearnerId, JsonElement Work);
 public sealed record SubmissionRequest(JsonElement Payload);
