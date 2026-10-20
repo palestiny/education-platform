@@ -1111,7 +1111,7 @@ public sealed class PostgresFirstSliceStoreTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await closeTask);
         Assert.Equal("FORBIDDEN", error.Message);
         using var verifyDb = CreateContext(connection!);
-        Assert.Equal("OPEN", verifyDb.Assignments.Single(x => x.Id == assignment.Value.Id).Status);
+        Assert.Equal("ACTIVE", verifyDb.Assignments.Single(x => x.Id == assignment.Value.Id).Status);
         Assert.Empty(verifyDb.IdempotencyRecords.Where(x => x.OperationScope == "assignment.close"));
         Assert.Empty(verifyDb.AuditRecords.Where(x => x.Operation == "assignment.close"));
         Assert.Empty(verifyDb.OutboxMessages.Where(x => x.MessageType == "Assignment.AssignmentClosed"));
