@@ -76,3 +76,24 @@ Do not infer identity-provider selection, credential-validation protocol, guardi
 - Exact-head CI for commit `201f3ea655048f967663d65ef31a7bf7d7def56c`: [run 39457015087](https://github.com/palestiny/education-platform/actions/runs/39457015087). Restore, build, EF migration validation, idempotent migration script generation, and the PostgreSQL test suite all completed successfully.
 - **Important boundary:** these are authority persistence records and relational integrity constraints only. The current first-slice service/store still does not read or lock these authority rows as part of protected mutations. Assignments do not yet have foreign keys to the authority records, and the transactional command contract is not wired. This checkpoint therefore does not prove atomic revocation, policy-change serialization, or authority-backed assignment eligibility.
 - Next: add fixture helpers to seed authoritative Person/context/goal/membership/grant rows; implement one PostgreSQL transaction-aware command adapter that locks and checks them before replay resolution; wire all three Application commands to that adapter; then prove revoke-vs-create/submit/close behavior with independent DbContexts and explicit transaction barriers. Keep the current store path only as a deliberate compatibility/test path, not as the production authorization boundary.
+
+## 9. Current implementation checkpoint — 2026-10-20 (authority schema exists; command boundary still missing)
+
+Verified against branch head `bb143f276c33cda46890a54db6b2aeeb9a4cb6cd` and PR #5:
+
+- The authority tables, EF mappings, migration, and relational-integrity tests are present; the prior checkpoint wording in sections 4 and 8 that says the migration is still a future step is historical and superseded by section 8's completed migration checkpoint.
+- `IFirstSliceTransactionalCommand` and its typed command records exist, but `FirstSliceService` still authorizes through separate Application ports and then calls `IFirstSliceStore`. `Program.cs` registers `PostgresFirstSliceStore`, not a transaction-aware command adapter.
+- Production authorization adapters remain fail-closed. This is safer than allowing requests through, but means the production API is not yet backed by the newly added authority records.
+- Existing store replay paths can read a durable idempotency response before any authorization check inside the same PostgreSQL transaction. The Application pre-check helps ordinary retries but does not satisfy the approved A1 transaction boundary.
+- No revocation command/writer currently enforces the same context-row lock protocol. Until every authority mutation follows that protocol, a context lock in a protected command alone would not prove serialization.
+
+### Required next implementation slice
+
+1. Add deterministic PostgreSQL fixture builders for Person, tenant-scoped LearningContext, LearningGoal, membership, and explicit action grants.
+2. Implement the PostgreSQL transaction-aware command adapter, including a common context lock protocol and final checks before idempotency replay. Do not silently reuse the existing store methods as if they were already safe.
+3. Route the three protected use cases through that adapter in production DI; preserve a clearly bounded test/in-memory path where needed.
+4. Add two-connection tests with transaction barriers for revoke-versus-create, revoke-versus-submit, revoke-versus-close, and replay-after-revocation; include same-key unique-conflict recovery.
+5. Add/verify authority revocation writers using the same lock order, then run the complete CI workflow on the exact final commit.
+
+**Status:** authority schema = implemented and CI-verified; transaction-aware command wiring = not implemented; atomic revocation = **NOT PROVEN**. PR #5 remains open, draft, and unmerged.
+
