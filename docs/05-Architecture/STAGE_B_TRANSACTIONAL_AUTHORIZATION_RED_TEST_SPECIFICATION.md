@@ -1,6 +1,6 @@
 # Stage B — Transactional Authorization RED Test Specification
 
-**Status:** SPECIFIED — EXECUTABLE RED/GREEN IMPLEMENTATION NEXT  
+**Status:** PARTIALLY IMPLEMENTED — exact-head CI and complete concurrency proof remain required  
 **Date:** 2026-10-20  
 **Approved design:** A1 typed transaction-aware persistence command  
 **Related:** `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`, `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`, `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`
@@ -11,15 +11,18 @@ Specify the smallest test-first increment that proves platform-owned membership/
 
 Do not create membership tables or production adapters before the initial command contract and test harness are reviewed. The current repository has no authoritative durable membership/policy model, so concurrency scenarios require a deliberately small test-owned authority fixture or schema proposal, not assumptions about a finished production schema.
 
-## 2. Current gap the RED tests must expose
+## 2. Current implementation status and remaining proof obligations
 
-The current Application service calls creation/submission authorization before invoking `IFirstSliceStore`. The PostgreSQL store opens its transaction after an idempotency lookup. This means the current call path cannot prove that:
-- authorization and mutation share a transaction;
-- membership revocation serializes with the final authorization decision;
-- protected idempotency replay re-checks current authority in the same transaction;
-- a duplicate-key race never returns a stored protected response without reauthorization.
+The branch now contains platform authority records and an EF migration, a typed `IFirstSliceTransactionalCommand`, a PostgreSQL implementation that locks the tenant-scoped learning context before authority checks and idempotency replay, and a revocation writer that takes the same context lock. Production DI registers the transactional command when PostgreSQL is configured outside Development/Testing.
 
-Existing tests for an earlier Application authorization check are not substitutes for the transaction-aware cases below.
+This is implementation evidence, not a blanket proof of atomic revocation. The required remaining checks include:
+- exact-head CI for the latest test additions;
+- deterministic two-connection barriers proving both lock orderings, rather than relying on task scheduling;
+- every future membership, grant, person, context, and goal lifecycle writer following a documented common lock order;
+- same-key behavior under concurrent conflict/deadlock, with retries restarting in a fresh transaction and reauthorizing;
+- explicit, tested idempotency scope across contexts and tenants.
+
+Legacy Application authorizers remain in the service composition for the non-transactional compatibility path. Production guarantees must be assessed against the actual production DI path and transaction-aware command, not the compatibility path.
 
 ## 3. Test harness rules
 
@@ -115,7 +118,7 @@ The RED work must extend the existing PostgreSQL test harness rather than create
 - Existing audit/outbox failure tests already demonstrate database-enforced rollback; preserve that coverage when adding authority tables.
 - `src/EducationPlatform.Application/FirstSlice/IFirstSliceStore.cs` currently exposes separate create/submit/close calls and has no transaction-aware authorization command. `FirstSliceService` invokes creation/submission authorizers before calling the store.
 - `src/EducationPlatform.Infrastructure/Persistence/PostgresFirstSliceStore.cs` performs the idempotency lookup before beginning the mutation transaction. Its unique-conflict recovery must not be reused as a protected replay path without restarting authorization in a fresh transaction.
-- `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` currently maps only Assignment, Submission, IdempotencyRecord, AuditRecord, and OutboxMessage. Authority entities and migration are absent.
+- `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` now maps the platform-owned authority records in addition to first-slice persistence entities; migration `20261020170000_AddPlatformAuthorityRecords` adds the corresponding tables and tenant/context constraints. Keep schema snapshot and migration validation in CI.
 - The integration test project targets .NET 10 and uses xUnit v3 plus Npgsql via the Infrastructure project. Existing CI runs PostgreSQL, build, EF migration validation, idempotent migration-script generation, and tests.
 
 **Sequencing guard:** introduce the provider-neutral typed command contract and a deterministic PostgreSQL authority fixture first; then add concurrency tests using explicit barriers and separate contexts. Only after RED behavior is observable should production authority mappings/migration and the command implementation be added. A compiling mock-only test is not proof of transaction serialization.
@@ -130,4 +133,4 @@ The RED specification becomes implementation-ready when:
 5. expected CI handling for RED is explicit;
 6. no production schema/provider/onboarding choice is smuggled into the test fixture.
 
-The implementation gate passes only when the tests become GREEN on an exact commit and CI proves the real PostgreSQL serialization cases. Until then, atomic revocation remains **NOT IMPLEMENTED / NOT PROVEN**.
+The implementation gate passes only when tests are GREEN on the exact latest commit and CI proves the real PostgreSQL serialization cases with deterministic synchronization. Current transactional code and revocation writer exist, but complete atomic-revocation behavior remains **NOT PROVEN** until lock-order coverage and exact-head verification pass.
