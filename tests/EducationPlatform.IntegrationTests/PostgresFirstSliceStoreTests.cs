@@ -864,6 +864,101 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Single(verifyDb.OutboxMessages.Where(x => x.MessageType == "Assignment.AssignmentCreated"));
     }
 
+    [Fact]
+    public async Task Concurrent_same_key_creation_commits_one_mutation_and_returns_one_replay()
+    {
+        using var seedDb = CreateFreshDatabase();
+        seedDb.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "same-key-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "same-key-learner", Status = "ACTIVE" });
+        seedDb.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "same-key-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        seedDb.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "same-key-goal", TenantId = "tenant-a",
+            ContextId = "same-key-context", Status = "ACTIVE"
+        });
+        seedDb.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "same-key-context",
+                PersonId = "same-key-teacher", MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "same-key-context",
+                PersonId = "same-key-learner", MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        seedDb.ActionPolicyGrants.Add(new ActionPolicyGrantAuthorityRecord
+        {
+            TenantId = "tenant-a", ContextId = "same-key-context", SubjectType = "PERSON",
+            SubjectId = "same-key-teacher", Action = "assignment.create", Status = "ACTIVE"
+        });
+        await seedDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var connection = Environment.GetEnvironmentVariable("EDUCATION_PLATFORM_TEST_CONNECTION");
+        Assert.False(string.IsNullOrWhiteSpace(connection));
+        using var firstDb = CreateContext(connection!);
+        using var secondDb = CreateContext(connection!);
+        using var blockerDb = CreateContext(connection!);
+        using var observerDb = CreateContext(connection!);
+        await firstDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        await secondDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        var firstPid = await firstDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
+        var secondPid = await secondDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
+
+        FirstSliceService BuildService(EducationPlatformDbContext db) => new(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+        var firstService = BuildService(firstDb);
+        var secondService = BuildService(secondDb);
+
+        // Force the first request to hold the context lock while waiting to insert its
+        // assignment. The second request must wait for that same context lock.
+        await using var blockerTransaction =
+            await blockerDb.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        await blockerDb.Database.ExecuteSqlRawAsync(
+            "LOCK TABLE assignments IN ACCESS EXCLUSIVE MODE",
+            TestContext.Current.CancellationToken);
+
+        const string key = "concurrent-same-key";
+        const string payload = "{\"work\":\"same-request\"}";
+        var firstTask = firstService.CreateAssignmentAsync(
+            "tenant-a", "same-key-teacher", "same-key-context", "same-key-goal", "same-key-learner",
+            payload, key, "same-key-correlation-1", TestContext.Current.CancellationToken).AsTask();
+        await AssertBackendWaitingForLockAsync(
+            observerDb, firstPid, TestContext.Current.CancellationToken);
+
+        var secondTask = secondService.CreateAssignmentAsync(
+            "tenant-a", "same-key-teacher", "same-key-context", "same-key-goal", "same-key-learner",
+            payload, key, "same-key-correlation-2", TestContext.Current.CancellationToken).AsTask();
+        await AssertBackendWaitingForLockAsync(
+            observerDb, secondPid, TestContext.Current.CancellationToken);
+
+        await blockerTransaction.CommitAsync(TestContext.Current.CancellationToken);
+        var results = await Task.WhenAll(firstTask, secondTask);
+
+        Assert.Single(results.Where(x => !x.Replayed));
+        Assert.Single(results.Where(x => x.Replayed));
+        Assert.Single(results.Select(x => x.Value.Id).Distinct());
+
+        using var verifyDb = CreateContext(connection!);
+        Assert.Single(verifyDb.Assignments.Where(x =>
+            x.TenantId == "tenant-a" && x.ContextId == "same-key-context"));
+        Assert.Single(verifyDb.IdempotencyRecords.Where(x =>
+            x.TenantId == "tenant-a" && x.ActorId == "same-key-teacher" &&
+            x.OperationScope == "assignment.create" && x.IdempotencyKey == key));
+        Assert.Single(verifyDb.AuditRecords.Where(x => x.Operation == "assignment.create"));
+        Assert.Single(verifyDb.OutboxMessages.Where(x => x.MessageType == "Assignment.AssignmentCreated"));
+    }
+
     private static async Task AssertBackendWaitingForLockAsync(
         EducationPlatformDbContext observerDb, int backendPid, CancellationToken cancellationToken)
     {
