@@ -725,6 +725,11 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.False(string.IsNullOrWhiteSpace(connection));
         using var commandDb = CreateContext(connection!);
         using var revokeDb = CreateContext(connection!);
+        using var observerDb = CreateContext(connection!);
+        await commandDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        var commandBackendPid = await commandDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
         var service = new FirstSliceService(
             new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
             new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
@@ -752,6 +757,8 @@ public sealed class PostgresFirstSliceStoreTests
             "tenant-a", "race-teacher", "race-context", "race-goal", "race-learner",
             "{\"work\":\"race\"}", "race-revocation-key", "race-correlation",
             TestContext.Current.CancellationToken).AsTask();
+        await AssertBackendWaitingForLockAsync(
+            observerDb, commandBackendPid, TestContext.Current.CancellationToken);
         await revokeTransaction.CommitAsync(TestContext.Current.CancellationToken);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await createTask);
@@ -761,6 +768,27 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Empty(verifyDb.IdempotencyRecords);
         Assert.Empty(verifyDb.AuditRecords);
         Assert.Empty(verifyDb.OutboxMessages);
+    }
+
+    private static async Task AssertBackendWaitingForLockAsync(
+        EducationPlatformDbContext observerDb, int backendPid, CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; attempt < 100; attempt++)
+        {
+            var waitEvent = await observerDb.Database
+                .SqlQueryRaw<string?>(
+                    "SELECT wait_event_type AS \"Value\" FROM pg_stat_activity WHERE pid = {0}",
+                    backendPid)
+                .SingleOrDefaultAsync(cancellationToken);
+            if (waitEvent == "Lock")
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(10), cancellationToken);
+        }
+
+        Assert.Fail($"PostgreSQL backend {backendPid} did not enter a lock wait within one second.");
     }
 
     private static EducationPlatformDbContext CreateContext(string connection)
@@ -999,6 +1027,11 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.False(string.IsNullOrWhiteSpace(connection));
         using var commandDb = CreateContext(connection!);
         using var revokeDb = CreateContext(connection!);
+        using var observerDb = CreateContext(connection!);
+        await commandDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        var commandBackendPid = await commandDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
         var submitService = new FirstSliceService(
             new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
             new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
@@ -1021,6 +1054,8 @@ public sealed class PostgresFirstSliceStoreTests
             "tenant-a", "race-submit-learner", assignment.Value.Id, "race-submit-learner",
             "{\"answer\":\"race\"}", "race-submit-key", "race-submit-correlation",
             TestContext.Current.CancellationToken).AsTask();
+        await AssertBackendWaitingForLockAsync(
+            observerDb, commandBackendPid, TestContext.Current.CancellationToken);
         await revokeTransaction.CommitAsync(TestContext.Current.CancellationToken);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await submitTask);
@@ -1085,6 +1120,11 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.False(string.IsNullOrWhiteSpace(connection));
         using var commandDb = CreateContext(connection!);
         using var revokeDb = CreateContext(connection!);
+        using var observerDb = CreateContext(connection!);
+        await commandDb.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        var commandBackendPid = await commandDb.Database
+            .SqlQueryRaw<int>("SELECT pg_backend_pid() AS \"Value\"")
+            .SingleAsync(TestContext.Current.CancellationToken);
         var closeService = new FirstSliceService(
             new PostgresFirstSliceStore(commandDb), new AllowCloseAuthorizer(),
             new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
@@ -1106,6 +1146,8 @@ public sealed class PostgresFirstSliceStoreTests
         var closeTask = closeService.CloseAssignmentAsync(
             "tenant-a", "race-close-teacher", assignment.Value.Id, 1,
             "race-close-key", "race-close-correlation", TestContext.Current.CancellationToken);
+        await AssertBackendWaitingForLockAsync(
+            observerDb, commandBackendPid, TestContext.Current.CancellationToken);
         await revokeTransaction.CommitAsync(TestContext.Current.CancellationToken);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(async () => await closeTask);
