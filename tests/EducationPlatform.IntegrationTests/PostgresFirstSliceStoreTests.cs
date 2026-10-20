@@ -799,7 +799,6 @@ public sealed class PostgresFirstSliceStoreTests
 
         return db;
     }
-}
 
     [Fact]
     public async Task Transactional_submission_replay_is_denied_after_authoritative_membership_revocation()
@@ -946,4 +945,4 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Equal(1, verifyDb.AuditRecords.Count(x => x.Operation == "assignment.close"));
         Assert.Equal(1, verifyDb.OutboxMessages.Count(x => x.MessageType == "Assignment.AssignmentClosed"));
     }
-
+}
