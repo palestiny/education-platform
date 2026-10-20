@@ -1,6 +1,6 @@
 # Stage B — Transactional Authorization Design Gate
 
-**Status:** A1 APPROVED — TRANSACTION CONTRACT DEFINED; RED TESTS REQUIRED BEFORE IMPLEMENTATION  
+**Status:** A1 IMPLEMENTED IN FIRST SLICE — CONCURRENCY EVIDENCE PARTIAL; BROADER LIFECYCLE WRITERS AND RETRY SEMANTICS REMAIN OPEN  
 **Date:** 2026-10-20  
 **Decision owner:** Project Owner  
 **Authority ownership:** Approved — platform-owned Person/contextual membership/lifecycle state in the same PostgreSQL transaction boundary as protected first-slice commands  
@@ -8,7 +8,9 @@
 
 ## 1. Purpose
 
-Turn the approved authority-ownership direction into a verifiable transaction contract before adding membership schema or production authorization adapters. This is a design gate, not permission to implement an assumed schema.
+Turn the approved authority-ownership direction into a verifiable transaction contract. The original design and RED-first sequence below records the decision history; the current branch has since added platform-owned authority records, the A1 transaction-aware command, a revocation writer, and PostgreSQL concurrency tests. Do not read historical statements such as “not yet implemented” as the current repository state.
+
+**Current verification evidence (2026-10-20):** GitHub Actions Run #685 passed on commit `04526afb7682f417f94a271c5183bd049e86a343`; all 109 tests passed, including same-key concurrent creation and the two tested context-lock orderings. This does not prove every authority lifecycle writer uses the lock protocol, nor does it prove production credential authentication or bounded deadlock retry.
 
 ## 2. Approved constraints
 
@@ -72,7 +74,7 @@ Inspection of the current PR branch confirms:
 
 - `FirstSliceService` currently calls the authorizer before calling `IFirstSliceStore`; this leaves the check-to-mutation gap.
 - `PostgresFirstSliceStore` owns the EF Core database context and transaction helper. It currently checks idempotency records before opening the transaction, then performs mutation, idempotency write, audit, and outbox work atomically.
-- Submission already re-reads and locks the tenant-scoped assignment row with `FOR UPDATE`, but membership/lifecycle rows do not yet exist and are not locked.
+- Submission re-reads and locks the tenant-scoped assignment row with `FOR UPDATE`. Platform-owned membership/grant records now exist and are checked within the transaction; the context row is the shared serialization lock, while every lifecycle writer that changes authority must use that same lock protocol.
 - Current authorization request records are provider-neutral Application contracts. Keep them provider-neutral; do not pass tokens, provider SDK objects, or a database transaction through public API/Application request models.
 
 **Approved design: Option A1, refined as a typed transaction-aware command boundary.**
@@ -85,7 +87,7 @@ Why prefer this over an explicit unit-of-work that passes a transaction across m
 - it reduces the risk of separate ports accidentally using different connections or transaction scopes;
 - the trade-off is that the transaction-aware command boundary must be designed carefully so application policy meaning remains explicit and persistence does not become a hidden general-purpose authorization engine.
 
-A1 is owner-approved. The following command contract is the implementation target; it does not authorize schema creation until the RED tests and schema-level ownership details are reviewed.
+A1 is owner-approved and has been implemented for the first slice. The contract below remains the reference for reviewing the implementation and future lifecycle writers; it is not evidence that every production identity/schema concern is complete.
 
 ### 6.1 Typed command contract
 
@@ -121,7 +123,7 @@ If the final schema cannot provide stable lockable authority rows for a relevant
 - Never return a protected replay before rechecking current authorization within the same transaction boundary.
 - A fingerprint mismatch returns the existing idempotency conflict outcome only after authorization, without disclosing the saved response.
 - Denial/indeterminate outcomes produce no successful mutation/idempotency/audit-success/outbox records. Security-denial telemetry, if later added, must be separately defined and must not reveal protected resource data.
-- The existing store checks idempotency before opening its transaction. The implementation must move protected idempotency lookup/replay into the transaction after authoritative authorization and required locks.
+- Historical baseline: the compatibility store checked idempotency before opening its transaction. The production A1 command now resolves protected idempotency inside its transaction after current authority checks and context/resource locks. Keep the compatibility path explicitly separate from production guarantees.
 - A uniqueness race must roll back the losing attempt, then re-enter the command through the full authorization/transaction protocol before returning any stored response. Never return the winning response directly from a catch block without fresh authorization.
 - Mutation, idempotency success result, audit, and outbox writes commit or roll back together.
 - Retry only classified transient database errors, with a bounded policy and a fresh transaction/authorization on each retry. Do not retry denials, validation errors, or fingerprint conflicts. Cancellation before commit rolls back; no success response is returned until commit succeeds.
