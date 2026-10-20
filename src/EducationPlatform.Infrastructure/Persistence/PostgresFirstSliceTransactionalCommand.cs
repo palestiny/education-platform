@@ -23,8 +23,8 @@ public sealed class PostgresFirstSliceTransactionalCommand(EducationPlatformDbCo
             await LockAndValidateContextAsync(command.TenantId, command.ContextId, cancellationToken);
             await RequirePersonAsync(command.ActorId, cancellationToken);
             await RequirePersonAsync(command.LearnerId, cancellationToken);
-            await RequireMembershipAsync(command.TenantId, command.ContextId, command.ActorId, cancellationToken);
-            await RequireMembershipAsync(command.TenantId, command.ContextId, command.LearnerId, cancellationToken);
+            await RequireMembershipAsync(command.TenantId, command.ContextId, command.ActorId, "TEACHER", cancellationToken);
+            await RequireMembershipAsync(command.TenantId, command.ContextId, command.LearnerId, "LEARNER", cancellationToken);
             await RequireGoalAsync(command.TenantId, command.ContextId, command.GoalId, cancellationToken);
             await RequireGrantAsync(command.TenantId, command.ContextId, command.ActorId, "assignment.create", cancellationToken);
 
@@ -86,7 +86,7 @@ public sealed class PostgresFirstSliceTransactionalCommand(EducationPlatformDbCo
                 throw new InvalidOperationException("RESOURCE_NOT_FOUND");
 
             await RequirePersonAsync(command.ActorId, cancellationToken);
-            await RequireMembershipAsync(command.TenantId, assignment.ContextId, command.ActorId, cancellationToken);
+            await RequireMembershipAsync(command.TenantId, assignment.ContextId, command.ActorId, "LEARNER", cancellationToken);
             await RequireGrantAsync(command.TenantId, assignment.ContextId, command.ActorId, "submission.create", cancellationToken);
 
             var replay = await FindReplayAsync<Submission>(
@@ -146,7 +146,7 @@ public sealed class PostgresFirstSliceTransactionalCommand(EducationPlatformDbCo
                 throw new InvalidOperationException("RESOURCE_NOT_FOUND");
 
             await RequirePersonAsync(command.ActorId, cancellationToken);
-            await RequireMembershipAsync(command.TenantId, assignment.ContextId, command.ActorId, cancellationToken);
+            await RequireMembershipAsync(command.TenantId, assignment.ContextId, command.ActorId, "TEACHER", cancellationToken);
             await RequireGrantAsync(command.TenantId, assignment.ContextId, command.ActorId, "assignment.close", cancellationToken);
 
             var replay = await FindReplayAsync<Assignment>(
@@ -209,11 +209,12 @@ public sealed class PostgresFirstSliceTransactionalCommand(EducationPlatformDbCo
     }
 
     private async Task RequireMembershipAsync(
-        string tenantId, string contextId, string personId, CancellationToken cancellationToken)
+        string tenantId, string contextId, string personId, string requiredMembershipType, CancellationToken cancellationToken)
     {
         var membership = await db.ContextualMemberships.AsNoTracking().AnyAsync(
             x => x.TenantId == tenantId && x.ContextId == contextId &&
-                 x.PersonId == personId && x.Status == "ACTIVE", cancellationToken);
+                 x.PersonId == personId && x.MembershipType == requiredMembershipType &&
+                 x.Status == "ACTIVE", cancellationToken);
         if (!membership)
             throw new InvalidOperationException("FORBIDDEN");
     }
