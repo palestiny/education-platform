@@ -13,6 +13,70 @@ public sealed class PostgresPersistenceCollection { }
 public sealed class PostgresFirstSliceStoreTests
 {
     [Fact]
+    public async Task Authority_goal_foreign_key_rejects_cross_tenant_context_reference()
+    {
+        using var db = CreateFreshDatabase();
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "context-authority-a",
+            TenantId = "tenant-a",
+            Status = "ACTIVE"
+        });
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "goal-authority-a",
+            TenantId = "tenant-a",
+            ContextId = "context-authority-a",
+            Status = "ACTIVE"
+        });
+        db.SaveChanges();
+
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "goal-authority-b",
+            TenantId = "tenant-b",
+            ContextId = "context-authority-a",
+            Status = "ACTIVE"
+        });
+
+        await Assert.ThrowsAsync<DbUpdateException>(async () =>
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken));
+
+        db.ChangeTracker.Clear();
+        Assert.Single(db.LearningContexts);
+        Assert.Single(db.LearningGoals);
+        Assert.Equal("tenant-a", db.LearningGoals.Single().TenantId);
+    }
+
+    [Fact]
+    public async Task Authority_membership_foreign_keys_reject_unknown_person()
+    {
+        using var db = CreateFreshDatabase();
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "membership-context",
+            TenantId = "tenant-a",
+            Status = "ACTIVE"
+        });
+        db.SaveChanges();
+
+        db.ContextualMemberships.Add(new ContextualMembershipAuthorityRecord
+        {
+            TenantId = "tenant-a",
+            ContextId = "membership-context",
+            PersonId = "person-does-not-exist",
+            MembershipType = "LEARNER",
+            Status = "ACTIVE"
+        });
+
+        await Assert.ThrowsAsync<DbUpdateException>(async () =>
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken));
+
+        db.ChangeTracker.Clear();
+        Assert.Empty(db.ContextualMemberships);
+    }
+
+    [Fact]
     public async Task Atomic_assignment_creation_persists_idempotency_audit_and_outbox()
     {
         using var db = CreateFreshDatabase();
@@ -550,6 +614,11 @@ public sealed class PostgresFirstSliceStoreTests
         var db = new EducationPlatformDbContext(options);
         db.Database.Migrate();
 
+        db.ActionPolicyGrants.RemoveRange(db.ActionPolicyGrants);
+        db.ContextualMemberships.RemoveRange(db.ContextualMemberships);
+        db.LearningGoals.RemoveRange(db.LearningGoals);
+        db.Persons.RemoveRange(db.Persons);
+        db.LearningContexts.RemoveRange(db.LearningContexts);
         db.Assignments.RemoveRange(db.Assignments);
         db.Submissions.RemoveRange(db.Submissions);
         db.IdempotencyRecords.RemoveRange(db.IdempotencyRecords);
