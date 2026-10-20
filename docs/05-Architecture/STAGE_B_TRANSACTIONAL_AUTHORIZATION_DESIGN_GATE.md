@@ -1,6 +1,6 @@
 # Stage B — Transactional Authorization Design Gate
 
-**Status:** DESIGN IN PROGRESS — NO SCHEMA OR PRODUCTION ADAPTER AUTHORIZED  
+**Status:** DESIGN PROPOSAL RECORDED — OWNER REVIEW REQUIRED BEFORE IMPLEMENTATION  
 **Date:** 2026-10-20  
 **Decision owner:** Project Owner  
 **Authority ownership:** Approved — platform-owned Person/contextual membership/lifecycle state in the same PostgreSQL transaction boundary as protected first-slice commands  
@@ -66,7 +66,28 @@ Tests must use separate database contexts/connections where needed to prove actu
 
 The gate must compare module-boundary clarity, testability, lock ownership, transaction leakage, cancellation, retry safety, and complexity. Recommend one option with explicit trade-offs before implementation. Do not silently select schema or widen the product scope.
 
-## 6. RED test plan required before GREEN
+## 6. Repository fit assessment and recommendation
+
+Inspection of the current PR branch confirms:
+
+- `FirstSliceService` currently calls the authorizer before calling `IFirstSliceStore`; this leaves the check-to-mutation gap.
+- `PostgresFirstSliceStore` owns the EF Core database context and transaction helper. It currently checks idempotency records before opening the transaction, then performs mutation, idempotency write, audit, and outbox work atomically.
+- Submission already re-reads and locks the tenant-scoped assignment row with `FOR UPDATE`, but membership/lifecycle rows do not yet exist and are not locked.
+- Current authorization request records are provider-neutral Application contracts. Keep them provider-neutral; do not pass tokens, provider SDK objects, or a database transaction through public API/Application request models.
+
+**Recommendation for owner review: Option A1, refined as a typed transaction-aware command boundary.**
+
+The Application use case should continue validating request intent and constructing a typed command. A dedicated transaction-aware command/store operation should own the PostgreSQL transaction, perform the final authoritative membership/lifecycle and resource-state reads/locks using the same DbContext/connection, then commit mutation, idempotency, audit, and outbox together. Keep provider-specific credential validation outside this transaction. Keep authorization outcomes typed and explicit; do not turn an external or remote policy call into a supposed atomic check.
+
+Why prefer this over an explicit unit-of-work that passes a transaction across multiple ports:
+- the existing persistence store already owns the EF Core transaction and atomic audit/outbox work;
+- it avoids leaking EF transaction objects across module/application contracts;
+- it reduces the risk of separate ports accidentally using different connections or transaction scopes;
+- the trade-off is that the transaction-aware command boundary must be designed carefully so application policy meaning remains explicit and persistence does not become a hidden general-purpose authorization engine.
+
+A1 is a recommendation, **not yet an owner-approved implementation choice**. Before coding, the command contract must specify how the application supplies typed authorization intent and how authoritative membership/policy facts are evaluated in the transaction without external calls. If this separation cannot be kept clear, compare A2 again and bring the trade-off back to the owner.
+
+## 7. RED test plan required before GREEN
 
 At minimum, author executable tests for:
 
@@ -83,7 +104,7 @@ At minimum, author executable tests for:
 
 RED must fail because the intended behavior is absent, not because the test harness or database setup is broken.
 
-## 7. Exit criteria
+## 8. Exit criteria
 
 This gate can pass only when:
 
@@ -95,10 +116,10 @@ This gate can pass only when:
 - owner review is requested for any new product-level policy choice;
 - no atomic guarantee is claimed until exact-head CI proves the relevant concurrency scenarios.
 
-## 8. Current result
+## 9. Current result
 
 **Authority-ownership direction:** APPROVED.  
 **Transaction design:** OPEN.  
 **Membership schema and production adapter implementation:** NOT YET AUTHORIZED.  
 **Atomic revocation:** NOT IMPLEMENTED / NOT CLAIMED.  
-**Next action:** compare A1 and A2 against the existing repository contracts, recommend one, and present any remaining owner decisions before writing implementation code.
+**Next action:** owner reviews the A1 recommendation; after approval, define the concrete command contract and RED tests before schema or production adapter implementation.
