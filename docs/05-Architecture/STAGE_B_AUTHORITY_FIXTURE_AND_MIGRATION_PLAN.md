@@ -97,3 +97,9 @@ Verified against branch head `bb143f276c33cda46890a54db6b2aeeb9a4cb6cd` and PR #
 
 **Status:** authority schema = implemented and CI-verified; transaction-aware command wiring = not implemented; atomic revocation = **NOT PROVEN**. PR #5 remains open, draft, and unmerged.
 
+## 10. Documentation checkpoint CI result — 2026-10-20
+
+- Commit `2e5fcdbc9e8c60fcb02eea78dc3d0834a4285ea9` passed GitHub Actions run [39459467470](https://github.com/palestiny/education-platform/actions/runs/39459467470).
+- This run validates the repository's existing restore/build/migration/test workflow for the documentation checkpoint. It does **not** validate a transaction-aware authority command because no such adapter has been implemented in this commit.
+- The next code change must be runtime behavior plus tests, not another documentation-only completion claim. The acceptance criteria remain: authority checks and idempotency replay inside the same PostgreSQL transaction; all protected commands routed through that boundary; revocation writers share its lock protocol; independent-connection concurrency tests pass on the exact head.
+
