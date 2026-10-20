@@ -159,13 +159,22 @@ Required implementation evidence: Application-level authorization for create and
 
 **Still OPEN:** authoritative identity→Person mapping, lifecycle state, durable contextual membership and eligibility predicates, explicit resource/action policy storage, production credential validation, and revocation consistency. Option A is only valid if the chosen membership source can share the command transaction/locking protocol; otherwise use the approved fresh-check/no-positive-cache fallback and document the residual race. This implementation does not select a provider or membership schema and does not close production readiness.
 
-## 13. Revocation transaction feasibility — owner decision open
+## 13. Revocation authority ownership — owner decision approved
 
-The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`.
+The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`; the next design gate is `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`.
 
-- **Conditional feasibility:** Option A can fit the accepted modular-monolith/PostgreSQL architecture if authoritative platform membership/lifecycle state shares the protected command's database transaction/locking boundary.
-- **Important limitation:** current Application authorization ports run before the store mutation; this call shape alone does not provide atomic revocation. A transaction-aware final membership check/lock must be designed before claiming Option A.
-- **Recommended for owner review, not yet approved:** provider-neutral credential validation with platform-owned Person/contextual membership/lifecycle authority in the same PostgreSQL boundary.
-- If membership authority remains remote/separate without a real shared transaction, use the approved Option B fallback: fresh authoritative checks, no positive cache initially, fail closed, and document the residual race.
-- **Owner authority-ownership decision remains OPEN.** Do not create membership tables or claim atomic revocation until the decision and transaction protocol are approved. Production authorization remains fail-closed.
+- **Owner decision (2026-10-20): APPROVED** — platform-owned Person mapping and contextual membership/lifecycle state in the same PostgreSQL transaction authority as protected first-slice commands; external credential verification remains provider-neutral.
+- **Important limitation:** current Application authorization ports run before the store mutation; this call shape alone does not provide atomic revocation. A transaction-aware final membership/policy check and lock must be designed and verified before claiming Option A.
+- **Next gate:** compare transaction-aware persistence command versus explicit unit-of-work/coordinator, specify global lock ordering, and define real PostgreSQL concurrency tests for command-versus-revocation serialization.
+- If same-transaction serialization cannot be demonstrated, use the approved Option B fallback: fresh authoritative checks, no positive cache initially, fail closed, and document the residual race.
+- Approval covers the authority-ownership direction only. It does not select a schema, provider, onboarding flow, or authorize implementation before the transaction design gate passes. Production authorization remains fail-closed.
 
+
+
+## 14. Owner approval and exact-head documentation increment — 2026-10-20
+
+- Owner approved platform-owned Person/contextual membership/lifecycle authority within the protected commands' PostgreSQL transaction boundary; external credential verification remains provider-neutral.
+- The transaction-aware authorization design gate is documented in `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`.
+- Approval does not establish atomic revocation: the transaction protocol, lock order, and PostgreSQL command-versus-revocation concurrency tests remain open.
+- Latest docs-only head: `d8c7c35300ae8b6853d71b2b3e24e6fd2e709ace`. Exact-head CI must be checked before calling this increment verified.
+- PR #5 remains draft/open/unmerged. No membership schema/provider was selected and no merge was performed.
