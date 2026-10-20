@@ -1,7 +1,7 @@
 # Stage B — Identity & Membership Contract Test Plan
 
 **Project:** Education Platform  
-**Status:** BASELINE DECISIONS ACCEPTED — ASSIGNMENT-CLOSE APPLICATION CONTRACT IMPLEMENTED; BROADER IDENTITY/MEMBERSHIP CONTRACTS STILL OPEN  
+**Status:** ASSIGNMENT-CLOSE APPLICATION CONTRACT IMPLEMENTED; ASSIGNMENT-CREATE/SUBMISSION POLICY ACCEPTED ON 2026-10-20; APPLICATION CONTRACT IMPLEMENTATION STILL OPEN  
 **Date:** 2026-10-09  
 **Inputs:** `PROVIDER_NEUTRAL_IDENTITY_MEMBERSHIP_CONTRACT_PROPOSAL.md`, `PRODUCTION_AUTHENTICATION_ADAPTER_TDD_RED_SPECIFICATION.md`
 
@@ -153,3 +153,38 @@ The close authorization decision must happen **before** the close mutation and b
 - **Application port:** centralizes the use-case authorization boundary and supports deterministic fake implementations in contract tests while keeping the policy implementation provider-neutral.
 
 Implementation evidence: `src/EducationPlatform.Application/Security/AssignmentCloseAuthorization.cs`, `src/EducationPlatform.Application/FirstSlice/FirstSliceService.cs`, and `src/EducationPlatform.Api/Security/FailClosedAssignmentCloseAuthorizer.cs`. The Development/Testing fixture is deterministic; production remains fail-closed until approved real membership/policy adapters are implemented. The implementation does not authorize assignment-create or learner-submit policy changes.
+
+
+## 9. Owner-approved assignment creation and learner submission contract cases
+
+The owner approved the corresponding Option B decisions on 2026-10-20. These are required first-slice outcomes. This section specifies behavior to implement; it does **not** claim the behavior is already wired into the Application service or backed by production membership/policy adapters.
+
+| Test ID | Given | When | Expected result | Required side-effect assertion |
+|---|---|---|---|---|
+| CREATE-POLICY-001 | Actor has no active eligible membership in the target learning context | Actor creates an assignment | Deny | No assignment, idempotency success, audit success, or outbox success record |
+| CREATE-POLICY-002 | Actor has membership but no explicit `assignment.create` grant for the context/action | Actor creates an assignment | Deny | No mutation; a relationship or role label alone cannot grant access |
+| CREATE-POLICY-003 | Membership or policy lookup is unavailable, ambiguous, or indeterminate | Actor creates an assignment | Fail closed with safe operational outcome | No assignment or success reliability records |
+| CREATE-POLICY-004 | Goal belongs to a different context or tenant | Actor creates an assignment | Reject using approved non-disclosure behavior | No cross-context/tenant mutation |
+| CREATE-POLICY-005 | Selected learner is not eligible in the same context | Actor creates an assignment | Deny | No assignment or success reliability records |
+| CREATE-POLICY-006 | Actor has active eligible membership and explicit context-scoped `assignment.create` permission; goal and learner are eligible in the same context | Actor creates an assignment | Allow subject to existing domain validation | Exactly one assignment with server-derived tenant/context and one persisted recipient |
+| SUBMIT-POLICY-001 | Authenticated internal person differs from the persisted assignment recipient | Actor submits | Reject using approved non-disclosure behavior | No submission or success reliability records |
+| SUBMIT-POLICY-002 | Recipient has no active eligible membership/participation in the assignment's exact context | Actor submits | Deny | No submission, idempotency success, audit success, or outbox success record |
+| SUBMIT-POLICY-003 | Recipient membership exists but explicit `submission.create` policy denies the action | Actor submits | Deny | No mutation; membership/relationship alone is not permission |
+| SUBMIT-POLICY-004 | Membership/policy source is unavailable, ambiguous, or indeterminate | Actor submits | Fail closed | No submission or success reliability records |
+| SUBMIT-POLICY-005 | Assignment belongs to another tenant/context | Actor submits | Reject using approved non-disclosure behavior | No cross-tenant/context mutation or protected-resource disclosure |
+| SUBMIT-POLICY-006 | Assignment is closed or closes concurrently after an earlier read | Actor submits | Reject at persistence boundary | Preserve row-lock/re-read; no submission or success reliability records |
+| SUBMIT-POLICY-007 | Recipient and context are authorized but retry replays a prior protected result after access was revoked | Actor retries | Re-authorize before returning protected replay | No replay to a currently unauthorized actor; no duplicate side effects |
+| REVOKE-CONSISTENCY-001 | Membership and command can share a supported authoritative transaction/locking protocol | Revocation races a submission | Serialize revocation and submission according to documented lock order | Test both operation orders and prove no commit based on membership revoked earlier in serialization order |
+| REVOKE-CONSISTENCY-002 | Membership authority cannot join the command transaction | Revocation races a submission under fallback Option B | Fresh authoritative check for each command; fail closed on unavailable/indeterminate result | Explicitly document and test the remaining check-to-mutation race; do not claim atomic revocation or an unverified maximum delay |
+
+### Required Application boundary
+
+Assignment creation and learner submission must be authorized in the Application use case, not only in HTTP endpoints. The Application contract must accept internal actor identity and trusted server-resolved resource/context identifiers, return explicit `Allowed`, `Denied`, or `Indeterminate`, and allow mutation only for `Allowed`. Authorization must occur before protected idempotency replay. Test bearer tokens and deterministic fixtures remain test-only.
+
+### Revocation implementation decision rule
+
+Option A is preferred only if the selected authoritative membership source can participate in the same transaction/locking protocol as the protected command. If that is not feasible, implement the approved Option B fallback: authoritative check on each command, no positive authorization cache initially, fail closed, and explicitly document the residual race and verified source consistency. Positive cached authorization (Option C) is not approved for this slice.
+
+### Current implementation status
+
+The existing first-slice API performs coarse endpoint authority checks and the Application service currently enforces the contextual policy port for assignment-close only. The approved assignment-create and learner-submission policy contracts above are **not yet implemented in the Application use cases**. Durable membership/policy adapters and production identity validation remain separate open gates. Do not invent a provider, membership schema, eligibility source, or transactional boundary to make these tests pass.
