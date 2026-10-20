@@ -49,3 +49,13 @@ Revocation and policy-change commands must lock/update the same authoritative ro
 This plan is not itself proof of atomic revocation. That claim remains **NOT IMPLEMENTED / NOT PROVEN** until concurrency tests demonstrate real database blocking/commit ordering and pass on the exact final commit.
 
 Do not infer identity-provider selection, credential-validation protocol, guardian/consent rules, onboarding, group assignment behavior, or physical tenant isolation from this plan.
+
+
+## 6. Exact-head verification checkpoint — 2026-10-20
+
+- **Branch head:** `82d20616b2a68c46e4d0c5e211cccb6012c2b079`
+- **CI run:** [run 39450253493](https://github.com/palestiny/education-platform/actions/runs/39450253493), workflow run #633 — success.
+- Verified steps on that exact head: restore, build, EF migration validation, idempotent migration-script generation, and test suite.
+- This commit only adds/updates design documentation; it does not add authority tables or change runtime behavior.
+- **Next implementation checkpoint remains unchanged:** add authority fixture and RED concurrency/replay tests, then implement the EF model and generated migration using the repository's actual .NET/EF tooling. Do not manually claim migration correctness from documentation-only CI.
+- PR #5 remains open, draft, and unmerged.
