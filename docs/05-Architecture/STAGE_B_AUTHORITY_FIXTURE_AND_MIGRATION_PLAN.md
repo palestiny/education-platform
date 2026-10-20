@@ -8,7 +8,7 @@
 
 The current EF Core context maps only assignments, submissions, idempotency records, audit records, and outbox messages. Assignment context, goal, and learner identifiers are bounded strings, not foreign keys to authoritative rows. The typed Application command contract exists at `IFirstSliceTransactionalCommand.cs`, but `FirstSliceService` is not wired to it and there is no transactional implementation yet.
 
-The latest exact branch head at the time of this checkpoint is `07dfcea1f4f76205545374d1f74b22a5053f4b0b`. CI run [39450635293](https://github.com/palestiny/education-platform/actions/runs/39450635293), workflow run #634, completed successfully. This verifies the current branch baseline and documentation, not transactional revocation behavior.
+The branch has since added concurrent same-key assignment creation and assignment-close coverage. The test compilation fixes are on commit `75eb9cd081b602e2d8236115c6945fec069470ae`; CI run [39454067674](https://github.com/palestiny/education-platform/actions/runs/39454067674) completed successfully, including build, EF migration validation, idempotent migration script generation, and the PostgreSQL test suite. This verifies the latest tested commit, not transactional revocation behavior. The next implementation gate remains the authority schema plus a generated and reviewed EF migration; do not introduce authority entities into the active DbContext without updating the migration and model snapshot in the same change.
 
 ## 2. Minimum authority records for the approved first slice
 
