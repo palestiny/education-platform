@@ -129,3 +129,17 @@ PR #2 remains a reviewable, unmerged change set; a successful CI run verifies on
 - Cross-tenant learner submission and post-close submission rejection tests are also included.
 - **Still open:** production identity provider/credential validation, durable Person/membership and resource-policy adapters, revocation freshness/atomicity across authorization and mutation, and the broader learning journey.
 - PR #5 remains draft and unmerged. Passing CI is not merge authorization.
+
+## 11. Owner-approved Stage B authorization decisions — 2026-10-20
+
+The project owner accepted the decisions recorded in `STAGE_B_ASSIGNMENT_CREATE_AND_SUBMISSION_AUTHORIZATION_DECISION_BRIEF.md`:
+
+- **Assignment creation:** Option B — require active, eligible contextual membership and explicit `assignment.create` policy; validate goal and learner eligibility against the same trusted context.
+- **Learner submission:** Option B — require persisted-recipient identity, tenant/context alignment, active eligible contextual membership, explicit `submission.create` policy, and the existing assignment-open check at the persistence boundary.
+- **Audience scope:** group/class-audience assignment behavior remains deferred; this slice is one assignment to one persisted recipient.
+- **Revocation consistency:** use a shared authoritative transaction/locking protocol (Option A) if the actual membership ownership boundary supports it. Otherwise use Option B: fresh authoritative check per command, no positive authorization cache initially, fail closed on unavailable/indeterminate results, and document the residual check-to-mutation race. Option C caching is not approved.
+
+**Gate interpretation:** the owner policy decision gate is PASS. Implementation and production authorization remain OPEN until the accepted contract is implemented and verified. In particular, approval does not mean that durable membership/policy adapters, production credential validation, or atomic revocation already exist. Feasibility of Option A must be demonstrated against the selected authoritative membership source before claiming that guarantee; if not feasible, follow Option B without inventing a maximum revocation delay.
+
+Required implementation evidence: Application-level authorization for create and submit; no-mutation tests for denied/indeterminate/outage paths; tenant/context and recipient tests; authorization re-check before protected idempotency replay; PostgreSQL concurrency/revocation coverage appropriate to the chosen boundary; exact-head CI. Preserve idempotency, expected-version concurrency, audit/outbox behavior, and the submission row-lock/re-read guard.
+
