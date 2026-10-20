@@ -147,7 +147,7 @@ Required implementation evidence: Application-level authorization for create and
 
 ## 12. Create/submission Application authorization implementation — 2026-10-20
 
-**Implementation status:** Application authorization ports are implemented and CI-verified on code commit `894cf6e2bee54d0d81ae393f878eba25716382e7` (run 609: https://github.com/palestiny/education-platform/actions/runs/39440180267).
+**Implementation status:** Application authorization ports and durable denial/no-mutation regression tests are implemented and CI-verified on code commit `63b489ff2b415a7897b2a816f6055152b6f31ab3` (run 615: https://github.com/palestiny/education-platform/actions/runs/39440930697).
 
 - Added `IAssignmentCreationAuthorizer` and `ILearnerSubmissionAuthorizer`, reusing explicit `Allowed` / `Denied` / `Indeterminate` outcomes.
 - `FirstSliceService.CreateAssignmentAsync` authorizes before calling the mutation store, so denied or indeterminate requests cannot consume an idempotency key or create mutation/reliability records.
