@@ -158,3 +158,14 @@ Required implementation evidence: Application-level authorization for create and
 - Integration tests cover denied/indeterminate create, denied submission, no idempotency-key consumption after denial, recipient mismatch before authorization, and trusted persisted assignment context. Existing PostgreSQL persistence, audit/outbox rollback, close replay, and migration checks pass in the same CI run.
 
 **Still OPEN:** authoritative identity→Person mapping, lifecycle state, durable contextual membership and eligibility predicates, explicit resource/action policy storage, production credential validation, and revocation consistency. Option A is only valid if the chosen membership source can share the command transaction/locking protocol; otherwise use the approved fresh-check/no-positive-cache fallback and document the residual race. This implementation does not select a provider or membership schema and does not close production readiness.
+
+## 13. Revocation transaction feasibility — owner decision open
+
+The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`.
+
+- **Conditional feasibility:** Option A can fit the accepted modular-monolith/PostgreSQL architecture if authoritative platform membership/lifecycle state shares the protected command's database transaction/locking boundary.
+- **Important limitation:** current Application authorization ports run before the store mutation; this call shape alone does not provide atomic revocation. A transaction-aware final membership check/lock must be designed before claiming Option A.
+- **Recommended for owner review, not yet approved:** provider-neutral credential validation with platform-owned Person/contextual membership/lifecycle authority in the same PostgreSQL boundary.
+- If membership authority remains remote/separate without a real shared transaction, use the approved Option B fallback: fresh authoritative checks, no positive cache initially, fail closed, and document the residual race.
+- **Owner authority-ownership decision remains OPEN.** Do not create membership tables or claim atomic revocation until the decision and transaction protocol are approved. Production authorization remains fail-closed.
+
