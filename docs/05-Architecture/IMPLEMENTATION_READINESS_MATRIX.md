@@ -2,11 +2,17 @@
 
 **Date:** 2026-10-16  
 **Status:** FIRST TECHNICAL SLICE VERIFIED; BROADER LEARNING JOURNEY INCOMPLETE  
-**Implementation authorization:** Applies only to the existing first technical slice. It does not authorize production identity-provider integration or the still-unimplemented contextual membership/policy checks.
+**Implementation authorization:** Applies only to the existing first technical slice. First-slice durable authority records, contextual membership/grant checks, and the A1 transaction-aware PostgreSQL command are now implemented on the current PR branch. This does not authorize production identity-provider integration or imply the broader learning journey is complete.
 
 ## 1. Purpose
 
 Track which accepted Product, Domain, UX, Architecture, Security, Data and API obligations have evidence in the existing first technical slice, while keeping broader journey and production-readiness gaps visible. This matrix is not a blanket authorization for all future implementation.
+
+## Current status override — 2026-10-20
+
+The dated entries below preserve project decision history; statements that the first-slice authority schema/command/revocation tests are “not yet implemented” are historical and superseded by this current status. GitHub Actions Run #685 passed on code commit `04526afb7682f417f94a271c5183bd049e86a343`: build, EF migration validation, idempotent migration-script generation, and all 109 tests passed (0 failed, 0 skipped). That run includes PostgreSQL tests for same-key concurrent creation and both tested context-lock orderings.
+
+**Current Stage B status: PARTIAL PASS.** First-slice authority records/migration, transaction-aware command, grant/membership revocation writer, replay reauthorization, wrong-membership-type checks, same-key race, and context-lock ordering tests exist. Still open: audit every Person/context/goal/membership/grant lifecycle write path for the shared lock protocol; add/test bounded retry for classified deadlock/serialization failures with a fresh transaction and reauthorization; verify cancellation/exhaustion mappings; and complete production identity/credential validation. Production identity, consent, physical tenant isolation, and broader learning-journey gates remain open. PR #5 remains draft/open/unmerged.
 
 ## 2. First Technical Slice and broader target
 
@@ -62,9 +68,9 @@ Evidence supports the following within the **existing first technical slice**:
 The following remain open or incomplete:
 
 - Production identity-provider selection and real credential-validation adapter.
-- Durable Person and contextual membership resolution.
-- Production resource/action authorization backed by durable membership and policy sources remains open. A provider-neutral assignment-close authorization port and deterministic Development/Testing fixture are now enforced by the Application service before mutation or idempotency replay; API integration tests cover the fixture, while direct service tests cover denial/no mutation and re-authorization before replay. This is not production membership/policy integration.
-- Membership eligibility rules for assignment creation and learner submission.
+- Production identity→Person mapping and real credential validation remain open. Platform-owned Person records exist, but they do not replace a production credential adapter.
+- Durable first-slice contextual membership and action-policy grant records plus transaction-local create/submit/close checks are implemented. Universal lifecycle ownership is not yet proven: every Person/context/goal/membership/grant writer must follow the shared context-lock protocol.
+- Membership eligibility rules for assignment creation and learner submission are enforced for the current first-slice contracts; broader role, guardian, organization, and enrollment semantics remain open.
 - Physical tenant isolation.
 - Jurisdiction-specific consent, age and privacy rules.
 - Final retention periods and deployment configuration.
@@ -107,9 +113,9 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Security baseline | PASS for accepted baseline decisions |
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
-| Production identity/authentication | **OPEN — provider-neutral resolver seam and inactive-person fail-closed behavior are contract-tested; no provider selection, real credential validation, or production API wiring. Current PR #5 code head `0b7733da2230d604c722825f3aae65a099b24019` passed CI run [38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962); that run does not close production identity gaps.** |
+| Production identity/authentication | **OPEN — no selected provider or real credential validation; production resolver remains fail-closed** |
 | Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; PR #5 adds cross-tenant learner rejection, post-close rejection, and stale tracked assignment regression coverage. Code head `0b7733da2230d604c722825f3aae65a099b24019` passed build, migration validation/script generation, and tests in [CI run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962). Production membership/policy integration remains open.** |
-| Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
+| First-slice contextual membership/resource policy | **IMPLEMENTED — PostgreSQL authority records and transaction-local checks; broader lifecycle writer lock coverage still open** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
 
