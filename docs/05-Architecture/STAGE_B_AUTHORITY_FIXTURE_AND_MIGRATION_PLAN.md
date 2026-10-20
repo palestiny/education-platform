@@ -103,3 +103,21 @@ Verified against branch head `bb143f276c33cda46890a54db6b2aeeb9a4cb6cd` and PR #
 - This run validates the repository's existing restore/build/migration/test workflow for the documentation checkpoint. It does **not** validate a transaction-aware authority command because no such adapter has been implemented in this commit.
 - The next code change must be runtime behavior plus tests, not another documentation-only completion claim. The acceptance criteria remain: authority checks and idempotency replay inside the same PostgreSQL transaction; all protected commands routed through that boundary; revocation writers share its lock protocol; independent-connection concurrency tests pass on the exact head.
 
+## 10. First transaction-aware command implementation — 2026-10-20
+
+Commit `5c162d9` adds `PostgresFirstSliceTransactionalCommand`, and commit `37ffc108` wires it into production composition. The Application service delegates creation, submission, and close to the typed command when it is registered; existing test/in-memory composition retains the prior constructor path.
+
+The adapter currently:
+- Locks the tenant-scoped learning-context row before final authority checks.
+- Requires an active context, active Person records, active contextual membership, and an explicit active `PERSON` action grant.
+- Requires an active goal in the same tenant/context for assignment creation.
+- Locks and re-reads the assignment before submission/close; submission rejects the wrong recipient and closed assignments.
+- Performs current authority checks before idempotency replay lookup.
+- Persists mutation, idempotency result, audit record, and outbox message in one database transaction.
+
+**Not yet proven / follow-up required:**
+- The new implementation has not yet passed CI on its current head at the time of writing.
+- No dedicated two-connection concurrency tests have been added for revocation races or same-key replay conflicts.
+- There is not yet a platform authority-revocation writer that takes the same context lock. Therefore the adapter's context lock does not by itself prove revocation serialization; atomic revocation remains **NOT PROVEN** until all authority writers follow this lock protocol and independent-connection tests pass.
+- Production authorization uses the authority records directly; without provisioned authority rows it fails closed. The production credential-to-Person provisioning path remains out of scope.
+
