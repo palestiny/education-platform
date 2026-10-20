@@ -1,7 +1,8 @@
 # Stage B — Assignment Creation and Learner Submission Authorization Decision Brief
 
-**Status:** PROPOSED — PROJECT OWNER DECISION REQUIRED BEFORE BROADENING IMPLEMENTATION  
-**Date:** 2026-10-16  
+**Status:** OWNER DECISIONS ACCEPTED — IMPLEMENTATION MUST FOLLOW THE APPROVED CONTRACT  
+**Proposal date:** 2026-10-16  
+**Owner decision recorded:** 2026-10-20  
 **Scope:** First-slice assignment creation and learner submission only  
 **Related:** `PRODUCTION_IDENTITY_AUTHORIZATION_DESIGN_GATE.md`, `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`, `STAGE_B_RESOLUTION_PORT_CONTRACT.md`
 
@@ -9,19 +10,11 @@
 
 The current first slice has durable assignment/submission persistence, tenant-scoped assignment lookup, a closed-assignment guard, and regression coverage for cross-tenant and wrong-learner requests. Assignment-close has an Application-layer authorization port, but assignment creation and learner submission do not yet use durable contextual membership/resource-policy adapters.
 
-The current API test bearer and deterministic authorization fixtures prove test scenarios only. They are not production identity or membership proof. This brief proposes the minimum policy contract; it does not authorize a provider, membership schema, onboarding flow, or production adapter.
+The current API test bearer and deterministic authorization fixtures prove test scenarios only. They are not production identity or membership proof. This brief records the approved minimum policy contract; it does not authorize a provider, membership schema, onboarding flow, or production adapter.
 
-## 2. Assignment creation — options
+## 2. Assignment creation — decision
 
-### Option A: Keep the current minimal first-slice behavior
-
-Accept a trusted actor/tenant context and validate basic request fields; persist the requested learning context, goal, and learner references.
-
-- **Benefit:** smallest implementation; avoids guessing the membership model.
-- **Risk:** a valid actor context alone does not prove that the actor may create assignments in that context, that the goal belongs to it, or that the selected learner is eligible.
-- **Disposition:** not sufficient for production authorization.
-
-### Option B: Context membership plus explicit resource/action policy (recommended)
+**APPROVED: Option B — Context membership plus explicit resource/action policy.**
 
 Before mutation, resolve the target context and verify server-side that:
 1. the actor has an active, eligible membership in that exact tenant and learning context;
@@ -32,19 +25,11 @@ Before mutation, resolve the target context and verify server-side that:
 
 Fail closed for denied, ambiguous, unavailable, or indeterminate membership/policy results.
 
-- **Benefit:** consistent with DEC-0023 through DEC-0026 and the accepted assignment-close direction.
-- **Cost:** requires approved membership eligibility rules and a durable policy/membership source before production wiring.
+This requires approved membership eligibility rules and authoritative membership/policy sources before production wiring. Minimal field validation alone is not sufficient for production authorization.
 
-## 3. Learner submission — options
+## 3. Learner submission — decision
 
-### Option A: Assignment recipient + tenant + open-state checks only
-
-Require the authenticated internal person to match the assignment's persisted learner ID, require tenant-scoped resource access, and require the assignment to remain open.
-
-- **Benefit:** aligns with the current single-recipient assignment model and is easy to explain.
-- **Risk:** does not establish that the learner's membership in the learning context is still active or that the context/relationship remains eligible after assignment creation.
-
-### Option B: Recipient identity plus active contextual membership (recommended)
+**APPROVED: Option B — Recipient identity plus active contextual membership.**
 
 Before mutation, verify all of the following using trusted server-side data:
 1. the authenticated internal person is the persisted assignment recipient;
@@ -55,70 +40,65 @@ Before mutation, verify all of the following using trusted server-side data:
 
 If any required check is denied, ambiguous, or unavailable, do not create a submission or idempotency/audit/outbox success records. Cross-tenant and wrong-recipient responses must continue using approved non-disclosure behavior.
 
-- **Benefit:** prevents an old assignment reference from serving as continuing authorization after membership is removed.
-- **Cost:** requires a source of truth and a defined revocation freshness/consistency contract.
+## 4. Assignment audience scope
 
-### Option C: Audience/group-based assignment access
+**APPROVED: defer group/class-audience assignments.** Keep the first slice at **one assignment → one persisted recipient**. Do not implement group/audience semantics in this increment. Classroom-wide assignments require a separate design for audience cardinality, eligibility, recipient snapshots, and revocation behavior.
 
-Allow submissions based on class/group enrollment or assignment audience, rather than only the persisted single recipient.
+## 5. Revocation consistency — approved direction
 
-- **Benefit:** supports future classroom-wide assignments.
-- **Risk:** expands the domain and changes current semantics, requiring audience cardinality, eligibility, recipient snapshots, and revocation behavior to be designed.
+**APPROVED: Option A is the target when membership and the protected command can share an authoritative database transaction/locking protocol. If that is not technically possible, use Option B.**
 
-- **Disposition:** defer; do not implement group/audience semantics in this slice.
-
-## 4. Recommended first-slice contract
-
-Approve **Assignment creation Option B** and **Learner submission Option B**, with these boundaries:
-
-- Keep the current one-assignment-to-one-recipient model.
-- Evaluate authorization in the Application use case, not only in HTTP endpoints or persistence code.
-- The Application contract receives internal actor identity and resource/context identifiers resolved from trusted server-side state; it never receives raw bearer tokens or provider SDK objects.
-- Authorization outcomes are explicit: `Allowed`, `Denied`, or `Indeterminate`. Only `Allowed` proceeds.
-- Re-evaluate access for each new command; do not treat a previously issued assignment as permanent authorization.
-- Keep the PostgreSQL submission row-lock/re-read check, idempotency, expected-version concurrency, audit, and outbox guarantees.
-- Test denial, resolver outage, inactive/revoked membership, wrong context, wrong recipient, cross-tenant requests, and no-mutation behavior at Application and PostgreSQL/API integration layers.
-- Define revocation consistency explicitly before claiming immediate revocation. A pre-mutation authorization check alone cannot guarantee atomicity with a membership change unless the storage/transaction protocol supports it.
-
-## 5. Revocation consistency — decision options
-
-The application must not promise "immediate revocation" unless the authorization read and protected mutation have a consistency protocol that supports that guarantee. Rechecking authorization on every request is necessary, but by itself it does not eliminate a race where membership is revoked after the check and before the mutation.
-
-### Option A: Transactionally enforced revocation (strongest guarantee; recommended if the data boundary permits it)
+### Option A — Transactionally enforced revocation (preferred target)
 
 Membership state and the protected command participate in a shared database transaction/locking protocol, so revocation and submission are serialized against the same authoritative membership state.
 
-- **Guarantee:** a submission cannot commit based on membership that was already revoked earlier in the serialization order.
-- **Cost:** requires a shared transactional boundary and carefully designed lock ordering; it may not be possible if membership is owned by an external provider/service.
-- **Important:** this is a design target, not a claim about the current implementation.
+- Target guarantee: a submission cannot commit based on membership that was already revoked earlier in the serialization order.
+- Requires a shared transactional boundary and carefully designed lock ordering.
+- This is an approved target, **not a claim about the current implementation**. Feasibility must be demonstrated against the eventual membership ownership and persistence boundary.
 
-### Option B: Fresh authoritative check with an explicitly bounded race
+### Option B — Fresh authoritative check (required fallback)
 
-Read membership/policy from the authoritative source for every command, disable positive authorization caching, and define/document the remaining check-to-mutation race and any source replication delay.
+If Option A cannot be supported, read membership/policy from the authoritative source for every command, disable positive authorization caching initially, and fail closed when the source is unavailable or the result is indeterminate.
 
-- **Guarantee:** fresher decisions than cached authorization, but not atomic revocation unless the source and mutation share a consistency protocol.
-- **Cost:** latency and availability depend on the authority source; a source outage must fail closed.
+- This provides fresher decisions but is **not atomic revocation** unless the source and mutation share a consistency protocol.
+- Document the residual check-to-mutation race and any verified source replication delay.
+- Do not claim a maximum revocation delay until the authority source's consistency and failure behavior have been verified.
 
-### Option C: Time-bounded cached authorization
+Option C (time-bounded positive authorization caching) is **not approved** for the initial slice. It would require a separate explicit owner decision accepting an enforceable exposure window.
 
-Allow a positive decision cache with a defined maximum TTL and invalidation behavior.
+## 6. Shared enforcement and verification requirements
 
-- **Guarantee:** revocation takes effect no later than the documented bound only if cache invalidation, source replication, and clock assumptions all uphold it.
-- **Cost:** simpler/cheaper reads, but a nonzero exposure window; not appropriate unless the owner explicitly accepts that window and it is enforceable.
+- Enforce authorization in the Application use case, not only in HTTP endpoints or persistence code.
+- Application contracts receive internal actor identity and resource/context identifiers resolved from trusted server-side state; never pass raw bearer tokens or provider SDK objects into the Application layer.
+- Authorization outcomes are explicit: `Allowed`, `Denied`, or `Indeterminate`. Only `Allowed` proceeds.
+- Re-evaluate access for each new command and before returning a protected idempotency replay.
+- On denial or inability to verify, do not create success records for submissions, idempotency, audit, or outbox.
+- Preserve tenant isolation, the PostgreSQL submission row-lock/re-read check, idempotency, expected-version concurrency, audit, and outbox guarantees.
+- Add/maintain tests for denied and indeterminate decisions, resolver outage, inactive/revoked membership, wrong context, wrong recipient, cross-tenant requests, replay authorization, concurrent revocation/command behavior where supported, and no-mutation guarantees.
+- Test bearer tokens and deterministic authorization fixtures are test-only and must never be represented as production authentication or authorization.
 
-**Recommendation:** prefer Option A if membership and the command can share a transaction boundary. If they cannot, use Option B as the initial safe direction and explicitly document that it does not provide atomic revocation; do not claim a maximum delay until the authoritative source's consistency and failure behavior have been verified. Option C requires explicit owner acceptance of a measurable exposure window.
+## 7. Decisions and remaining gates
 
-## 6. Decisions still required from the owner
+### Owner decisions — recorded as accepted on 2026-10-20
 
-1. Approve or reject Assignment creation Option B.
-2. Approve or reject Learner submission Option B.
-3. Confirm that group/class-audience assignments remain out of scope for the first slice.
-4. Require that membership removal blocks new submissions after the configured consistency boundary; the maximum acceptable revocation delay must be decided before production readiness can be claimed.
+1. Assignment creation Option B — **APPROVED**.
+2. Learner submission Option B — **APPROVED**.
+3. Group/class-audience assignments — **DEFERRED / OUT OF SCOPE** for this slice.
+4. Revocation consistency — **Option A preferred if feasible; otherwise Option B with no positive cache initially, fail-closed behavior, and explicit residual-race documentation**.
+
+### Still required before production readiness
+
+- Prove whether the membership authority can participate in the protected command's transaction/locking protocol; choose Option A only if the actual ownership boundary supports it, otherwise implement the approved Option B fallback.
+- Define membership eligibility and authoritative sources without guessing a provider or schema.
+- Implement and test the accepted assignment-create and submission authorization contract through Application use cases and the persistence/API boundaries.
+- Resolve production identity-provider selection, real credential validation, durable Person/contextual membership, and resource-policy adapters through their separate design gates.
+- Keep guardian policy, onboarding, age/consent/privacy, and other out-of-scope choices explicit rather than silently deciding them here.
 
 No identity provider, membership table, account onboarding, guardian policy, or production adapter is selected by this brief.
 
-## 7. Gate result
+## 8. Gate result
 
-**Status: OPEN — do not broaden implementation until the owner accepts the contract.**
+**Owner policy decision gate: PASS — decisions recorded above.**  
+**Implementation / production authorization gate: OPEN.**
 
-This proposal narrows the decision and trade-offs. It does not claim production authorization is implemented, and passing test-fixture CI does not close this gate.
+These approvals authorize implementation of the specified policy contract and tests, not a provider choice or a claim that production authorization/revocation is already implemented. Passing test-fixture CI does not close the implementation or production-readiness gaps.
