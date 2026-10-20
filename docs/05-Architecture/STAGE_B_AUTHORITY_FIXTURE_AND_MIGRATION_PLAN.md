@@ -121,3 +121,14 @@ The adapter currently:
 - There is not yet a platform authority-revocation writer that takes the same context lock. Therefore the adapter's context lock does not by itself prove revocation serialization; atomic revocation remains **NOT PROVEN** until all authority writers follow this lock protocol and independent-connection tests pass.
 - Production authorization uses the authority records directly; without provisioned authority rows it fails closed. The production credential-to-Person provisioning path remains out of scope.
 
+## 11. Revocation writer and independent-connection regression — 2026-10-20
+
+This section supersedes the earlier "no revocation writer" statement in section 10:
+
+- Added `PostgresAuthorityRevocationWriter` for action-grant and membership revocation. It takes the same tenant/context `FOR UPDATE` lock before changing authority state and commits the change in its own transaction.
+- Updated the assignment-creation replay test to revoke through that writer and verify a durable response is not returned after revocation.
+- Added an independent-connection PostgreSQL test that holds the context lock while revoking a grant, starts assignment creation from another connection, commits the revocation, and asserts creation fails without assignment/idempotency/audit/outbox writes.
+- CI for current head `14f881be82fc0ba1ae077a51baa38262d088845e` is still running at the time of this checkpoint: https://github.com/palestiny/education-platform/actions/runs/39461404030
+
+The shared lock protocol is now implemented for the protected commands and these two authority-revocation methods. **Do not call atomic revocation fully proven until the current CI passes and all future context, membership, grant, and lifecycle mutation paths are required to use this writer/lock protocol.** Same-key race recovery and broader concurrency coverage remain follow-up work.
+
