@@ -198,3 +198,14 @@ The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIB
 - Owner decision required: (A) platform persists contexts and goals in the same PostgreSQL authority, (B) an existing module supplies transaction-aware access over the same transaction, or (C) external/remote source, which cannot satisfy the current atomic guarantee without revising scope or using the approved fresh-check fallback.
 - No authority schema was created and no production adapter was added. Atomic revocation remains not implemented/not proven.
 - CI run #626 passed for commit `92ecdc569218aa57dd82496f81ad286672769086`; the authority-schema brief and later documentation updates require exact-head CI verification.
+
+
+## 17. Owner-approved authority boundary (2026-10-20)
+
+- Owner explicitly approved Option A: platform-owned tenant-scoped learning contexts and learning goals in the same PostgreSQL transaction authority as Person mapping, contextual membership, action policy, and protected commands.
+- Decision brief updated: `STAGE_B_AUTHORITY_SCHEMA_BOUNDARY_DECISION_BRIEF.md`. This resolves the ownership gate; schema/code remain unimplemented.
+- Minimum provider-neutral authority records to implement: Person/external issuer-subject linkage, LearningContext, LearningGoal, ContextualMembership, ActionPolicyGrant. Assignment references must validate tenant/context alignment and recipient eligibility; use composite constraints where practical.
+- Lock contract includes context → membership rows (stable order) → policy grant rows (stable order) → goal or protected resource → idempotency lookup after authorization → mutation/idempotency/audit/outbox commit.
+- Revocation, context/goal disablement, and policy changes must use compatible locks. Unique-key race losers restart the full authorization protocol; never return stored responses directly from the conflict catch.
+- Next implementation sequence: PostgreSQL two-connection RED tests → authority entities/migration/snapshot → typed transaction-aware persistence command → compatible lifecycle revocation locks → exact-head CI.
+- Explicitly not approved: identity provider, onboarding, guardian/consent, physical tenant isolation. Atomic revocation remains not implemented/not proven.
