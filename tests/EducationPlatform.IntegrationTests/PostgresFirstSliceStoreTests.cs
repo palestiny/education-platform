@@ -622,6 +622,71 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.NotNull(first.Value.Id);
     }
 
+    [Fact]
+    public async Task Transactional_command_checks_authority_before_replaying_assignment_creation()
+    {
+        using var db = CreateFreshDatabase();
+        db.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "authority-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "authority-learner", Status = "ACTIVE" });
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "authority-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "authority-goal", TenantId = "tenant-a",
+            ContextId = "authority-context", Status = "ACTIVE"
+        });
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "authority-context",
+                PersonId = "authority-teacher", MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "authority-context",
+                PersonId = "authority-learner", MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        db.ActionPolicyGrants.Add(new ActionPolicyGrantAuthorityRecord
+        {
+            TenantId = "tenant-a", ContextId = "authority-context",
+            SubjectType = "PERSON", SubjectId = "authority-teacher",
+            Action = "assignment.create", Status = "ACTIVE"
+        });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+
+        var first = await service.CreateAssignmentAsync(
+            "tenant-a", "authority-teacher", "authority-context", "authority-goal",
+            "authority-learner", "{\"work\":\"authority\"}", "authority-replay-key",
+            "authority-correlation-first", TestContext.Current.CancellationToken);
+        Assert.False(first.Replayed);
+
+        var grant = await db.ActionPolicyGrants.SingleAsync(
+            x => x.Action == "assignment.create" && x.SubjectId == "authority-teacher",
+            TestContext.Current.CancellationToken);
+        db.ActionPolicyGrants.Remove(grant);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateAssignmentAsync(
+                "tenant-a", "authority-teacher", "authority-context", "authority-goal",
+                "authority-learner", "{\"work\":\"authority\"}", "authority-replay-key",
+                "authority-correlation-retry", TestContext.Current.CancellationToken));
+
+        Assert.Equal("FORBIDDEN", error.Message);
+        Assert.Single(db.Assignments);
+        Assert.Single(db.IdempotencyRecords);
+        Assert.Single(db.AuditRecords);
+        Assert.Single(db.OutboxMessages);
+    }
+
     private static EducationPlatformDbContext CreateContext(string connection)
     {
         var options = new DbContextOptionsBuilder<EducationPlatformDbContext>()
