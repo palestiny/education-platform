@@ -732,8 +732,10 @@ public sealed class PostgresFirstSliceStoreTests
 
         await using var revokeTransaction =
             await revokeDb.Database.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        var tenantId = "tenant-a";
+        var contextId = "race-context";
         _ = await revokeDb.LearningContexts.FromSqlInterpolated(
-                $"SELECT * FROM learning_contexts WHERE \"TenantId\" = {"tenant-a"} AND \"Id\" = {"race-context"} FOR UPDATE")
+                $"SELECT * FROM learning_contexts WHERE \"TenantId\" = {tenantId} AND \"Id\" = {contextId} FOR UPDATE")
             .AsTracking()
             .SingleAsync(TestContext.Current.CancellationToken);
         var grant = await revokeDb.ActionPolicyGrants.SingleAsync(
