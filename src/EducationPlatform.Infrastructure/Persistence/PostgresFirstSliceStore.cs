@@ -100,7 +100,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
                         true);
                 }
             }
-        {
+
             var (value, status) = mutation();
 
             if (!string.IsNullOrWhiteSpace(idempotencyKey))
@@ -196,7 +196,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
                     return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
                 }
             }
-        {
+
             var assignment = db.Assignments.SingleOrDefault(x =>
                 x.Id == assignmentId && x.TenantId == tenantId);
 
