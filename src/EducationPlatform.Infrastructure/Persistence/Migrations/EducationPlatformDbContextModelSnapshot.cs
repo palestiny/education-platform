@@ -108,6 +108,7 @@ partial class EducationPlatformDbContextModelSnapshot : ModelSnapshot
             b.HasKey("Id");
             b.HasAlternateKey("TenantId", "ContextId", "Id");
             b.HasIndex("TenantId", "ContextId");
+            b.HasOne<LearningContextAuthorityRecord>().WithMany().HasForeignKey("TenantId", "ContextId").HasPrincipalKey("TenantId", "Id").OnDelete(DeleteBehavior.Restrict).IsRequired();
             b.ToTable("learning_goals");
         });
 
@@ -122,6 +123,8 @@ partial class EducationPlatformDbContextModelSnapshot : ModelSnapshot
             b.HasKey("TenantId", "ContextId", "PersonId", "MembershipType");
             b.HasIndex("PersonId");
             b.HasIndex("TenantId", "ContextId", "Status");
+            b.HasOne<LearningContextAuthorityRecord>().WithMany().HasForeignKey("TenantId", "ContextId").HasPrincipalKey("TenantId", "Id").OnDelete(DeleteBehavior.Restrict).IsRequired();
+            b.HasOne<PersonAuthorityRecord>().WithMany().HasForeignKey("PersonId").OnDelete(DeleteBehavior.Restrict).IsRequired();
             b.ToTable("contextual_memberships");
         });
 
@@ -136,6 +139,7 @@ partial class EducationPlatformDbContextModelSnapshot : ModelSnapshot
             b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
             b.HasKey("TenantId", "ContextId", "SubjectType", "SubjectId", "Action");
             b.HasIndex("TenantId", "ContextId", "Action", "Status");
+            b.HasOne<LearningContextAuthorityRecord>().WithMany().HasForeignKey("TenantId", "ContextId").HasPrincipalKey("TenantId", "Id").OnDelete(DeleteBehavior.Restrict).IsRequired();
             b.ToTable("action_policy_grants");
         });
 
