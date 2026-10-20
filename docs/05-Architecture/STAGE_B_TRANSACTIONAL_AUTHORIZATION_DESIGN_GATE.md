@@ -162,7 +162,7 @@ This gate can pass only when:
 ## 9. Current result
 
 **Authority-ownership direction:** APPROVED.  
-**Transaction design:** A1 approved; typed command contract and lock order defined; implementation gated on RED tests.  
-**Membership schema and production adapter implementation:** NOT YET AUTHORIZED.  
-**Atomic revocation:** NOT IMPLEMENTED / NOT CLAIMED.  
-**Next action:** add failing tests for transaction-aware authorization, idempotency-after-authorization, and actual PostgreSQL command/revocation serialization; only then implement the smallest schema/command increment those tests require. Owner approval remains required before broader production identity/provider or onboarding choices.
+**Transaction-aware first-slice command and authority schema:** IMPLEMENTED; exact-head code CI passed on `04526afb7682f417f94a271c5183bd049e86a343` (109/109 tests, Run #685).  
+**Atomic revocation:** PARTIALLY VERIFIED for the implemented command/revocation writer pair and tested lock schedules; not a blanket guarantee for every lifecycle writer.  
+**Still open:** the Infrastructure revocation writer is not registered or exposed as a production lifecycle API in the current `Program.cs`; person/context/goal lifecycle updates and all other authority writers need an explicit compatible lock protocol; bounded deadlock/serialization retry with fresh-transaction reauthorization and cancellation/exhaustion behavior remain unproven. Production credential validation, consent, and physical tenant isolation remain separate open gates.  
+**Next action:** close the lifecycle-writer ownership/exposure gap and define/test bounded transient-failure retry semantics. Do not treat this partial pass as production identity/authentication sign-off or merge authorization.
