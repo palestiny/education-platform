@@ -11,17 +11,32 @@ public sealed class FirstSliceService
     private readonly IAssignmentCloseAuthorizer _closeAuthorizer;
     private readonly IAssignmentCreationAuthorizer _creationAuthorizer;
     private readonly ILearnerSubmissionAuthorizer _submissionAuthorizer;
+    private readonly IFirstSliceTransactionalCommand? _transactionalCommand;
 
+    // Compatibility constructor for existing in-memory/unit-test composition.
     public FirstSliceService(
         IFirstSliceStore store,
         IAssignmentCloseAuthorizer closeAuthorizer,
         IAssignmentCreationAuthorizer creationAuthorizer,
         ILearnerSubmissionAuthorizer submissionAuthorizer)
+        : this(store, closeAuthorizer, creationAuthorizer, submissionAuthorizer, null)
+    {
+    }
+
+    // Production composition supplies the transaction-aware command. Authorization
+    // and idempotency are then evaluated by the same persistence transaction.
+    public FirstSliceService(
+        IFirstSliceStore store,
+        IAssignmentCloseAuthorizer closeAuthorizer,
+        IAssignmentCreationAuthorizer creationAuthorizer,
+        ILearnerSubmissionAuthorizer submissionAuthorizer,
+        IFirstSliceTransactionalCommand? transactionalCommand)
     {
         _store = store;
         _closeAuthorizer = closeAuthorizer;
         _creationAuthorizer = creationAuthorizer;
         _submissionAuthorizer = submissionAuthorizer;
+        _transactionalCommand = transactionalCommand;
     }
 
     public async ValueTask<FirstSliceMutation<Assignment>> CreateAssignmentAsync(
@@ -29,6 +44,16 @@ public sealed class FirstSliceService
         string learnerId, string work, string? key, string correlationId,
         CancellationToken cancellationToken = default)
     {
+        var fingerprint = Fingerprint($"assignment.create|{contextId}|{goalId}|{learnerId}|{work}");
+        if (_transactionalCommand is not null)
+        {
+            return await _transactionalCommand.CreateAssignmentAsync(
+                new CreateAssignmentCommand(
+                    tenantId, actorId, contextId, goalId, learnerId, work,
+                    key, fingerprint, correlationId),
+                cancellationToken);
+        }
+
         var authorization = await _creationAuthorizer.AuthorizeAsync(
             new AssignmentCreationAuthorizationRequest(
                 actorId, tenantId, contextId, goalId, learnerId, "assignment.create"),
@@ -37,7 +62,6 @@ public sealed class FirstSliceService
         EnsureAllowed(authorization);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var fingerprint = Fingerprint($"assignment.create|{contextId}|{goalId}|{learnerId}|{work}");
         return _store.CreateAssignment(
             tenantId, actorId, contextId, goalId, learnerId, work,
             key, fingerprint, correlationId);
@@ -48,6 +72,15 @@ public sealed class FirstSliceService
         string learnerId, string payload, string? key, string correlationId,
         CancellationToken cancellationToken = default)
     {
+        var fingerprint = Fingerprint($"submission.create|{assignmentId}|{learnerId}|{payload}");
+        if (_transactionalCommand is not null)
+        {
+            return await _transactionalCommand.CreateSubmissionAsync(
+                new CreateSubmissionCommand(
+                    tenantId, actorId, assignmentId, payload, key, fingerprint, correlationId),
+                cancellationToken);
+        }
+
         // Load the protected resource inside the Application use case. Never authorize
         // against a caller-supplied Assignment snapshot or client-supplied context.
         var assignment = _store.GetAssignment(tenantId, assignmentId);
@@ -68,7 +101,6 @@ public sealed class FirstSliceService
         EnsureAllowed(authorization);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var fingerprint = Fingerprint($"submission.create|{assignment.Id}|{learnerId}|{payload}");
         return _store.CreateSubmission(
             tenantId, actorId, assignment, learnerId, payload,
             key, fingerprint, correlationId);
@@ -80,6 +112,16 @@ public sealed class FirstSliceService
     {
         if (expectedVersion < 1)
             throw new InvalidOperationException("VALIDATION_FAILED");
+
+        var fingerprint = Fingerprint($"assignment.close|{assignmentId}|{expectedVersion}");
+        if (_transactionalCommand is not null)
+        {
+            return await _transactionalCommand.CloseAssignmentAsync(
+                new CloseAssignmentCommand(
+                    tenantId, actorId, assignmentId, expectedVersion,
+                    idempotencyKey, fingerprint, correlationId),
+                cancellationToken);
+        }
 
         // Resolve the resource in trusted tenant scope inside the application use case.
         // Authorization is checked before the mutation store can return an idempotency replay.
@@ -95,7 +137,6 @@ public sealed class FirstSliceService
         EnsureAllowed(authorization);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var fingerprint = Fingerprint($"assignment.close|{assignmentId}|{expectedVersion}");
         return _store.CloseAssignment(
             tenantId, actorId, assignmentId, expectedVersion, idempotencyKey, fingerprint, correlationId);
     }
