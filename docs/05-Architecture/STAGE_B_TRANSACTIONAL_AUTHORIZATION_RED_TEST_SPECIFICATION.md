@@ -15,13 +15,16 @@ The branch now contains durable authority records and a production PostgreSQL ad
 
 The branch now contains platform authority records and an EF migration, a typed `IFirstSliceTransactionalCommand`, a PostgreSQL implementation that locks the tenant-scoped learning context before authority checks and idempotency replay, and a revocation writer that takes the same context lock. Production DI registers the transactional command when PostgreSQL is configured outside Development/Testing.
 
-This is implementation evidence, not a blanket proof of atomic revocation. The latest checked commit `4ca8a438d248c22fa6db749d538f637c0a830dea` passed GitHub Actions build, EF migration validation, idempotent migration-script generation, and tests (Run #39487766294). PostgreSQL tests now cover both observed context-lock orderings: revocation commits first and the protected command is denied; the protected command owns the context lock first while revocation is observed waiting, then both operations commit in order.
+This is implementation evidence, not a blanket proof of production authorization readiness. Exact-head GitHub Actions Run #685 passed on commit `04526afb7682f417f94a271c5183bd049e86a343`: build, EF migration validation, idempotent migration-script generation, and all 109 tests passed (0 failed, 0 skipped). The run includes the PostgreSQL integration suite.
 
-The required remaining checks include:
-- repeat exact-head CI after any further changes;
-- broader proof that every membership, grant, person, context, and goal lifecycle writer follows the documented common lock order;
-- same-key behavior under concurrent conflict/deadlock, with retries restarting in a fresh transaction and reauthorizing;
-- explicit, tested idempotency scope across contexts and tenants.
+PostgreSQL tests now cover both observed context-lock orderings: revocation commits first and the protected command is denied; the protected command owns the context lock first while revocation is observed waiting, then both operations commit in order. The same-key concurrency test `Concurrent_same_key_creation_commits_one_mutation_and_returns_one_replay` also passed in that exact-head run; it coordinates two independent command contexts and observes both database lock waits before releasing the blocker, then asserts one mutation/replay and one set of reliability records.
+
+Remaining proof obligations:
+- rerun exact-head CI after any further changes;
+- broaden the shared lock protocol to every membership, grant, person, context, and goal lifecycle writer, and verify all actual write paths use it;
+- test classified deadlock/serialization failures, bounded retry, fresh-transaction restart, reauthorization, cancellation, and exhaustion behavior;
+- keep idempotency scope explicit: the same actor/operation/key reused across contexts is currently tested as a conflict; tenant boundary behavior and non-disclosure should remain covered as the contract evolves;
+- keep production credential verification, trusted actor derivation, and end-to-end API authorization independently verified.
 
 Legacy Application authorizers remain in the service composition for the non-transactional compatibility path. Production guarantees must be assessed against the actual production DI path and transaction-aware command, not the compatibility path.
 
@@ -113,14 +116,12 @@ Creation locks and validates the goal/context/recipient authority rows needed to
 
 The RED work must extend the existing PostgreSQL test harness rather than create a parallel testing framework:
 
-- `tests/EducationPlatform.IntegrationTests/PostgresFirstSliceStoreTests.cs` is the starting point for TA-001/002/005/006/008/009/010/011/012. It uses `EDUCATION_PLATFORM_TEST_CONNECTION`, applies EF migrations, and disables parallel execution for the PostgreSQL collection.
-- `CreateFreshDatabase()` clears the five current first-slice tables and returns one DbContext. Concurrency tests must create **two separately constructed contexts/connections** from the configured connection string; never share one DbContext across concurrent actors.
-- `CreateContext(string connection)` constructs an independent Npgsql-backed DbContext and can be reused as the basis for a two-connection fixture.
-- Existing audit/outbox failure tests already demonstrate database-enforced rollback; preserve that coverage when adding authority tables.
-- `src/EducationPlatform.Application/FirstSlice/IFirstSliceStore.cs` currently exposes separate create/submit/close calls and has no transaction-aware authorization command. `FirstSliceService` invokes creation/submission authorizers before calling the store.
-- `src/EducationPlatform.Infrastructure/Persistence/PostgresFirstSliceStore.cs` performs the idempotency lookup before beginning the mutation transaction. Its unique-conflict recovery must not be reused as a protected replay path without restarting authorization in a fresh transaction.
-- `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` now maps the platform-owned authority records in addition to first-slice persistence entities; migration `20261020170000_AddPlatformAuthorityRecords` adds the corresponding tables and tenant/context constraints. Keep schema snapshot and migration validation in CI.
-- The integration test project targets .NET 10 and uses xUnit v3 plus Npgsql via the Infrastructure project. Existing CI runs PostgreSQL, build, EF migration validation, idempotent migration-script generation, and tests.
+- `tests/EducationPlatform.IntegrationTests/PostgresFirstSliceStoreTests.cs` contains PostgreSQL coverage for denial/no-side-effects, replay after authority revocation, both context-lock orderings, concurrent same-key create/replay, wrong membership types, cross-context idempotency conflict, and atomic audit/outbox rollback. Latest exact-head CI passed all 109 tests.
+- `CreateFreshDatabase()` and `CreateContext(string connection)` provide fixtures for independent Npgsql-backed DbContexts. Concurrency tests must use **separately constructed contexts/connections**; never share one DbContext across concurrent actors.
+- Existing audit/outbox failure tests demonstrate rollback of authoritative mutation and reliability records; preserve that coverage.
+- The transaction-aware command and `PostgresAuthorityRevocationWriter` exist on this branch. The transaction-aware command locks/validates context and current authority before idempotency replay; revocation uses the same context lock. Do not describe this as proof that every authority lifecycle write path is protected.
+- `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` maps platform-owned authority records; migration `20261020170000_AddPlatformAuthorityRecords` adds the corresponding tables and tenant/context constraints. Keep schema snapshot and migration validation in CI.
+- The integration test project targets .NET 10 and uses xUnit v3 plus Npgsql via Infrastructure. CI runs PostgreSQL, build, EF migration validation, idempotent migration-script generation, and tests.
 
 **Sequencing note (historical plan):** the original plan called for the provider-neutral typed command contract and PostgreSQL authority fixture before production mappings. The current branch has progressed beyond that initial stage. Keep any new authorization/lifecycle behavior test-first, and require explicit PostgreSQL lock observation plus separate contexts for concurrency claims; a compiling mock-only test is not proof of transaction serialization.
 
@@ -134,4 +135,4 @@ The RED specification becomes implementation-ready when:
 5. expected CI handling for RED is explicit;
 6. no production schema/provider/onboarding choice is smuggled into the test fixture.
 
-The implementation gate passes only when tests are GREEN on the exact latest commit and CI proves the real PostgreSQL serialization cases with deterministic synchronization. Current transactional code and revocation writer exist, but complete atomic-revocation behavior remains **NOT PROVEN** until lock-order coverage and exact-head verification pass.
+Current verification status: **PARTIAL PASS**. Exact-head CI on `04526afb7682f417f94a271c5183bd049e86a343` is green (109/109 tests), including the deterministic same-key race and both tested context-lock orderings. The broader implementation gate remains **NOT PASSED** until all authority lifecycle writers are audited against the common lock order and retry/deadlock/cancellation semantics are demonstrated. This status is not a production identity/authentication sign-off.
