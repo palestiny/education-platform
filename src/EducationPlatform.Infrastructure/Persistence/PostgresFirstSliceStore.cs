@@ -42,13 +42,25 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             tenantId, actorId, "submission.create", assignment.ContextId, idempotencyKey, requestFingerprint,
             () =>
             {
-                if (assignment.IsClosed)
+                // The route lookup may have loaded this assignment before a concurrent close.
+                // Lock and re-read the authoritative row inside this transaction so a stale
+                // tracked entity cannot permit a submission after closure has committed.
+                db.Entry(assignment).State = EntityState.Detached;
+                var currentAssignment = db.Assignments
+                    .FromSqlInterpolated(
+                        $"SELECT * FROM assignments WHERE \"Id\" = {assignment.Id} AND \"TenantId\" = {tenantId} FOR UPDATE")
+                    .AsTracking()
+                    .SingleOrDefault();
+
+                if (currentAssignment is null)
+                    throw new InvalidOperationException("RESOURCE_NOT_FOUND");
+                if (currentAssignment.IsClosed)
                     throw new InvalidOperationException("BUSINESS_RULE_VIOLATION");
 
                 var submission = new Submission
                 {
                     Id = Guid.NewGuid().ToString("N"),
-                    AssignmentId = assignment.Id,
+                    AssignmentId = currentAssignment.Id,
                     TenantId = tenantId,
                     LearnerId = learnerId,
                     Payload = payload
@@ -64,28 +76,31 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         string requestFingerprint, Func<(T Value, string Status)> mutation,
         string correlationId)
     {
-        if (!string.IsNullOrWhiteSpace(idempotencyKey))
-        {
-            var existing = db.IdempotencyRecords.SingleOrDefault(x =>
-                x.TenantId == tenantId &&
-                x.ActorId == actorId &&
-                x.OperationScope == operation &&
-                x.IdempotencyKey == idempotencyKey);
-
-            if (existing is not null)
-            {
-                if (existing.RequestFingerprint != requestFingerprint)
-                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
-
-                return new FirstSliceMutation<T>(
-                    JsonSerializer.Deserialize<T>(existing.ResponseJson)!,
-                    true);
-            }
-        }
-
         using var transaction = db.Database.BeginTransaction();
         try
         {
+            // Resolve a replay only after entering the transaction. Final authorization
+            // must still be enforced by the transactional command boundary.
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var existing = db.IdempotencyRecords.AsNoTracking().SingleOrDefault(x =>
+                    x.TenantId == tenantId &&
+                    x.ActorId == actorId &&
+                    x.OperationScope == operation &&
+                    x.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                {
+                    if (existing.RequestFingerprint != requestFingerprint)
+                        throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                    transaction.Commit();
+                    return new FirstSliceMutation<T>(
+                        JsonSerializer.Deserialize<T>(existing.ResponseJson)!,
+                        true);
+                }
+            }
+
             var (value, status) = mutation();
 
             if (!string.IsNullOrWhiteSpace(idempotencyKey))
@@ -137,7 +152,9 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         catch (DbUpdateException ex) when (IsIdempotencyUniqueViolation(ex) && !string.IsNullOrWhiteSpace(idempotencyKey))
         {
             transaction.Rollback();
-            var existing = db.IdempotencyRecords.Single(x =>
+            db.ChangeTracker.Clear();
+            using var replayTransaction = db.Database.BeginTransaction();
+            var existing = db.IdempotencyRecords.AsNoTracking().Single(x =>
                 x.TenantId == tenantId &&
                 x.ActorId == actorId &&
                 x.OperationScope == operation &&
@@ -146,6 +163,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             if (existing.RequestFingerprint != requestFingerprint)
                 throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
 
+            replayTransaction.Commit();
             return new FirstSliceMutation<T>(
                 JsonSerializer.Deserialize<T>(existing.ResponseJson)!,
                 true);
@@ -156,26 +174,29 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         string tenantId, string actorId, string assignmentId, int expectedVersion,
         string? idempotencyKey, string requestFingerprint, string correlationId)
     {
-        if (!string.IsNullOrWhiteSpace(idempotencyKey))
-        {
-            var existing = db.IdempotencyRecords.SingleOrDefault(x =>
-                x.TenantId == tenantId &&
-                x.ActorId == actorId &&
-                x.OperationScope == "assignment.close" &&
-                x.IdempotencyKey == idempotencyKey);
-
-            if (existing is not null)
-            {
-                if (existing.RequestFingerprint != requestFingerprint)
-                    throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
-
-                return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
-            }
-        }
-
         using var transaction = db.Database.BeginTransaction();
         try
         {
+            // Resolve a replay inside the transaction, after the current use-case
+            // authorization pre-check. The transactional command must enforce final authorization.
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                var existing = db.IdempotencyRecords.AsNoTracking().SingleOrDefault(x =>
+                    x.TenantId == tenantId &&
+                    x.ActorId == actorId &&
+                    x.OperationScope == "assignment.close" &&
+                    x.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                {
+                    if (existing.RequestFingerprint != requestFingerprint)
+                        throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                    transaction.Commit();
+                    return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
+                }
+            }
+
             var assignment = db.Assignments.SingleOrDefault(x =>
                 x.Id == assignmentId && x.TenantId == tenantId);
 
@@ -236,12 +257,40 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
         catch (DbUpdateConcurrencyException)
         {
             transaction.Rollback();
+            db.ChangeTracker.Clear();
+
+            // A concurrent request using the same idempotency key may have committed
+            // the close while this context was waiting on the assignment version token.
+            // Resolve that winner in a fresh transaction before returning a conflict.
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                using var replayTransaction = db.Database.BeginTransaction();
+                var existing = db.IdempotencyRecords.AsNoTracking().SingleOrDefault(x =>
+                    x.TenantId == tenantId &&
+                    x.ActorId == actorId &&
+                    x.OperationScope == "assignment.close" &&
+                    x.IdempotencyKey == idempotencyKey);
+
+                if (existing is not null)
+                {
+                    if (existing.RequestFingerprint != requestFingerprint)
+                        throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
+
+                    replayTransaction.Commit();
+                    return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
+                }
+
+                replayTransaction.Commit();
+            }
+
             throw new InvalidOperationException("CONCURRENCY_CONFLICT");
         }
         catch (DbUpdateException ex) when (IsIdempotencyUniqueViolation(ex) && !string.IsNullOrWhiteSpace(idempotencyKey))
         {
             transaction.Rollback();
-            var existing = db.IdempotencyRecords.Single(x =>
+            db.ChangeTracker.Clear();
+            using var replayTransaction = db.Database.BeginTransaction();
+            var existing = db.IdempotencyRecords.AsNoTracking().Single(x =>
                 x.TenantId == tenantId &&
                 x.ActorId == actorId &&
                 x.OperationScope == "assignment.close" &&
@@ -250,6 +299,7 @@ public sealed class PostgresFirstSliceStore(EducationPlatformDbContext db) : IFi
             if (existing.RequestFingerprint != requestFingerprint)
                 throw new InvalidOperationException("IDEMPOTENCY_CONFLICT");
 
+            replayTransaction.Commit();
             return JsonSerializer.Deserialize<Assignment>(existing.ResponseJson)!;
         }
     }

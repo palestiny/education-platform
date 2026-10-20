@@ -16,6 +16,11 @@ if (!string.IsNullOrWhiteSpace(connectionString))
             connectionString,
             npgsql => npgsql.MigrationsAssembly(typeof(EducationPlatformDbContext).Assembly.FullName)));
     builder.Services.AddScoped<IFirstSliceStore, PostgresFirstSliceStore>();
+    // Production uses the authority-backed transaction boundary. Development and
+    // integration fixtures retain their explicit test authorizers until seeded with
+    // platform-owned authority records.
+    if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+        builder.Services.AddScoped<IFirstSliceTransactionalCommand, PostgresFirstSliceTransactionalCommand>();
 }
 else if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
 {
@@ -29,10 +34,17 @@ else
 
 builder.Services.AddScoped<FirstSliceService>();
 if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
+{
     builder.Services.AddSingleton<IAssignmentCloseAuthorizer, TestFixtureAssignmentCloseAuthorizer>();
+    builder.Services.AddSingleton<IAssignmentCreationAuthorizer, TestFixtureAssignmentCreationAuthorizer>();
+    builder.Services.AddSingleton<ILearnerSubmissionAuthorizer, TestFixtureLearnerSubmissionAuthorizer>();
+}
 else
+{
     builder.Services.AddSingleton<IAssignmentCloseAuthorizer, FailClosedAssignmentCloseAuthorizer>();
-builder.Services.AddScoped<AssignmentLookup>();
+    builder.Services.AddSingleton<IAssignmentCreationAuthorizer, FailClosedAssignmentCreationAuthorizer>();
+    builder.Services.AddSingleton<ILearnerSubmissionAuthorizer, FailClosedLearnerSubmissionAuthorizer>();
+}
 builder.Services.AddScoped<RequestExecutionContextAccessor>();
 builder.Services.AddScoped<IExecutionContextAccessor>(sp => sp.GetRequiredService<RequestExecutionContextAccessor>());
 if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
@@ -61,7 +73,7 @@ app.Use(async (http, next) =>
 });
 
 app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
-    (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string contextId, [FromBody] AssignmentRequest request) =>
+    async (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string contextId, [FromBody] AssignmentRequest request) =>
     {
         var auth = context.Current;
         if (auth is null)
@@ -75,12 +87,20 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
 
         try
         {
-            var mutation = service.CreateAssignment(
+            var mutation = await service.CreateAssignmentAsync(
                 auth.TenantId, auth.PrincipalId, contextId, request.GoalId, request.LearnerId,
                 request.Work.GetRawText(), http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
-                (string)http.Items["CorrelationId"]!);
+                (string)http.Items["CorrelationId"]!, http.RequestAborted);
             var assignment = mutation.Value;
             return Results.Created($"/api/v1/assignments/{assignment.Id}", assignment);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "FORBIDDEN")
+        {
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "AUTHORIZATION_UNAVAILABLE")
+        {
+            return Results.Json(Error("AUTHORIZATION_UNAVAILABLE"), statusCode: StatusCodes.Status503ServiceUnavailable);
         }
         catch (InvalidOperationException ex) when (ex.Message == "IDEMPOTENCY_CONFLICT")
         {
@@ -89,7 +109,7 @@ app.MapPost("/api/v1/learning-contexts/{contextId}/assignments",
     });
 
 app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
-    (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string assignmentId, [FromServices] AssignmentLookup lookup, [FromBody] SubmissionRequest request) =>
+    async (HttpContext http, IExecutionContextAccessor context, FirstSliceService service, string assignmentId, [FromBody] SubmissionRequest request) =>
     {
         var auth = context.Current;
         if (auth is null)
@@ -97,18 +117,26 @@ app.MapPost("/api/v1/assignments/{assignmentId}/submissions",
         if (!auth.HasAuthority("submission:create"))
             return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
 
-        var assignment = lookup.Get(auth.TenantId, assignmentId);
-        if (assignment is null || assignment.TenantId != auth.TenantId) return Results.NotFound();
-        if (auth.PrincipalId != assignment.LearnerId) return Results.NotFound();
-
         try
         {
-            var mutation = service.CreateSubmission(
-                auth.TenantId, auth.PrincipalId, assignment, auth.PrincipalId, request.Payload.GetRawText(),
+            var mutation = await service.CreateSubmissionAsync(
+                auth.TenantId, auth.PrincipalId, assignmentId, auth.PrincipalId, request.Payload.GetRawText(),
                 http.Request.Headers["Idempotency-Key"].FirstOrDefault(),
-                (string)http.Items["CorrelationId"]!);
+                (string)http.Items["CorrelationId"]!, http.RequestAborted);
             var submission = mutation.Value;
             return Results.Created($"/api/v1/submissions/{submission.Id}", submission);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "RESOURCE_NOT_FOUND")
+        {
+            return Results.NotFound();
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "FORBIDDEN")
+        {
+            return Results.Json(Error("FORBIDDEN"), statusCode: StatusCodes.Status403Forbidden);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "AUTHORIZATION_UNAVAILABLE")
+        {
+            return Results.Json(Error("AUTHORIZATION_UNAVAILABLE"), statusCode: StatusCodes.Status503ServiceUnavailable);
         }
         catch (InvalidOperationException ex) when (ex.Message == "BUSINESS_RULE_VIOLATION")
         {
@@ -167,11 +195,6 @@ app.MapPost("/api/v1/assignments/{assignmentId}/close",
 app.Run();
 
 static object Error(string code) => new { code };
-
-public sealed class AssignmentLookup(IFirstSliceStore store)
-{
-    public EducationPlatform.Domain.FirstSlice.Assignment? Get(string tenantId, string id) => store.GetAssignment(tenantId, id);
-}
 
 public sealed record AssignmentRequest(string GoalId, string LearnerId, JsonElement Work);
 public sealed record SubmissionRequest(JsonElement Payload);

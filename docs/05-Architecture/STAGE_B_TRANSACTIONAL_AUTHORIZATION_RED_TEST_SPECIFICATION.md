@@ -1,0 +1,138 @@
+# Stage B — Transactional Authorization RED Test Specification
+
+**Status:** PARTIALLY IMPLEMENTED — exact-head CI and complete concurrency proof remain required  
+**Date:** 2026-10-20  
+**Approved design:** A1 typed transaction-aware persistence command  
+**Related:** `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`, `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`, `STAGE_B_IDENTITY_MEMBERSHIP_CONTRACT_TEST_PLAN.md`
+
+## 1. Purpose and scope
+
+Specify the test-first increment that proves platform-owned membership/lifecycle authorization is serialized with protected PostgreSQL mutations. These tests are not proof of production identity-provider validation, consent policy, onboarding, or physical tenant isolation.
+
+The branch now contains durable authority records and a production PostgreSQL adapter. The specification remains a verification checklist; earlier sequencing notes below describe the original RED-first plan and should not be read as a statement that the current branch lacks authority persistence.
+
+## 2. Current implementation status and remaining proof obligations
+
+The branch now contains platform authority records and an EF migration, a typed `IFirstSliceTransactionalCommand`, a PostgreSQL implementation that locks the tenant-scoped learning context before authority checks and idempotency replay, and a revocation writer that takes the same context lock. Production DI registers the transactional command when PostgreSQL is configured outside Development/Testing.
+
+This is implementation evidence, not a blanket proof of production authorization readiness. Exact-head GitHub Actions Run #685 passed on commit `04526afb7682f417f94a271c5183bd049e86a343`: build, EF migration validation, idempotent migration-script generation, and all 109 tests passed (0 failed, 0 skipped). The run includes the PostgreSQL integration suite.
+
+PostgreSQL tests now cover both observed context-lock orderings: revocation commits first and the protected command is denied; the protected command owns the context lock first while revocation is observed waiting, then both operations commit in order. The same-key concurrency test `Concurrent_same_key_creation_commits_one_mutation_and_returns_one_replay` also passed in that exact-head run; it coordinates two independent command contexts and observes both database lock waits before releasing the blocker, then asserts one mutation/replay and one set of reliability records.
+
+Remaining proof obligations:
+- rerun exact-head CI after any further changes;
+- broaden the shared lock protocol to every membership, grant, person, context, and goal lifecycle writer, and verify all actual write paths use it;
+- test classified deadlock/serialization failures, bounded retry, fresh-transaction restart, reauthorization, cancellation, and exhaustion behavior;
+- keep idempotency scope explicit: the same actor/operation/key reused across contexts is currently tested as a conflict; tenant boundary behavior and non-disclosure should remain covered as the contract evolves;
+- keep production credential verification, trusted actor derivation, and end-to-end API authorization independently verified.
+
+Legacy Application authorizers remain in the service composition for the non-transactional compatibility path. Production guarantees must be assessed against the actual production DI path and transaction-aware command, not the compatibility path.
+
+## 3. Test harness rules
+
+- Use PostgreSQL integration tests and at least two independent DbContext/connection instances for concurrency schedules.
+- Use explicit synchronization barriers in tests (not arbitrary sleeps) to pause one transaction after acquiring the intended lock and before commit.
+- Test real database blocking/commit ordering, not only mocked authorizer call order.
+- Every test starts from isolated tenant/context fixtures and asserts final persisted state after both transactions complete.
+- Each negative test asserts no unintended mutation, successful idempotency result, audit-success record, or outbox event was committed.
+- Keep provider-neutral command contracts in Application; keep EF/PostgreSQL details in Infrastructure.
+- Tests should be authored RED against the missing contract before implementation. Do not weaken the assertions to make the current pre-transaction authorizer appear atomic.
+- If the branch's CI policy does not permit a knowingly red default PR, land a compiling test-contract/helper layer first and stage failing behavioral tests on the agreed test branch; do not merge a red PR.
+
+## 4. First required RED suite
+
+### TA-001 — Creation denied in transaction
+
+Given a valid trusted actor and otherwise valid assignment data, with the actor's contextual membership inactive or lacking `assignment.create`, when the transaction-aware create command executes, then it returns a typed denial and commits no assignment, successful idempotency record, success audit, or outbox event.
+
+### TA-002 — Submission denied in transaction
+
+Given an assignment and a recipient whose contextual membership is revoked or lacks `submission.create`, when submission executes, then it is denied in the transaction and creates no submission or success reliability records.
+
+### TA-003 — Revocation wins before protected command
+
+Transaction R locks and revokes the authoritative membership row and commits. Command C starts/continues afterward. C must observe the inactive lifecycle state and be denied with no protected side effects.
+
+### TA-004 — Protected command wins lock before revocation
+
+Command C obtains the authoritative membership lock, validates policy and performs the protected mutation. Transaction R attempting to revoke the same membership must block until C commits. The final order must be C then R, and the test must demonstrate the blocking with independent connections/barriers.
+
+### TA-005 — Assignment closure versus submission
+
+Preserve the current assignment-row locking guarantee while extending the same transaction to include membership/policy checks. If close commits first, submission is rejected. If submission owns the documented lock order first, it may commit before close; no stale preloaded assignment snapshot may decide the outcome.
+
+### TA-006 — Replay after membership revocation
+
+A first command succeeds and commits its idempotency response. Membership is then revoked. Repeating the same command/key must reauthorize within the command transaction and deny without returning the protected saved response. Counts of assignment/submission, idempotency, audit, and outbox records remain unchanged by the retry.
+
+### TA-007 — Idempotency fingerprint mismatch after denial
+
+When the actor no longer has authority and supplies a key that has an existing response with a mismatched fingerprint, current authorization must be evaluated first. The caller receives the safe denial outcome rather than a key-conflict response that could disclose protected key usage. No writes occur.
+
+### TA-008 — Concurrent same-key requests
+
+Two independent commands with the same tenant, actor, operation, and idempotency key race. Exactly one protected mutation and one set of success records may commit. The losing path must roll back, start a fresh transaction, reauthorize, and only then return a replay or a safe denial. No direct replay from an exception handler without reauthorization.
+
+### TA-009 — Indeterminate authority
+
+If the transaction-local authority data is missing, ambiguous, or cannot be evaluated safely, command fails closed with the API's unavailable/indeterminate mapping (503 where applicable). No protected side effects commit. Database infrastructure failures must not be mislabeled as ordinary policy denial.
+
+### TA-010 — Cross-tenant/context mismatch
+
+An actor's membership in context A cannot authorize a resource/goal/recipient in context B or another tenant. No protected row or response payload is disclosed and no mutation/reliability success records are committed.
+
+### TA-011 — Atomic mutation and reliability records
+
+Inject a failure after the domain mutation is staged and before commit. Mutation, idempotency success result, audit, and outbox all roll back together. A retry after rollback can execute exactly once.
+
+### TA-012 — Cancellation, deadlock, and bounded retry
+
+Cancellation before commit rolls back. A classified transient database failure may be retried only a bounded number of times, each attempt in a new transaction and with a fresh authority check. Denial, validation errors, and fingerprint conflicts are not retried. Exhaustion maps to a safe unavailable outcome.
+
+## 5. Global lock-order assertions
+
+The tests and implementation must verify this common relative order across create, submit, close, revoke, membership-disable, and policy-change commands:
+
+1. tenant/context authority rows needed by the command;
+2. relevant membership/lifecycle rows, in deterministic stable-key order;
+3. relevant action-policy rows, in deterministic stable-key order;
+4. target resource rows (assignment/goal as applicable);
+5. idempotency key/replay resolution after current authorization;
+6. mutation plus idempotency/audit/outbox writes and commit.
+
+Creation locks and validates the goal/context/recipient authority rows needed to preserve eligibility. Revocation and policy-change commands lock/update the same authority rows and follow the same relative ordering. The final schema may refine exact row types, but any change to the global order requires an explicit deadlock analysis and concurrency tests before implementation.
+
+## 6. Required API/contract assertions
+
+- Denied maps to 403; indeterminate/unavailable maps to 503; do not expose membership existence or provider diagnostics.
+- Tenant and actor/Person IDs come from trusted server-side execution context, never request-body authority claims.
+- Submission recipient and context are resolved from persisted assignment data, not client-supplied snapshots.
+- Action intent is typed/closed at the command boundary; do not let the client choose an arbitrary policy name.
+- No positive authorization cache.
+- No external network/provider call while database authority locks are held.
+- No successful protected replay before transaction-local reauthorization.
+
+## 7. Existing repository harness — verified implementation map
+
+The RED work must extend the existing PostgreSQL test harness rather than create a parallel testing framework:
+
+- `tests/EducationPlatform.IntegrationTests/PostgresFirstSliceStoreTests.cs` contains PostgreSQL coverage for denial/no-side-effects, replay after authority revocation, both context-lock orderings, concurrent same-key create/replay, wrong membership types, cross-context idempotency conflict, and atomic audit/outbox rollback. Latest exact-head CI passed all 109 tests.
+- `CreateFreshDatabase()` and `CreateContext(string connection)` provide fixtures for independent Npgsql-backed DbContexts. Concurrency tests must use **separately constructed contexts/connections**; never share one DbContext across concurrent actors.
+- Existing audit/outbox failure tests demonstrate rollback of authoritative mutation and reliability records; preserve that coverage.
+- The transaction-aware command and `PostgresAuthorityRevocationWriter` exist on this branch. The transaction-aware command locks/validates context and current authority before idempotency replay; revocation uses the same context lock. Do not describe this as proof that every authority lifecycle write path is protected.
+- `src/EducationPlatform.Infrastructure/Persistence/EducationPlatformDbContext.cs` maps platform-owned authority records; migration `20261020170000_AddPlatformAuthorityRecords` adds the corresponding tables and tenant/context constraints. Keep schema snapshot and migration validation in CI.
+- The integration test project targets .NET 10 and uses xUnit v3 plus Npgsql via Infrastructure. CI runs PostgreSQL, build, EF migration validation, idempotent migration-script generation, and tests.
+
+**Sequencing note (historical plan):** the original plan called for the provider-neutral typed command contract and PostgreSQL authority fixture before production mappings. The current branch has progressed beyond that initial stage. Keep any new authorization/lifecycle behavior test-first, and require explicit PostgreSQL lock observation plus separate contexts for concurrency claims; a compiling mock-only test is not proof of transaction serialization.
+
+## 7. Exit criteria
+
+The RED specification becomes implementation-ready when:
+1. command types and typed decision/error outcomes are named in the design contract;
+2. a minimal test authority fixture is approved without implying a final production schema;
+3. tests TA-001 through TA-012 are mapped to unit/integration/concurrency layers;
+4. the concurrency harness demonstrates deterministic barriers and separate PostgreSQL connections;
+5. expected CI handling for RED is explicit;
+6. no production schema/provider/onboarding choice is smuggled into the test fixture.
+
+Current verification status: **PARTIAL PASS**. Exact-head CI on `04526afb7682f417f94a271c5183bd049e86a343` is green (109/109 tests), including the deterministic same-key race and both tested context-lock orderings. The broader implementation gate remains **NOT PASSED** until all authority lifecycle writers are audited against the common lock order and retry/deadlock/cancellation semantics are demonstrated. This status is not a production identity/authentication sign-off.

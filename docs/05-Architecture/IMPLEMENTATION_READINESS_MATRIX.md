@@ -1,12 +1,18 @@
 # Implementation Readiness Matrix — First Technical Slice
 
-**Date:** 2026-10-09  
+**Date:** 2026-10-16  
 **Status:** FIRST TECHNICAL SLICE VERIFIED; BROADER LEARNING JOURNEY INCOMPLETE  
-**Implementation authorization:** Applies only to the existing first technical slice. It does not authorize production identity-provider integration or the still-unimplemented contextual membership/policy checks.
+**Implementation authorization:** Applies only to the existing first technical slice. First-slice durable authority records, contextual membership/grant checks, and the A1 transaction-aware PostgreSQL command are now implemented on the current PR branch. This does not authorize production identity-provider integration or imply the broader learning journey is complete.
 
 ## 1. Purpose
 
 Track which accepted Product, Domain, UX, Architecture, Security, Data and API obligations have evidence in the existing first technical slice, while keeping broader journey and production-readiness gaps visible. This matrix is not a blanket authorization for all future implementation.
+
+## Current status override — 2026-10-20
+
+The dated entries below preserve project decision history; statements that the first-slice authority schema/command/revocation tests are “not yet implemented” are historical and superseded by this current status. GitHub Actions Run #685 passed on code commit `04526afb7682f417f94a271c5183bd049e86a343`: build, EF migration validation, idempotent migration-script generation, and all 109 tests passed (0 failed, 0 skipped). That run includes PostgreSQL tests for same-key concurrent creation and both tested context-lock orderings.
+
+**Current Stage B status: PARTIAL PASS.** First-slice authority records/migration, transaction-aware command, grant/membership revocation writer, replay reauthorization, wrong-membership-type checks, same-key race, and context-lock ordering tests exist. Still open: audit every Person/context/goal/membership/grant lifecycle write path for the shared lock protocol; add/test bounded retry for classified deadlock/serialization failures with a fresh transaction and reauthorization; verify cancellation/exhaustion mappings; and complete production identity/credential validation. Production identity, consent, physical tenant isolation, and broader learning-journey gates remain open. PR #5 remains draft/open/unmerged.
 
 ## 2. First Technical Slice and broader target
 
@@ -57,13 +63,14 @@ Evidence supports the following within the **existing first technical slice**:
 4. Server-derived tenant enforcement: implemented and CI verified for current API scenarios.
 5. Logical tenant isolation with defense-in-depth: accepted for the current phase.
 6. Idempotency, expected-version concurrency, and transactional audit/outbox behavior: covered by the existing regression suite; preserve these guarantees in future authorization work.
+7. Submission-vs-close stale-read protection: the submission transaction locks and re-reads the tenant-scoped assignment row before persisting; exact code head `0b7733da2230d604c722825f3aae65a099b24019` passed build, EF migration validation/script generation, and tests in [CI run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962). This proves the included PostgreSQL regression scenario, not every production concurrency schedule.
 
 The following remain open or incomplete:
 
 - Production identity-provider selection and real credential-validation adapter.
-- Durable Person and contextual membership resolution.
-- Production resource/action authorization backed by durable membership and policy sources remains open. A provider-neutral assignment-close authorization port and deterministic Development/Testing fixture are now enforced by the Application service before mutation or idempotency replay; API integration tests cover the fixture, while direct service tests cover denial/no mutation and re-authorization before replay. This is not production membership/policy integration.
-- Membership eligibility rules for assignment creation and learner submission.
+- Production identity→Person mapping and real credential validation remain open. Platform-owned Person records exist, but they do not replace a production credential adapter.
+- Durable first-slice contextual membership and action-policy grant records plus transaction-local create/submit/close checks are implemented. Universal lifecycle ownership is not yet proven: every Person/context/goal/membership/grant writer must follow the shared context-lock protocol.
+- Membership eligibility rules for assignment creation and learner submission are enforced for the current first-slice contracts; broader role, guardian, organization, and enrollment semantics remain open.
 - Physical tenant isolation.
 - Jurisdiction-specific consent, age and privacy rules.
 - Final retention periods and deployment configuration.
@@ -106,9 +113,9 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 | Security baseline | PASS for accepted baseline decisions |
 | Current API contract | PASS for currently tested endpoints/scenarios |
 | First technical slice | **PASS — CI VERIFIED for the tested commit** |
-| Production identity/authentication | **OPEN — resolver seam CI-verified; code head `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39` passed run #551 and current branch head `bd93376b9c82fea90eb84a230c4e35f80ab326b0` passed run #563; provider selection and real credential validation remain open** |
-| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; assignment-close scenarios passed runs #479/#480; code head `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39` passed run #551 and current branch head `bd93376b9c82fea90eb84a230c4e35f80ab326b0` passed run #563; production membership/policy integration remains open** |
-| Production contextual membership/resource policy | **OPEN — durable membership/policy resolution not implemented** |
+| Production identity/authentication | **OPEN — no selected provider or real credential validation; production resolver remains fail-closed** |
+| Assignment-close authorization contract | **APPLICATION ENFORCEMENT IMPLEMENTED — deterministic fixture only; PR #5 adds cross-tenant learner rejection, post-close rejection, and stale tracked assignment regression coverage. Code head `0b7733da2230d604c722825f3aae65a099b24019` passed build, migration validation/script generation, and tests in [CI run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962). Production membership/policy integration remains open.** |
+| First-slice contextual membership/resource policy | **IMPLEMENTED — PostgreSQL authority records and transaction-local checks; broader lifecycle writer lock coverage still open** |
 | Broader learning journey | **INCOMPLETE — not proven end-to-end** |
 | Release/deployment | **NOT READY — production identity, privacy and deployment gates remain** |
 
@@ -117,3 +124,108 @@ RED must represent an intentional behavioral failure, not a broken test harness.
 Keep the verified first technical slice stable and preserve its regression guarantees. Resource-scoped fixture and regression-test commit `bf70d7b544078f9d6c4179f71894834974d78cb5` passed CI (run #474). Application-use-case enforcement, denial/no-mutation, durable idempotency/audit/outbox non-mutation on denial, replay authorization re-checks against PostgreSQL, exact-resource grant matching, indeterminate fail-closed behavior, cross-tenant rejection, and fail-closed authorizer cancellation propagation are covered by the verified suite. Exact-head code run #551 passed on `7c02b119c9b79f1e58f2f627bcb9edabf4c7bd39`: https://github.com/palestiny/education-platform/actions/runs/37926998814. Subsequent documentation reconciliation is also CI-verified on current branch head `bd93376b9c82fea90eb84a230c4e35f80ab326b0` by runs #562 and #563: https://github.com/palestiny/education-platform/actions/runs/37936367127 and https://github.com/palestiny/education-platform/actions/runs/37936374424. Provider integration, durable membership/policy resolution, revocation freshness, and production implementation remain open; fixture behavior is not evidence of production authorization.
 
 PR #2 remains a reviewable, unmerged change set; a successful CI run verifies only the tested code and scenarios, not the open gaps listed above.
+
+
+## 10. Latest verified increment — assignment lifecycle reliability
+
+- **Code head:** `0b7733da2230d604c722825f3aae65a099b24019`
+- **CI:** [run 38949797962](https://github.com/palestiny/education-platform/actions/runs/38949797962) — success, including build, EF migration validation, idempotent migration-script generation, and test step.
+- The submission persistence path now re-reads the tenant-scoped assignment row under a PostgreSQL row lock before checking that it remains open.
+- A PostgreSQL integration regression test loads ACTIVE state in one context, closes the assignment in a second context, then proves the stale context cannot persist a submission or reliability records.
+- Cross-tenant learner submission and post-close submission rejection tests are also included.
+- **Still open:** production identity provider/credential validation, durable Person/membership and resource-policy adapters, revocation freshness/atomicity across authorization and mutation, and the broader learning journey.
+- PR #5 remains draft and unmerged. Passing CI is not merge authorization.
+
+## 11. Owner-approved Stage B authorization decisions — 2026-10-20
+
+The project owner accepted the decisions recorded in `STAGE_B_ASSIGNMENT_CREATE_AND_SUBMISSION_AUTHORIZATION_DECISION_BRIEF.md`:
+
+- **Assignment creation:** Option B — require active, eligible contextual membership and explicit `assignment.create` policy; validate goal and learner eligibility against the same trusted context.
+- **Learner submission:** Option B — require persisted-recipient identity, tenant/context alignment, active eligible contextual membership, explicit `submission.create` policy, and the existing assignment-open check at the persistence boundary.
+- **Audience scope:** group/class-audience assignment behavior remains deferred; this slice is one assignment to one persisted recipient.
+- **Revocation consistency:** use a shared authoritative transaction/locking protocol (Option A) if the actual membership ownership boundary supports it. Otherwise use Option B: fresh authoritative check per command, no positive authorization cache initially, fail closed on unavailable/indeterminate results, and document the residual check-to-mutation race. Option C caching is not approved.
+
+**Gate interpretation:** the owner policy decision gate is PASS. Implementation and production authorization remain OPEN until the accepted contract is implemented and verified. In particular, approval does not mean that durable membership/policy adapters, production credential validation, or atomic revocation already exist. Feasibility of Option A must be demonstrated against the selected authoritative membership source before claiming that guarantee; if not feasible, follow Option B without inventing a maximum revocation delay.
+
+Required implementation evidence: Application-level authorization for create and submit; no-mutation tests for denied/indeterminate/outage paths; tenant/context and recipient tests; authorization re-check before protected idempotency replay; PostgreSQL concurrency/revocation coverage appropriate to the chosen boundary; exact-head CI. Preserve idempotency, expected-version concurrency, audit/outbox behavior, and the submission row-lock/re-read guard.
+
+
+
+## 12. Create/submission Application authorization implementation — 2026-10-20
+
+**Implementation status:** Application authorization ports and durable denial/no-mutation regression tests are implemented and CI-verified on code commit `63b489ff2b415a7897b2a816f6055152b6f31ab3` (run 615: https://github.com/palestiny/education-platform/actions/runs/39440930697).
+
+- Added `IAssignmentCreationAuthorizer` and `ILearnerSubmissionAuthorizer`, reusing explicit `Allowed` / `Denied` / `Indeterminate` outcomes.
+- `FirstSliceService.CreateAssignmentAsync` authorizes before calling the mutation store, so denied or indeterminate requests cannot consume an idempotency key or create mutation/reliability records.
+- `FirstSliceService.CreateSubmissionAsync` loads the assignment inside the Application use case with trusted tenant scope, rejects non-recipient requests without disclosing resource details, authorizes against the persisted assignment context, and only then calls the store.
+- Both use cases re-check cancellation at the mutation boundary and authorize before protected idempotency replay.
+- API maps denied decisions to 403 and indeterminate/unavailable decisions to 503.
+- Development/Testing DI uses deterministic fixtures; production DI uses fail-closed adapters. No production membership or resource-policy data source is implemented or implied by these fixtures.
+- Integration tests cover denied/indeterminate create, denied submission, no idempotency-key consumption after denial, recipient mismatch before authorization, and trusted persisted assignment context. Existing PostgreSQL persistence, audit/outbox rollback, close replay, and migration checks pass in the same CI run.
+
+**Still OPEN:** authoritative identity→Person mapping, lifecycle state, durable contextual membership and eligibility predicates, explicit resource/action policy storage, production credential validation, and revocation consistency. Option A is only valid if the chosen membership source can share the command transaction/locking protocol; otherwise use the approved fresh-check/no-positive-cache fallback and document the residual race. This implementation does not select a provider or membership schema and does not close production readiness.
+
+## 13. Revocation authority ownership — owner decision approved
+
+The feasibility assessment is recorded in `STAGE_B_REVOCATION_CONSISTENCY_FEASIBILITY.md`; the next design gate is `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`.
+
+- **Owner decision (2026-10-20): APPROVED** — platform-owned Person mapping and contextual membership/lifecycle state in the same PostgreSQL transaction authority as protected first-slice commands; external credential verification remains provider-neutral.
+- **Important limitation:** current Application authorization ports run before the store mutation; this call shape alone does not provide atomic revocation. A transaction-aware final membership/policy check and lock must be designed and verified before claiming Option A.
+- **Next gate:** compare transaction-aware persistence command versus explicit unit-of-work/coordinator, specify global lock ordering, and define real PostgreSQL concurrency tests for command-versus-revocation serialization.
+- If same-transaction serialization cannot be demonstrated, use the approved Option B fallback: fresh authoritative checks, no positive cache initially, fail closed, and document the residual race.
+- Approval covers the authority-ownership direction only. It does not select a schema, provider, onboarding flow, or authorize implementation before the transaction design gate passes. Production authorization remains fail-closed.
+
+
+
+## 14. Owner approval and exact-head documentation increment — 2026-10-20
+
+- Owner approved platform-owned Person/contextual membership/lifecycle authority within the protected commands' PostgreSQL transaction boundary; external credential verification remains provider-neutral.
+- The transaction-aware authorization design gate is documented in `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`.
+- Approval does not establish atomic revocation: the transaction protocol, lock order, and PostgreSQL command-versus-revocation concurrency tests remain open.
+- At the time this matrix entry was authored, the docs-only head was `bdca832429fa6e14f44bb4fcfd85ec7466a04e2f`; the transaction-design gate was subsequently refined in commit `4071779965fa8fa97531d329baab493d1cf8bbb8`. The latest docs-only commits have no associated PR-triggered workflow run returned by the connector; do not treat earlier code CI as exact-head verification.
+- PR #5 remains draft/open/unmerged. No membership schema/provider was selected and no merge was performed.
+
+
+## 15. Transaction-aware authorization decision — owner approved (2026-10-20)
+
+- **A1 approved:** typed transaction-aware persistence command owns the PostgreSQL transaction and performs final authoritative membership/lifecycle and action-policy checks, resource locking, mutation, idempotency, audit, and outbox work within that boundary.
+- The command contract and global lock-order expectations are recorded in `STAGE_B_TRANSACTIONAL_AUTHORIZATION_DESIGN_GATE.md`.
+- The executable test-first requirements are specified in `STAGE_B_TRANSACTIONAL_AUTHORIZATION_RED_TEST_SPECIFICATION.md` (TA-001 through TA-012), including separate PostgreSQL connections and deterministic concurrency barriers.
+- **Not yet implemented/proven:** durable membership/policy schema, transaction-aware command code, membership-revocation serialization, replay-after-revocation protection inside the transaction, and the associated PostgreSQL concurrency tests.
+- **Next gate:** implement/verify the compiling test contract and then run the required RED → GREEN sequence without merging a knowingly red PR. No schema/provider/onboarding details are implicitly approved.
+- CI must be checked against the exact current PR head; earlier successful code CI does not verify later documentation commits.
+
+
+## 16. Authority schema boundary — blocking design decision (2026-10-20)
+
+- Added `STAGE_B_AUTHORITY_SCHEMA_BOUNDARY_DECISION_BRIEF.md` after inspecting the actual EF model and initial migration.
+- The current model persists assignments, submissions, idempotency, audit, and outbox; `ContextId`, `GoalId`, and `LearnerId` are bounded strings, not foreign keys to authoritative context/goal/membership records.
+- Locking a future membership row alone cannot prove that the learner and goal remain eligible in the same context. A1 needs a named source of truth for every fact used in the final authorization decision.
+- Owner decision required: (A) platform persists contexts and goals in the same PostgreSQL authority, (B) an existing module supplies transaction-aware access over the same transaction, or (C) external/remote source, which cannot satisfy the current atomic guarantee without revising scope or using the approved fresh-check fallback.
+- No authority schema was created and no production adapter was added. Atomic revocation remains not implemented/not proven.
+- CI run #626 passed for commit `92ecdc569218aa57dd82496f81ad286672769086`; the authority-schema brief and later documentation updates require exact-head CI verification.
+
+
+## 17. Owner-approved authority boundary (2026-10-20)
+
+- Owner explicitly approved Option A: platform-owned tenant-scoped learning contexts and learning goals in the same PostgreSQL transaction authority as Person mapping, contextual membership, action policy, and protected commands.
+- Decision brief updated: `STAGE_B_AUTHORITY_SCHEMA_BOUNDARY_DECISION_BRIEF.md`. This resolves the ownership gate; schema/code remain unimplemented.
+- Minimum provider-neutral authority records to implement: Person/external issuer-subject linkage, LearningContext, LearningGoal, ContextualMembership, ActionPolicyGrant. Assignment references must validate tenant/context alignment and recipient eligibility; use composite constraints where practical.
+- Lock contract includes context → membership rows (stable order) → policy grant rows (stable order) → goal or protected resource → idempotency lookup after authorization → mutation/idempotency/audit/outbox commit.
+- Revocation, context/goal disablement, and policy changes must use compatible locks. Unique-key race losers restart the full authorization protocol; never return stored responses directly from the conflict catch.
+- Next implementation sequence: PostgreSQL two-connection RED tests → authority entities/migration/snapshot → typed transaction-aware persistence command → compatible lifecycle revocation locks → exact-head CI.
+- Explicitly not approved: identity provider, onboarding, guardian/consent, physical tenant isolation. Atomic revocation remains not implemented/not proven.
+
+
+## 18. Current verified status — Stage B authorization (2026-10-20)
+
+This section supersedes historical status statements in earlier entries where they describe the current branch as lacking the authority schema or transaction-aware command. Those statements remain historical records, not the current implementation state.
+
+- **Current branch HEAD before this matrix update:** `b3b37d16b526e21f1057e0deb466bdaf057a6b88`.
+- **Exact-head CI for that HEAD:** Run #690 was still in progress at review time; result not yet confirmed. Do not infer success from Run #689.
+- **Run #689:** succeeded on `7f1a8889b53db649f7b8274b82318caedbee4dac`: https://github.com/palestiny/education-platform/actions/runs/39489189217.
+- **Implemented on the branch:** platform-owned Person, learning-context, learning-goal, contextual-membership and action-policy records; A1 transaction-aware protected commands; PostgreSQL context locking; revocation writer; tests for revocation/replay and tested lock schedules.
+- **Still not production-ready:** revocation writer is not registered as an application lifecycle service or exposed via API; it does not yet include trusted actor/correlation metadata or atomic audit/outbox writes. Production execution-context resolution is fail-closed, so do not expose authority-changing routes until trusted identity and explicit lifecycle authorization exist.
+- **Still unproven:** every person/context/goal/membership/grant lifecycle writer follows the shared lock protocol; bounded deadlock/serialization retry with a fresh transaction and full reauthorization; cancellation and retry-exhaustion semantics; production credential verification, consent policy, and physical tenant isolation.
+- **PR #5:** open, Draft, unmerged. Keep it that way while exact-head CI and the security/reliability gates remain open.
+- **Next gate:** define a typed internal lifecycle command requiring trusted actor context, target-specific revoke permission, correlation metadata, idempotency policy, and atomic status + audit + outbox behavior; implement and test it before adding any HTTP route.

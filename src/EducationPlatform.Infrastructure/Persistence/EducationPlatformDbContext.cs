@@ -11,6 +11,11 @@ public sealed class EducationPlatformDbContext(DbContextOptions<EducationPlatfor
     public DbSet<IdempotencyRecord> IdempotencyRecords => Set<IdempotencyRecord>();
     public DbSet<AuditRecord> AuditRecords => Set<AuditRecord>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<PersonAuthorityRecord> Persons => Set<PersonAuthorityRecord>();
+    public DbSet<LearningContextAuthorityRecord> LearningContexts => Set<LearningContextAuthorityRecord>();
+    public DbSet<LearningGoalAuthorityRecord> LearningGoals => Set<LearningGoalAuthorityRecord>();
+    public DbSet<ContextualMembershipAuthorityRecord> ContextualMemberships => Set<ContextualMembershipAuthorityRecord>();
+    public DbSet<ActionPolicyGrantAuthorityRecord> ActionPolicyGrants => Set<ActionPolicyGrantAuthorityRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,6 +75,82 @@ public sealed class EducationPlatformDbContext(DbContextOptions<EducationPlatfor
             entity.Property(x => x.ResourceId).HasMaxLength(64).IsRequired();
             entity.Property(x => x.ResultingStatus).HasMaxLength(64).IsRequired();
             entity.HasIndex(x => new { x.TenantId, x.OccurredAt });
+        });
+
+        modelBuilder.Entity<PersonAuthorityRecord>(entity =>
+        {
+            entity.ToTable("persons");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasMaxLength(64);
+            entity.Property(x => x.Status).HasMaxLength(32).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+        });
+
+        modelBuilder.Entity<LearningContextAuthorityRecord>(entity =>
+        {
+            entity.ToTable("learning_contexts");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasMaxLength(64);
+            entity.Property(x => x.TenantId).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(32).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasAlternateKey(x => new { x.TenantId, x.Id });
+            entity.HasIndex(x => new { x.TenantId, x.Id }).IsUnique();
+        });
+
+        modelBuilder.Entity<LearningGoalAuthorityRecord>(entity =>
+        {
+            entity.ToTable("learning_goals");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasMaxLength(64);
+            entity.Property(x => x.TenantId).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ContextId).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(32).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasAlternateKey(x => new { x.TenantId, x.ContextId, x.Id });
+            entity.HasOne<LearningContextAuthorityRecord>().WithMany()
+                .HasForeignKey(x => new { x.TenantId, x.ContextId })
+                .HasPrincipalKey(x => new { x.TenantId, x.Id })
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.TenantId, x.ContextId });
+        });
+
+        modelBuilder.Entity<ContextualMembershipAuthorityRecord>(entity =>
+        {
+            entity.ToTable("contextual_memberships");
+            entity.HasKey(x => new { x.TenantId, x.ContextId, x.PersonId, x.MembershipType });
+            entity.Property(x => x.TenantId).HasMaxLength(64);
+            entity.Property(x => x.ContextId).HasMaxLength(64);
+            entity.Property(x => x.PersonId).HasMaxLength(64);
+            entity.Property(x => x.MembershipType).HasMaxLength(32);
+            entity.Property(x => x.Status).HasMaxLength(32).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasOne<LearningContextAuthorityRecord>().WithMany()
+                .HasForeignKey(x => new { x.TenantId, x.ContextId })
+                .HasPrincipalKey(x => new { x.TenantId, x.Id })
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<PersonAuthorityRecord>().WithMany()
+                .HasForeignKey(x => x.PersonId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.TenantId, x.ContextId, x.Status });
+        });
+
+        modelBuilder.Entity<ActionPolicyGrantAuthorityRecord>(entity =>
+        {
+            entity.ToTable("action_policy_grants");
+            entity.HasKey(x => new { x.TenantId, x.ContextId, x.SubjectType, x.SubjectId, x.Action });
+            entity.Property(x => x.TenantId).HasMaxLength(64);
+            entity.Property(x => x.ContextId).HasMaxLength(64);
+            entity.Property(x => x.SubjectType).HasMaxLength(32);
+            entity.Property(x => x.SubjectId).HasMaxLength(64);
+            entity.Property(x => x.Action).HasMaxLength(128);
+            entity.Property(x => x.Status).HasMaxLength(32).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasOne<LearningContextAuthorityRecord>().WithMany()
+                .HasForeignKey(x => new { x.TenantId, x.ContextId })
+                .HasPrincipalKey(x => new { x.TenantId, x.Id })
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.TenantId, x.ContextId, x.Action, x.Status });
         });
 
         modelBuilder.Entity<OutboxMessage>(entity =>
