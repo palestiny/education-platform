@@ -77,6 +77,68 @@ partial class EducationPlatformDbContextModelSnapshot : ModelSnapshot
             b.ToTable("audit_records");
         });
 
+        modelBuilder.Entity<PersonAuthorityRecord>(b =>
+        {
+            b.Property<string>("Id").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("Status").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
+            b.HasKey("Id");
+            b.ToTable("persons");
+        });
+
+        modelBuilder.Entity<LearningContextAuthorityRecord>(b =>
+        {
+            b.Property<string>("Id").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("TenantId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("Status").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
+            b.HasKey("Id");
+            b.HasAlternateKey("TenantId", "Id");
+            b.HasIndex("TenantId", "Id").IsUnique();
+            b.ToTable("learning_contexts");
+        });
+
+        modelBuilder.Entity<LearningGoalAuthorityRecord>(b =>
+        {
+            b.Property<string>("Id").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("TenantId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("ContextId").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("Status").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
+            b.HasKey("Id");
+            b.HasAlternateKey("TenantId", "ContextId", "Id");
+            b.HasIndex("TenantId", "ContextId");
+            b.ToTable("learning_goals");
+        });
+
+        modelBuilder.Entity<ContextualMembershipAuthorityRecord>(b =>
+        {
+            b.Property<string>("TenantId").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("ContextId").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("PersonId").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("MembershipType").HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<string>("Status").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
+            b.HasKey("TenantId", "ContextId", "PersonId", "MembershipType");
+            b.HasIndex("PersonId");
+            b.HasIndex("TenantId", "ContextId", "Status");
+            b.ToTable("contextual_memberships");
+        });
+
+        modelBuilder.Entity<ActionPolicyGrantAuthorityRecord>(b =>
+        {
+            b.Property<string>("TenantId").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("ContextId").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("SubjectType").HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<string>("SubjectId").HasMaxLength(64).HasColumnType("character varying(64)");
+            b.Property<string>("Action").HasMaxLength(128).HasColumnType("character varying(128)");
+            b.Property<string>("Status").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+            b.Property<int>("Version").IsConcurrencyToken().HasColumnType("integer");
+            b.HasKey("TenantId", "ContextId", "SubjectType", "SubjectId", "Action");
+            b.HasIndex("TenantId", "ContextId", "Action", "Status");
+            b.ToTable("action_policy_grants");
+        });
+
         modelBuilder.Entity<OutboxMessage>(b =>
         {
             b.Property<Guid>("Id").HasColumnType("uuid");
