@@ -1218,4 +1218,108 @@ public sealed class PostgresFirstSliceStoreTests
         Assert.Empty(db.OutboxMessages);
     }
 
+
+    [Fact]
+    public async Task Transactional_submission_and_close_reject_active_memberships_of_wrong_type()
+    {
+        using var db = CreateFreshDatabase();
+        db.Persons.AddRange(
+            new PersonAuthorityRecord { Id = "wrong-role-teacher", Status = "ACTIVE" },
+            new PersonAuthorityRecord { Id = "wrong-role-learner", Status = "ACTIVE" });
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "wrong-role-context", TenantId = "tenant-a", Status = "ACTIVE"
+        });
+        db.LearningGoals.Add(new LearningGoalAuthorityRecord
+        {
+            Id = "wrong-role-goal", TenantId = "tenant-a",
+            ContextId = "wrong-role-context", Status = "ACTIVE"
+        });
+        db.ContextualMemberships.AddRange(
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                PersonId = "wrong-role-teacher", MembershipType = "TEACHER", Status = "ACTIVE"
+            },
+            new ContextualMembershipAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                PersonId = "wrong-role-learner", MembershipType = "LEARNER", Status = "ACTIVE"
+            });
+        db.ActionPolicyGrants.AddRange(
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                SubjectType = "PERSON", SubjectId = "wrong-role-teacher",
+                Action = "assignment.create", Status = "ACTIVE"
+            },
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                SubjectType = "PERSON", SubjectId = "wrong-role-learner",
+                Action = "submission.create", Status = "ACTIVE"
+            },
+            new ActionPolicyGrantAuthorityRecord
+            {
+                TenantId = "tenant-a", ContextId = "wrong-role-context",
+                SubjectType = "PERSON", SubjectId = "wrong-role-teacher",
+                Action = "assignment.close", Status = "ACTIVE"
+            });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var service = new FirstSliceService(
+            new PostgresFirstSliceStore(db), new AllowCloseAuthorizer(),
+            new AllowCreationAuthorizer(), new AllowSubmissionAuthorizer(),
+            new PostgresFirstSliceTransactionalCommand(db));
+        var assignment = await service.CreateAssignmentAsync(
+            "tenant-a", "wrong-role-teacher", "wrong-role-context", "wrong-role-goal",
+            "wrong-role-learner", "{\"work\":\"role-test\"}", "wrong-role-create",
+            "wrong-role-create-correlation", TestContext.Current.CancellationToken);
+
+        // Both records remain ACTIVE, but their membership types no longer authorize
+        // the corresponding submission and close commands.
+        var teacherMembership = await db.ContextualMemberships.SingleAsync(
+            x => x.PersonId == "wrong-role-teacher", TestContext.Current.CancellationToken);
+        var learnerMembership = await db.ContextualMemberships.SingleAsync(
+            x => x.PersonId == "wrong-role-learner", TestContext.Current.CancellationToken);
+        teacherMembership.MembershipType = "LEARNER";
+        learnerMembership.MembershipType = "TEACHER";
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var submissionError = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CreateSubmissionAsync(
+                "tenant-a", "wrong-role-learner", assignment.Value.Id, "wrong-role-learner",
+                "{\"answer\":\"should-deny\"}", "wrong-role-submit",
+                "wrong-role-submit-correlation", TestContext.Current.CancellationToken));
+        Assert.Equal("FORBIDDEN", submissionError.Message);
+
+        var closeError = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.CloseAssignmentAsync(
+                "tenant-a", "wrong-role-teacher", assignment.Value.Id, 1,
+                "wrong-role-close", "wrong-role-close-correlation",
+                TestContext.Current.CancellationToken));
+        Assert.Equal("FORBIDDEN", closeError.Message);
+
+        db.ChangeTracker.Clear();
+        Assert.Equal("ACTIVE", (await db.Assignments.SingleAsync(
+            x => x.Id == assignment.Value.Id, TestContext.Current.CancellationToken)).Status);
+        Assert.Empty(db.Submissions);
+        Assert.Equal(1, await db.IdempotencyRecords.CountAsync(
+            x => x.OperationScope == "assignment.create", TestContext.Current.CancellationToken));
+        Assert.Empty(await db.IdempotencyRecords.Where(
+            x => x.OperationScope == "submission.create" || x.OperationScope == "assignment.close")
+            .ToListAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(1, await db.AuditRecords.CountAsync(
+            x => x.Operation == "assignment.create", TestContext.Current.CancellationToken));
+        Assert.Empty(await db.AuditRecords.Where(
+            x => x.Operation == "submission.create" || x.Operation == "assignment.close")
+            .ToListAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(1, await db.OutboxMessages.CountAsync(
+            x => x.MessageType == "Assignment.AssignmentCreated", TestContext.Current.CancellationToken));
+        Assert.Empty(await db.OutboxMessages.Where(
+            x => x.MessageType == "Submission.SubmissionCreated" ||
+                 x.MessageType == "Assignment.AssignmentClosed")
+            .ToListAsync(TestContext.Current.CancellationToken));
+    }
+
 }
