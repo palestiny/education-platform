@@ -49,6 +49,36 @@ public sealed class PostgresFirstSliceStoreTests
     }
 
     [Fact]
+    public async Task Authority_policy_grant_foreign_key_rejects_cross_tenant_context_reference()
+    {
+        using var db = CreateFreshDatabase();
+        db.LearningContexts.Add(new LearningContextAuthorityRecord
+        {
+            Id = "policy-context-a",
+            TenantId = "tenant-a",
+            Status = "ACTIVE"
+        });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        db.ActionPolicyGrants.Add(new ActionPolicyGrantAuthorityRecord
+        {
+            TenantId = "tenant-b",
+            ContextId = "policy-context-a",
+            SubjectType = "PERSON",
+            SubjectId = "teacher-b",
+            Action = "assignment.create",
+            Status = "ACTIVE"
+        });
+
+        await Assert.ThrowsAsync<DbUpdateException>(async () =>
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken));
+
+        db.ChangeTracker.Clear();
+        Assert.Empty(db.ActionPolicyGrants);
+        Assert.Single(db.LearningContexts);
+    }
+
+    [Fact]
     public async Task Authority_membership_foreign_keys_reject_unknown_person()
     {
         using var db = CreateFreshDatabase();
