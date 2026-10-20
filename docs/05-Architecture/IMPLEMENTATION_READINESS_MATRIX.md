@@ -143,3 +143,18 @@ The project owner accepted the decisions recorded in `STAGE_B_ASSIGNMENT_CREATE_
 
 Required implementation evidence: Application-level authorization for create and submit; no-mutation tests for denied/indeterminate/outage paths; tenant/context and recipient tests; authorization re-check before protected idempotency replay; PostgreSQL concurrency/revocation coverage appropriate to the chosen boundary; exact-head CI. Preserve idempotency, expected-version concurrency, audit/outbox behavior, and the submission row-lock/re-read guard.
 
+
+
+## 12. Create/submission Application authorization implementation — 2026-10-20
+
+**Implementation status:** Application authorization ports are implemented and CI-verified on code commit `894cf6e2bee54d0d81ae393f878eba25716382e7` (run 609: https://github.com/palestiny/education-platform/actions/runs/39440180267).
+
+- Added `IAssignmentCreationAuthorizer` and `ILearnerSubmissionAuthorizer`, reusing explicit `Allowed` / `Denied` / `Indeterminate` outcomes.
+- `FirstSliceService.CreateAssignmentAsync` authorizes before calling the mutation store, so denied or indeterminate requests cannot consume an idempotency key or create mutation/reliability records.
+- `FirstSliceService.CreateSubmissionAsync` loads the assignment inside the Application use case with trusted tenant scope, rejects non-recipient requests without disclosing resource details, authorizes against the persisted assignment context, and only then calls the store.
+- Both use cases re-check cancellation at the mutation boundary and authorize before protected idempotency replay.
+- API maps denied decisions to 403 and indeterminate/unavailable decisions to 503.
+- Development/Testing DI uses deterministic fixtures; production DI uses fail-closed adapters. No production membership or resource-policy data source is implemented or implied by these fixtures.
+- Integration tests cover denied/indeterminate create, denied submission, no idempotency-key consumption after denial, recipient mismatch before authorization, and trusted persisted assignment context. Existing PostgreSQL persistence, audit/outbox rollback, close replay, and migration checks pass in the same CI run.
+
+**Still OPEN:** authoritative identity→Person mapping, lifecycle state, durable contextual membership and eligibility predicates, explicit resource/action policy storage, production credential validation, and revocation consistency. Option A is only valid if the chosen membership source can share the command transaction/locking protocol; otherwise use the approved fresh-check/no-positive-cache fallback and document the residual race. This implementation does not select a provider or membership schema and does not close production readiness.
